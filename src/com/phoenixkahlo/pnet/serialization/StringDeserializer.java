@@ -9,13 +9,13 @@ public class StringDeserializer implements Deserializer {
 
 	@Override
 	public Object deserialize(InputStream in) throws IOException, ProtocolViolationException {
-		byte[]
+		byte[] bin = SerializationUtils.deserializeByteArray(in);
+		return SerializationUtils.bytesToString(bin);
 	}
 
 	@Override
 	public Serializer toSerializer() {
-		// TODO Auto-generated method stub
-		return null;
+		return new StringSerializer();
 	}
 
 }

@@ -14,8 +14,7 @@ public class StringSerializer implements Serializer {
 	public void serialize(Object object, OutputStream out) throws IOException {
 		if (!canSerialize(object)) throw new IllegalArgumentException();
 		byte[] bin = SerializationUtils.stringToBytes((String) object);
-		SerializationUtils.writeInt(bin.length, out);
-		out.write(bin);
+		SerializationUtils.serializeByteArray(bin, out);
 	}
 
 	@Override

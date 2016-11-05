@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 /**
  * Static utility class for testing.
@@ -16,17 +17,23 @@ public class Testing {
 	private Testing() {
 	}
 
+	public static final Random RANDOM = new Random();
+	
 	/**
 	 * Execute all {@link com.phoenixkahlo.ptest.Test tests} in the given class.
 	 */
 	public static void test(Class<?> clazz) {
+		Random seeder = new Random();
 		System.out.println("testing class \"" + clazz.getSimpleName() + "\"");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
 			Test annotation = method.getAnnotation(Test.class);
 			if (annotation.name().equals("$unnamed"))
-				System.out.println("running \"" + method.getName() + "\"");
+				System.out.print("running \"" + method.getName() + "\"");
 			else
-				System.out.println("running \"" + annotation.name() + "\"");
+				System.out.print("running \"" + annotation.name() + "\"");
+			long seed = seeder.nextLong();
+			System.out.println(" (seed=" + seed + ")");
+			RANDOM.setSeed(seed);
 			try {
 				method.invoke(null);
 				System.out.println("test returned");

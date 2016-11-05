@@ -1,144 +1,111 @@
 package test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Random;
 
 import com.phoenixkahlo.pnet.serialization.ArraySerializer;
-import com.phoenixkahlo.pnet.serialization.Deserializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.pnet.serialization.StringSerializer;
 import com.phoenixkahlo.ptest.Test;
+import com.phoenixkahlo.ptest.Testing;
 
 public class ArraySerializationTest {
 
 	@Test
-	public static void testArraySerializerInt() throws Exception {
-		Serializer serializer = new ArraySerializer(int.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			int[] arr = new int[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			int[] arr2 = (int[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeIntArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(int.class), () -> {
+			int[] arr = new int[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = Testing.RANDOM.nextInt();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((int[]) a, (int[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerLong() throws Exception {
-		Serializer serializer = new ArraySerializer(long.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			long[] arr = new long[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			long[] arr2 = (long[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeLongArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(long.class), () -> {
+			long[] arr = new long[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = Testing.RANDOM.nextLong();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((long[]) a, (long[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerDouble() throws Exception {
-		Serializer serializer = new ArraySerializer(double.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			double[] arr = new double[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			double[] arr2 = (double[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeDoubleArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(double.class), () -> {
+			double[] arr = new double[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = Testing.RANDOM.nextDouble();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((double[]) a, (double[]) b));
+	}
+
+	@Test
+	public static void serializeFloatArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(float.class), () -> {
+			float[] arr = new float[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = Testing.RANDOM.nextFloat();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((float[]) a, (float[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerFloat() throws Exception {
-		Serializer serializer = new ArraySerializer(float.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			float[] arr = new float[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			float[] arr2 = (float[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeShortArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(short.class), () -> {
+			short[] arr = new short[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = (short) Testing.RANDOM.nextInt();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((short[]) a, (short[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerShort() throws Exception {
-		Serializer serializer = new ArraySerializer(short.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			short[] arr = new short[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			short[] arr2 = (short[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeCharArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(char.class), () -> {
+			char[] arr = new char[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = (char) Testing.RANDOM.nextInt();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((char[]) a, (char[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerChar() throws Exception {
-		Serializer serializer = new ArraySerializer(char.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			char[] arr = new char[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			char[] arr2 = (char[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeByteArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(byte.class), () -> {
+			byte[] arr = new byte[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = (byte) Testing.RANDOM.nextInt();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((byte[]) a, (byte[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerByte() throws Exception {
-		Serializer serializer = new ArraySerializer(byte.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			byte[] arr = new byte[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			byte[] arr2 = (byte[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeBooleanArr() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(boolean.class), () -> {
+			boolean[] arr = new boolean[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = Testing.RANDOM.nextBoolean();
+			}
+			return arr;
+		}, (a, b) -> Arrays.equals((boolean[]) a, (boolean[]) b));
 	}
 	
 	@Test
-	public static void testArraySerializerBoolean() throws Exception {
-		Serializer serializer = new ArraySerializer(boolean.class, null);
-		Deserializer deserializer = serializer.toDeserializer();
-		
-		Random random = new Random();
-		for (int n = 0; n < 50; n++) {
-			boolean[] arr = new boolean[random.nextInt(1000)];
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			serializer.serialize(arr, out);
-			InputStream in = new ByteArrayInputStream(out.toByteArray());
-			boolean[] arr2 = (boolean[]) deserializer.deserialize(in);
-			assert Arrays.equals(arr, arr2);
-		}
+	public static void serializeStringArray() throws Exception {
+		TestUtils.testSerializer(new ArraySerializer(String.class, new StringSerializer()), () -> {
+			String[] arr = new String[Testing.RANDOM.nextInt(5000)];
+			for (int i = 0; i < arr.length; i++) {
+				arr[i] = TestUtils.randomString();
+			}
+			return arr;
+		});
 	}
 	
 }

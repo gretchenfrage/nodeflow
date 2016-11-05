@@ -83,11 +83,22 @@ public class SerializationUtils {
 	}
 
 	/**
-	 * Head with array length.
+	 * Head with array length, symmetrical to deserializeByteArray.
 	 */
 	public static void serializeByteArray(byte[] bytes, OutputStream out) throws IOException {
 		writeInt(bytes.length, out);
 		out.write(bytes);
+	}
+	
+	/**
+	 * Head with array length, symmetrical to serializeByteArray.
+	 */
+	public static byte[] deserializeByteArray(InputStream in) throws IOException {
+		byte[] arr = new byte[readInt(in)];
+		int read = 0;
+		while (read < arr.length)
+			read += in.read(arr, read, arr.length);
+		return arr;
 	}
 	
 	public static void writeInt(int n, OutputStream out) throws IOException {
