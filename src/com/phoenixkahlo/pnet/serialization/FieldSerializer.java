@@ -16,6 +16,7 @@ public class FieldSerializer implements Serializer {
 	private Supplier<?> factory;
 
 	public FieldSerializer(Class<?> dataType, Serializer subSerializer, Supplier<?> factory) {
+		assert factory.get().getClass() == dataType;
 		this.dataType = dataType;
 		this.subSerializer = subSerializer;
 		this.factory = factory;

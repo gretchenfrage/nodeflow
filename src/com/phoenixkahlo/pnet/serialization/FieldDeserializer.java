@@ -17,6 +17,7 @@ public class FieldDeserializer implements Deserializer {
 	private Supplier<?> factory;
 	
 	public FieldDeserializer(Class<?> dataType, Deserializer subDeserializer, Supplier<?> factory) {
+		assert factory.get().getClass() == dataType;
 		this.dataType = dataType;
 		this.subDeserializer = subDeserializer;
 		this.factory = factory;

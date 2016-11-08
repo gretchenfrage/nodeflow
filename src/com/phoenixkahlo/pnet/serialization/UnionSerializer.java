@@ -30,7 +30,7 @@ public class UnionSerializer implements Serializer {
 	@Override
 	public void serialize(Object object, OutputStream out) throws IOException {
 		if (!canSerialize(object))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("cannot serialize " + object);
 		Serializer serializer = subSerializers.keySet().stream().filter(sub -> sub.canSerialize(object)).findAny()
 				.get();
 		SerializationUtils.writeInt(subSerializers.get(serializer), out);

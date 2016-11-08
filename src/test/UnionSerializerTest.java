@@ -26,7 +26,8 @@ public class UnionSerializerTest {
 		union.add(2, new ArrayListSerializer(union));
 		union.add(3, new HashMapSerializer(union));
 		union.add(4, new ArraySerializer(Object.class, union));
-		union.add(5, new FieldSerializer(FieldSerializerTest.TestClass2.class, union, FieldSerializerTest.TestClass2::new));
+		union.add(6, new FieldSerializer(FieldSerializerTest.TestClass2.class, union, FieldSerializerTest.TestClass2::new));
+		union.add(5, new FieldSerializer(FieldSerializerTest.TestClass1.class, union, FieldSerializerTest.TestClass1::new));
 		TestUtils.testSerializer(union, () -> {
 			if (Testing.RANDOM.nextInt(5) == 0) {
 				return TestUtils.randomString();
