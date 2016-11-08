@@ -16,15 +16,21 @@ public class FieldDeserializer implements Deserializer {
 	private Deserializer subDeserializer;
 	private Supplier<?> factory;
 	
-	public FieldDeserializer(Class<?> dataType, Deserializer subDeserializer, Supplier<?> factory) {
-		assert factory.get().getClass() == dataType;
+	public <E> FieldDeserializer(Class<E> dataType, Deserializer subDeserializer, Supplier<E> factory) {
 		this.dataType = dataType;
 		this.subDeserializer = subDeserializer;
 		this.factory = factory;
 	}
 	
-	public FieldDeserializer(Class<?> dataType, Supplier<?> factory) {
+	public <E> FieldDeserializer(Class<E> dataType, Supplier<E> factory) {
 		this(dataType, null, factory);
+	}
+	
+	FieldDeserializer(Supplier<?> factory, Deserializer subDeserializer, Class<?> dataType) {
+		assert factory.get().getClass() == dataType;
+		this.dataType = dataType;
+		this.subDeserializer = subDeserializer;
+		this.factory = factory;
 	}
 	
 	/**
@@ -64,18 +70,15 @@ public class FieldDeserializer implements Deserializer {
 			}
 		}
 		
-		if (object instanceof AutoDeserializer)
-			((AutoDeserializer) object).autoDeserialize(in);
+		if (object instanceof AutoSerializer)
+			((AutoSerializer) object).autoDeserialize(in);
 		
 		return object;
 	}
 
 	@Override
 	public Serializer toSerializer() {
-		if (subDeserializer == null)
-			return new FieldSerializer(dataType, factory);
-		else
-			return new FieldSerializer(dataType, subDeserializer.toSerializer(), factory);
+		return new FieldSerializer(factory, subDeserializer == null ? null : subDeserializer.toSerializer(), dataType);
 	}
 
 }

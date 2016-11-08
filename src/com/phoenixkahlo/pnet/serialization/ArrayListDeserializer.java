@@ -18,6 +18,8 @@ public class ArrayListDeserializer implements Deserializer {
 	@Override
 	public Object deserialize(InputStream in) throws IOException, ProtocolViolationException {
 		int length = SerializationUtils.readInt(in);
+		if (length < 0)
+			throw new ProtocolViolationException("ArrayList cannot have negative size");
 		List<Object> list = new ArrayList<Object>();
 		for (int i = 0; i < length; i++) {
 			list.add(subDeserializer.deserialize(in));

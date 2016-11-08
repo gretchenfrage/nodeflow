@@ -8,11 +8,11 @@ import java.util.List;
 public class ArrayListSerializer implements Serializer {
 
 	private Serializer subSerializer;
-	
+
 	public ArrayListSerializer(Serializer subSerializer) {
 		this.subSerializer = subSerializer;
 	}
-	
+
 	@Override
 	public boolean canSerialize(Object object) {
 		return object.getClass() == ArrayList.class;
@@ -20,7 +20,8 @@ public class ArrayListSerializer implements Serializer {
 
 	@Override
 	public void serialize(Object object, OutputStream out) throws IOException {
-		if (!canSerialize(object)) throw new IllegalArgumentException();
+		if (!canSerialize(object))
+			throw new IllegalArgumentException("cannot serialize " + object);
 		List<?> list = (List<?>) object;
 		SerializationUtils.writeInt(list.size(), out);
 		for (Object item : list) {

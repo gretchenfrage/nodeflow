@@ -24,22 +24,28 @@ public class Testing {
 	 * Execute all {@link com.phoenixkahlo.ptest.Test tests} in the given class.
 	 */
 	public static void test(Class<?> clazz, boolean crash) {
+		boolean assertEnabled = false;
+		assert assertEnabled = true;
+		if (!assertEnabled) {
+			System.err.println("enable assertions with the -ea VM argument");
+			System.exit(1);
+		}
+		
 		Random seeder = new Random();
-		System.out.println("testing class \"" + clazz.getSimpleName() + "\"");
+		System.out.println("running class \"" + clazz.getSimpleName() + "\"");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
 			Test annotation = method.getAnnotation(Test.class);
 			if (annotation.name().equals("$unnamed"))
-				System.out.print("running \"" + method.getName() + "\"");
+				System.out.print("running test \"" + method.getName() + "\"");
 			else
-				System.out.print("running \"" + annotation.name() + "\"");
+				System.out.print("running test \"" + annotation.name() + "\"");
 			long seed = seeder.nextLong();
 			System.out.println(" (seed=" + seed + ")");
 			RANDOM.setSeed(seed);
 			try {
 				method.invoke(null);
-				System.out.println("test returned");
 			} catch (InvocationTargetException e) {
-				System.out.println("test failed with exception:");
+				System.err.println("test failed with exception:");
 				if (crash)
 					throw new RuntimeException(e.getTargetException());
 				else
@@ -49,7 +55,6 @@ public class Testing {
 				e.printStackTrace();
 			}
 		});
-		System.out.println("\"" + clazz.getSimpleName() + "\" complete");
 	}
 	
 	public static void test(Class<?> clazz) {

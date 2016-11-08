@@ -35,8 +35,10 @@ public class SerializationUtils {
 			writeBoolean((Boolean) object, out);
 		else if (type.isEnum())
 			writeInt(((Enum<?>) object).ordinal(), out);
-		else
+		else if (serializer != null)
 			serializer.serialize(object, out);
+		else
+			throw new IllegalArgumentException("cannot serialize " + object + " with " + serializer);
 	}
 
 	/**
@@ -64,17 +66,19 @@ public class SerializationUtils {
 			return readBoolean(in);
 		else if (type.isEnum())
 			return type.getEnumConstants()[readInt(in)];
-		else
+		else if (deserializer != null)
 			return deserializer.deserialize(in);
+		else
+			throw new IllegalArgumentException("cannot deserialize " + type + " with " + deserializer);
 	}
-	
+
 	/**
 	 * Serialize with UTF-8.
 	 */
 	public static byte[] stringToBytes(String string) {
 		return string.getBytes(StandardCharsets.UTF_8);
 	}
-	
+
 	/**
 	 * Deserialize with UTF-8.
 	 */
@@ -89,7 +93,7 @@ public class SerializationUtils {
 		writeInt(bytes.length, out);
 		out.write(bytes);
 	}
-	
+
 	/**
 	 * Head with array length, symmetrical to serializeByteArray.
 	 */
@@ -100,7 +104,7 @@ public class SerializationUtils {
 			read += in.read(arr, read, arr.length);
 		return arr;
 	}
-	
+
 	public static void writeInt(int n, OutputStream out) throws IOException {
 		out.write(intToBytes(n));
 	}
