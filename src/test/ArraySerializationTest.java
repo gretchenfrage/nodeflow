@@ -105,7 +105,7 @@ public class ArraySerializationTest {
 				arr[i] = TestUtils.randomString();
 			}
 			return arr;
-		});
+		}, (a, b) -> Arrays.equals((String[]) a, (String[]) b));
 	}
 	
 }

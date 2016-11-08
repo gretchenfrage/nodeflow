@@ -1,6 +1,7 @@
 package com.phoenixkahlo.ptest;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ public class Testing {
 	/**
 	 * Execute all {@link com.phoenixkahlo.ptest.Test tests} in the given class.
 	 */
-	public static void test(Class<?> clazz) {
+	public static void test(Class<?> clazz, boolean crash) {
 		Random seeder = new Random();
 		System.out.println("testing class \"" + clazz.getSimpleName() + "\"");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
@@ -37,12 +38,22 @@ public class Testing {
 			try {
 				method.invoke(null);
 				System.out.println("test returned");
-			} catch (Throwable e) {
+			} catch (InvocationTargetException e) {
 				System.out.println("test failed with exception:");
+				if (crash)
+					throw new RuntimeException(e.getTargetException());
+				else
+					e.getTargetException().printStackTrace();
+			} catch (Throwable e) {
+				System.err.println("testing error");
 				e.printStackTrace();
 			}
 		});
 		System.out.println("\"" + clazz.getSimpleName() + "\" complete");
+	}
+	
+	public static void test(Class<?> clazz) {
+		test(clazz, false);
 	}
 
 	/**

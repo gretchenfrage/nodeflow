@@ -178,7 +178,7 @@ public class SerializationUtils {
 	}
 
 	public static byte[] longToBytes(long n) {
-		return ByteBuffer.allocate(8).putDouble(n).array();
+		return ByteBuffer.allocate(8).putLong(n).array();
 	}
 
 	public static long bytesToLong(byte[] bytes) {
