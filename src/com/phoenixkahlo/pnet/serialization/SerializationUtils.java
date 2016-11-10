@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import com.phoenixkahlo.pnet.ProtocolViolationException;
 
@@ -105,6 +106,19 @@ public class SerializationUtils {
 		return arr;
 	}
 
+	public static byte[] concatenate(byte[]... arrays) {
+		byte[] union = new byte[Arrays.stream(arrays).mapToInt(arr -> arr.length).sum()];
+		int unionIndex = 0;
+		for (byte[] array : arrays) {
+			for (byte b : array) {
+				union[unionIndex] = b;
+				unionIndex++;
+			}
+		}
+		return union;
+	}
+	
+	
 	public static void writeInt(int n, OutputStream out) throws IOException {
 		out.write(intToBytes(n));
 	}
