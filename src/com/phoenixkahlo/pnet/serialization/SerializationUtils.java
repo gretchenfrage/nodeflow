@@ -117,8 +117,21 @@ public class SerializationUtils {
 		}
 		return union;
 	}
-	
-	
+
+	public static byte[][] split(byte[] array, int maxChunkSize) {
+		int chunks = array.length % maxChunkSize == 0 ? array.length / maxChunkSize : array.length / maxChunkSize + 1;
+		int originalIndex = 0;
+		byte[][] newArrays = new byte[chunks][];
+		for (int metaArrayIndex = 0; metaArrayIndex < newArrays.length; metaArrayIndex++) {
+			newArrays[metaArrayIndex] = new byte[Math.min(maxChunkSize, array.length - originalIndex)];
+			for (int newArrayIndex = 0; newArrayIndex < newArrays[metaArrayIndex].length; newArrayIndex++) {
+				newArrays[metaArrayIndex][newArrayIndex] = array[originalIndex];
+				originalIndex++;
+			}
+		}
+		return newArrays;
+	}
+
 	public static void writeInt(int n, OutputStream out) throws IOException {
 		out.write(intToBytes(n));
 	}

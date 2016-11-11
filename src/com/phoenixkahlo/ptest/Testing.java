@@ -32,7 +32,7 @@ public class Testing {
 		}
 		
 		Random seeder = new Random();
-		System.out.println("running class \"" + clazz.getSimpleName() + "\"");
+		System.out.println("### running class \"" + clazz.getSimpleName() + "\" ###");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
 			Test annotation = method.getAnnotation(Test.class);
 			if (annotation.name().equals("$unnamed"))

@@ -12,6 +12,7 @@ public class MasterTest {
 		Testing.test(NullableSerializationTest.class);
 		Testing.test(FieldSerializerTest.class);
 		Testing.test(UnionSerializerTest.class);
+		Testing.test(ArraySplitTest.class);
 	}
 	
 }
