@@ -1,4 +1,4 @@
-package test;
+package test.serialization;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,25 +24,25 @@ public class TestUtils {
 			Object obj2 = serializer.toDeserializer().deserialize(in);
 			if (!equalityTest.test(obj1, obj2)) {
 				if (obj1 instanceof long[])
-					System.out.println("test: " + Arrays.toString((long[]) obj1) + " ?= " + Arrays.toString((long[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((long[]) obj1) + " ?= " + Arrays.toString((long[]) obj2));
 				else if (obj1 instanceof int[])
-					System.out.println("test: " + Arrays.toString((int[]) obj1) + " ?= " + Arrays.toString((int[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((int[]) obj1) + " ?= " + Arrays.toString((int[]) obj2));
 				else if (obj1 instanceof double[])
-					System.out.println("test: " + Arrays.toString((double[]) obj1) + " ?= " + Arrays.toString((double[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((double[]) obj1) + " ?= " + Arrays.toString((double[]) obj2));
 				else if (obj1 instanceof float[])
-					System.out.println("test: " + Arrays.toString((float[]) obj1) + " ?= " + Arrays.toString((float[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((float[]) obj1) + " ?= " + Arrays.toString((float[]) obj2));
 				else if (obj1 instanceof short[])
-					System.out.println("test: " + Arrays.toString((short[]) obj1) + " ?= " + Arrays.toString((short[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((short[]) obj1) + " ?= " + Arrays.toString((short[]) obj2));
 				else if (obj1 instanceof char[])
-					System.out.println("test: " + Arrays.toString((char[]) obj1) + " ?= " + Arrays.toString((char[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((char[]) obj1) + " ?= " + Arrays.toString((char[]) obj2));
 				else if (obj1 instanceof byte[])
-					System.out.println("test: " + Arrays.toString((byte[]) obj1) + " ?= " + Arrays.toString((byte[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((byte[]) obj1) + " ?= " + Arrays.toString((byte[]) obj2));
 				else if (obj1 instanceof boolean[])
-					System.out.println("test: " + Arrays.toString((boolean[]) obj1) + " ?= " + Arrays.toString((boolean[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((boolean[]) obj1) + " ?= " + Arrays.toString((boolean[]) obj2));
 				else if (obj1 instanceof Object[])
-					System.out.println("test: " + Arrays.toString((Object[]) obj1) + " ?= " + Arrays.toString((Object[]) obj2));
+					System.out.println("test.serialization: " + Arrays.toString((Object[]) obj1) + " ?= " + Arrays.toString((Object[]) obj2));
 				else
-					System.out.println("test: " + obj1 + " ?= " + obj2);
+					System.out.println("test.serialization: " + obj1 + " ?= " + obj2);
 				assert false;
 			}
 		}

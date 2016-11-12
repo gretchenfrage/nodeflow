@@ -36,16 +36,16 @@ public class Testing {
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
 			Test annotation = method.getAnnotation(Test.class);
 			if (annotation.name().equals("$unnamed"))
-				System.out.print("running test \"" + method.getName() + "\"");
+				System.out.print("running test.serialization \"" + method.getName() + "\"");
 			else
-				System.out.print("running test \"" + annotation.name() + "\"");
+				System.out.print("running test.serialization \"" + annotation.name() + "\"");
 			long seed = seeder.nextLong();
 			System.out.println(" (seed=" + seed + ")");
 			RANDOM.setSeed(seed);
 			try {
 				method.invoke(null);
 			} catch (InvocationTargetException e) {
-				System.err.println("test failed with exception:");
+				System.err.println("test.serialization failed with exception:");
 				if (crash)
 					throw new RuntimeException(e.getTargetException());
 				else

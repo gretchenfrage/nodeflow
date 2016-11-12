@@ -1,9 +1,10 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.pnet.socketold;
 
 /**
  * Represents a connection that has been attempted to be formed but has not yet
  * received confirmation.
  */
+@Deprecated
 public class UnconfirmedConnection {
 
 	private long connectionID;

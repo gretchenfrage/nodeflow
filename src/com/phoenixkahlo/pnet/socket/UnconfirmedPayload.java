@@ -1,31 +1,38 @@
 package com.phoenixkahlo.pnet.socket;
 
+/**
+ * A bean for payloads that have been sent but not confirmed.
+ */
 public class UnconfirmedPayload {
 
-	private long payloadID;
-	private long sentTime;
+	private int payloadID;
 	private byte[] transmission;
+	private long lastSentTime;
 
-	public UnconfirmedPayload(long payloadID, long sentTime, byte[] transmission) {
+	public UnconfirmedPayload(int payloadID, byte[] transmission, long lastSentTime) {
 		this.payloadID = payloadID;
-		this.sentTime = sentTime;
 		this.transmission = transmission;
+		this.lastSentTime = lastSentTime;
 	}
 
-	public UnconfirmedPayload(long payloadID, byte[] transmission) {
-		this(payloadID, System.currentTimeMillis(), transmission);
+	public UnconfirmedPayload(int payloadID, byte[] transmission) {
+		this(payloadID, transmission, System.currentTimeMillis());
 	}
 	
-	public long getPayloadID() {
+	public int getPayloadID() {
 		return payloadID;
 	}
 
-	public long getSentTime() {
-		return sentTime;
+	public long getLastSentTime() {
+		return lastSentTime;
 	}
 	
 	public byte[] getTransmission() {
 		return transmission;
+	}
+	
+	public void setLastSendTime(long time) {
+		this.lastSentTime = time;
 	}
 
 }

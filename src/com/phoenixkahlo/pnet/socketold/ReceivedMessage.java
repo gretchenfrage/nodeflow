@@ -1,21 +1,25 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.pnet.socketold;
 
 import java.util.OptionalInt;
 
 /**
- * A bean for all the data in a fully received message. Ordinal is an
- * OptionalInt, and as such, this works for both ordered and unordered messages.
- * Messages with lesser ordinals have a greater natural ordering. Any pair of
- * ReceivedMessages in which either is unordered have an equal natural ordering.
+ * A message that has been received. Messages with lower ordinals have a greater
+ * natural ordering, messages with no ordinals are equal to everything.
  */
+@Deprecated
 public class ReceivedMessage implements Comparable<ReceivedMessage> {
 
 	private byte[] message;
 	private OptionalInt ordinal;
 
-	public ReceivedMessage(byte[] message, OptionalInt ordinal) {
+	public ReceivedMessage(byte[] message) {
 		this.message = message;
-		this.ordinal = ordinal;
+		this.ordinal = OptionalInt.empty();
+	}
+
+	public ReceivedMessage(byte[] message, int ordinal) {
+		this.message = message;
+		this.ordinal = OptionalInt.of(ordinal);
 	}
 
 	public byte[] getMessage() {

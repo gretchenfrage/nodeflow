@@ -1,13 +1,8 @@
 package com.phoenixkahlo.pnet.socket;
 
-import java.io.IOException;
+import com.phoenixkahlo.util.EndableThread;
 
-/**
- * A thread that belongs to a SocketFamily which is responsible for broadcasting
- * heartbeats, and disconnecting sockets that haven't received a heartbeat for
- * an unacceptable amount of time.
- */
-public class FamilyHeartbeatThread extends Thread {
+public class FamilyHeartbeatThread extends Thread implements EndableThread {
 
 	private SocketFamily family;
 	private volatile boolean shouldContinue = true;
@@ -18,26 +13,25 @@ public class FamilyHeartbeatThread extends Thread {
 
 	@Override
 	public void run() {
-		while (shouldContinue) {
-			synchronized (family.getChildren()) {
-				for (ChildSocket child : family.getChildren()) {
-					try {
+		try {
+			while (shouldContinue) {
+				synchronized (family.getChildren()) {
+					for (ChildSocket child : family.getChildren()) {
 						child.sendHeartbeat();
-					} catch (IOException e) {
-					}
-					if (System.currentTimeMillis() - child.getLastHeartbeatTime() > SocketConstants.HEARTBEAT_INTERVAL * 2) {
-						child.disconnect();
+						if (System.currentTimeMillis() - child.getLastHeartbeat() > SocketConstants.HEARTBEAT_INTERVAL
+								* 2) {
+							child.disconnect();
+						}
 					}
 				}
-			}
-			try {
 				Thread.sleep(SocketConstants.HEARTBEAT_INTERVAL);
-			} catch (InterruptedException e) {
 			}
+		} catch (InterruptedException e) {
 		}
 	}
 
-	public void kill() {
+	@Override
+	public void end() {
 		shouldContinue = false;
 		interrupt();
 	}

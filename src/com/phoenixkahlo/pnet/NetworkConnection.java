@@ -19,7 +19,7 @@ public interface NetworkConnection {
 	Optional<NetworkUser> outreach(String address, int port);
 
 	/**
-	 * Set the test for whether incoming connections will be accepted.
+	 * Set the test.serialization for whether incoming connections will be accepted.
 	 */
 	void setIncomingTest(Predicate<PotentialConnection> test);
 

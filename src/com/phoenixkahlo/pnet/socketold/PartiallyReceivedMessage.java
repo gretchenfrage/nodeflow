@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.pnet.socketold;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import java.util.TreeSet;
 /**
  * A mutable collection of ReceivedPayloads that form a partial ReceivedMessage.
  */
+@Deprecated
 public class PartiallyReceivedMessage {
 
 	private long messageID;

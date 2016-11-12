@@ -1,22 +1,22 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.pnet.socketold;
 
 import java.util.OptionalInt;
 
 /**
- * A bean for all the data in a received payload. Ordinal is an OptionalInt, and
- * as such, this class works for both ordered and unordered messages. Payloads
- * with a greater partNumber have a greater natural ordering.
+ * A payload that has been received. Payloads with greater partNumbers have a
+ * greater natural ordering.
  */
+@Deprecated
 public class ReceivedPayload implements Comparable<ReceivedPayload> {
 
-	private int payloadID;
-	private int messageID;
+	private long payloadID;
+	private long messageID;
 	private OptionalInt ordinal;
 	private byte partNumber;
 	private byte totalParts;
 	private byte[] payload;
 
-	public ReceivedPayload(int payloadID, int messageID, int ordinal, byte partNumber, byte totalParts,
+	public ReceivedPayload(long payloadID, long messageID, int ordinal, byte partNumber, byte totalParts,
 			byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
@@ -26,7 +26,7 @@ public class ReceivedPayload implements Comparable<ReceivedPayload> {
 		this.payload = payload;
 	}
 
-	public ReceivedPayload(int payloadID, int messageID, byte partNumber, byte totalParts, byte[] payload) {
+	public ReceivedPayload(long payloadID, long messageID, byte partNumber, byte totalParts, byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
 		this.ordinal = OptionalInt.empty();
@@ -35,11 +35,11 @@ public class ReceivedPayload implements Comparable<ReceivedPayload> {
 		this.payload = payload;
 	}
 
-	public int getPayloadID() {
+	public long getPayloadID() {
 		return payloadID;
 	}
 
-	public int getMessageID() {
+	public long getMessageID() {
 		return messageID;
 	}
 

@@ -1,4 +1,4 @@
-package test;
+package test.serialization;
 
 import com.phoenixkahlo.pnet.serialization.StringSerializer;
 import com.phoenixkahlo.ptest.Test;

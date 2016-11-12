@@ -2,6 +2,17 @@ package test;
 
 import com.phoenixkahlo.ptest.Testing;
 
+import test.serialization.ArrayListSerializationTest;
+import test.serialization.ArraySerializationTest;
+import test.serialization.ArraySplitTest;
+import test.serialization.FieldSerializerTest;
+import test.serialization.HashMapSerializationTest;
+import test.serialization.NullableSerializationTest;
+import test.serialization.StringSerializationTest;
+import test.serialization.UnionSerializerTest;
+import test.socket.BasicChildSocketTest;
+import test.socket.RealUDPSocketWrapperTest;
+
 public class MasterTest {
 
 	public static void main(String[] args) {
@@ -13,6 +24,9 @@ public class MasterTest {
 		Testing.test(FieldSerializerTest.class);
 		Testing.test(UnionSerializerTest.class);
 		Testing.test(ArraySplitTest.class);
+		
+		Testing.test(RealUDPSocketWrapperTest.class);
+		Testing.test(BasicChildSocketTest.class);
 	}
 	
 }

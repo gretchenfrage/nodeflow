@@ -1,23 +1,21 @@
 package com.phoenixkahlo.pnet.socket;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
 
+/**
+ * A bean for potential PNetSocket connections. Currently only contains the
+ * SocketAddress.
+ */
 public class PotentialSocketConnection {
 
-	private InetAddress address;
-	private int port;
-
-	public PotentialSocketConnection(InetAddress address, int port) {
+	private SocketAddress address;
+	
+	public PotentialSocketConnection(SocketAddress address) {
 		this.address = address;
-		this.port = port;
-	}
-
-	public InetAddress getAddress() {
-		return address;
 	}
 	
-	public int getPort() {
-		return port;
+	public SocketAddress getAddress() {
+		return address;
 	}
 	
 }
