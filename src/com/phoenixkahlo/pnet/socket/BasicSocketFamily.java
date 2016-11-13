@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.phoenixkahlo.util.EndableThread;
+import com.phoenixkahlo.util.TriFunction;
 
 public class BasicSocketFamily implements SocketFamily {
 
@@ -29,13 +30,16 @@ public class BasicSocketFamily implements SocketFamily {
 	private List<Integer> unconfirmedConnections = new ArrayList<>();
 	private Predicate<PotentialSocketConnection> receiveTest;
 	private Consumer<PNetSocket> receiveHandler;
+	private TriFunction<SocketFamily, Integer, SocketAddress, ChildSocket> childSocketFactory;
 
 	public BasicSocketFamily(UDPSocketWrapper wrapper, EndableThread receivingThread, EndableThread heartbeatThread,
-			EndableThread retransmissionThread) {
+			EndableThread retransmissionThread,
+			TriFunction<SocketFamily, Integer, SocketAddress, ChildSocket> childSocketFactory) {
 		this.udpWrapper = wrapper;
 		this.receivingThread = receivingThread;
 		this.heartbeatThread = heartbeatThread;
 		this.retransmissionThread = retransmissionThread;
+		this.childSocketFactory = childSocketFactory;
 		disableReceiver();
 		receivingThread.start();
 		heartbeatThread.start();
@@ -47,11 +51,11 @@ public class BasicSocketFamily implements SocketFamily {
 		receivingThread = new FamilyReceivingThread(this);
 		heartbeatThread = new FamilyHeartbeatThread(this);
 		retransmissionThread = new FamilyRetransmissionThread(this);
+		this.childSocketFactory = BasicChildSocket::new;
 		disableReceiver();
 		receivingThread.start();
 		heartbeatThread.start();
 		retransmissionThread.start();
-
 	}
 
 	@Override
@@ -93,18 +97,19 @@ public class BasicSocketFamily implements SocketFamily {
 	public void receiveAccept(int connectionID, SocketAddress from) {
 		synchronized (unconfirmedConnections) {
 			if (!unconfirmedConnections.contains(connectionID)) {
-				System.err.println("ACCEPT received with connectionID " + connectionID + " from " + from + ", not a valid pending ID.");
+				System.err.println("ACCEPT received with connectionID " + connectionID + " from " + from
+						+ ", not a valid pending ID.");
 				return;
 			}
 		}
 		synchronized (children) {
-			children.add(new BasicChildSocket(this, connectionID, from));
+			children.add(childSocketFactory.apply(this, connectionID, from));
 		}
 		synchronized (unconfirmedConnections) {
 			unconfirmedConnections.remove(connectionID);
 			unconfirmedConnections.notifyAll();
 		}
-		
+
 	}
 
 	@Override
@@ -114,7 +119,8 @@ public class BasicSocketFamily implements SocketFamily {
 				unconfirmedConnections.remove(connectionID);
 				unconfirmedConnections.notifyAll();
 			} else {
-				System.err.println("REJECT received with connectionID " + connectionID + " from " + from + ", not a valid pending ID.");
+				System.err.println("REJECT received with connectionID " + connectionID + " from " + from
+						+ ", not a valid pending ID.");
 			}
 		}
 	}
@@ -144,7 +150,7 @@ public class BasicSocketFamily implements SocketFamily {
 	@Override
 	public void receiveConnect(int connectionID, SocketAddress from) {
 		if (receiveTest.test(new PotentialSocketConnection(from))) {
-			ChildSocket socket = new BasicChildSocket(this, connectionID, from);
+			ChildSocket socket = childSocketFactory.apply(this, connectionID, from);
 			synchronized (children) {
 				children.add(socket);
 			}
