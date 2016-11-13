@@ -1,17 +1,15 @@
 package test.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.bytesToInt;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.bytesToShort;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Arrays;
-import java.util.function.Function;
 
 import com.phoenixkahlo.pnet.socket.BasicChildSocket;
+import com.phoenixkahlo.pnet.socket.BasicMessageBuilder;
 import com.phoenixkahlo.pnet.socket.ChildSocket;
-import com.phoenixkahlo.pnet.socket.MessageBuilder;
-import com.phoenixkahlo.pnet.socket.ReceivedPayload;
 import com.phoenixkahlo.pnet.socket.SocketFamily;
 import com.phoenixkahlo.pnet.socket.UDPSocketWrapper;
 import com.phoenixkahlo.ptest.Mockery;
@@ -25,10 +23,8 @@ public class BasicChildSocketTest {
 		SocketFamily family = Testing.mock(SocketFamily.class);
 		int connectionID = 9283765;
 		SocketAddress sendTo = new InetSocketAddress("localhost", 42684);
-		@SuppressWarnings("unchecked")
-		Function<Integer, MessageBuilder> messageBuilderFactory = Testing.mock(Function.class);
 
-		ChildSocket socket = new BasicChildSocket(family, connectionID, sendTo, messageBuilderFactory);
+		ChildSocket socket = new BasicChildSocket(family, connectionID, sendTo, BasicMessageBuilder::new);
 
 		System.out.println("* subtest1 *");
 		byte[] sendTest1 = { 1, 6, 1, 3, 7, 1, 4, 67, 2, 3 };
