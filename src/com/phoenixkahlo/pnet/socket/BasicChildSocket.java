@@ -1,6 +1,8 @@
 package com.phoenixkahlo.pnet.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.shortToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.split;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,7 +13,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
@@ -24,7 +26,7 @@ public class BasicChildSocket implements ChildSocket {
 	// Synchronize usages of unconfirmed
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
 	private AtomicInteger nextSendOrdinal = new AtomicInteger(0);
-	private BlockingQueue<ReceivedMessage> received = new LinkedBlockingQueue<>();
+	private BlockingQueue<ReceivedMessage> received = new PriorityBlockingQueue<>(); // TODO: fix the ordering problem
 	// Synchronize usages of partiallyReceived
 	private List<MessageBuilder> partiallyReceived = new ArrayList<>();
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
@@ -189,6 +191,11 @@ public class BasicChildSocket implements ChildSocket {
 				}
 			}
 		}
+	}
+
+	@Override
+	public SocketAddress getAlienAddress() {
+		return sendTo;
 	}
 
 }

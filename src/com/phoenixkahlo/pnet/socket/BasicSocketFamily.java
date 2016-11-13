@@ -1,5 +1,8 @@
 package com.phoenixkahlo.pnet.socket;
 
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.longToBytes;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -10,15 +13,13 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.phoenixkahlo.pnet.socketold.UnconfirmedConnection;
 import com.phoenixkahlo.util.EndableThread;
-
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
 
 public class BasicSocketFamily implements SocketFamily {
 
 	private Random random = new Random();
 	private UDPSocketWrapper udpWrapper;
+	// Synchronize usages
 	private List<ChildSocket> children = new ArrayList<>();
 	private EndableThread receivingThread;
 	private EndableThread heartbeatThread;
@@ -89,6 +90,36 @@ public class BasicSocketFamily implements SocketFamily {
 	}
 
 	@Override
+	public void receiveAccept(int connectionID, SocketAddress from) {
+		synchronized (unconfirmedConnections) {
+			if (!unconfirmedConnections.contains(connectionID)) {
+				System.err.println("ACCEPT received with connectionID " + connectionID + " from " + from + ", not a valid pending ID.");
+				return;
+			}
+		}
+		synchronized (children) {
+			children.add(new BasicChildSocket(this, connectionID, from));
+		}
+		synchronized (unconfirmedConnections) {
+			unconfirmedConnections.remove(connectionID);
+			unconfirmedConnections.notifyAll();
+		}
+		
+	}
+
+	@Override
+	public void receiveReject(int connectionID, SocketAddress from) {
+		synchronized (unconfirmedConnections) {
+			if (unconfirmedConnections.contains(connectionID)) {
+				unconfirmedConnections.remove(connectionID);
+				unconfirmedConnections.notifyAll();
+			} else {
+				System.err.println("REJECT received with connectionID " + connectionID + " from " + from + ", not a valid pending ID.");
+			}
+		}
+	}
+
+	@Override
 	public List<ChildSocket> getChildren() {
 		return children;
 	}
@@ -108,6 +139,30 @@ public class BasicSocketFamily implements SocketFamily {
 		receivingThread.end();
 		heartbeatThread.end();
 		retransmissionThread.end();
+	}
+
+	@Override
+	public void receiveConnect(int connectionID, SocketAddress from) {
+		if (receiveTest.test(new PotentialSocketConnection(from))) {
+			ChildSocket socket = new BasicChildSocket(this, connectionID, from);
+			synchronized (children) {
+				children.add(socket);
+			}
+			try {
+				udpWrapper.send(longToBytes(connectionID | SocketConstants.ACCEPT), from);
+			} catch (IOException e) {
+				System.err.println("IOException while accepting connection");
+				e.printStackTrace();
+			}
+			receiveHandler.accept(socket);
+		} else {
+			try {
+				udpWrapper.send(longToBytes(connectionID | SocketConstants.REJECT), from);
+			} catch (IOException e) {
+				System.err.println("IOException while rejecting connection");
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

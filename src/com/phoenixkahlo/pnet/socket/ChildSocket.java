@@ -1,5 +1,7 @@
 package com.phoenixkahlo.pnet.socket;
 
+import java.net.SocketAddress;
+
 /**
  * A PNetSocket that belongs to a SocketFamily. Depends on the SocketFamily's
  * helper threads to receive its messages and delegate them to it through the
@@ -37,7 +39,7 @@ public interface ChildSocket extends PNetSocket {
 	 * Transmit a heartbeat to the other side.
 	 */
 	void sendHeartbeat();
-	
+
 	/**
 	 * @return the connection ID within the family.
 	 */
@@ -48,5 +50,10 @@ public interface ChildSocket extends PNetSocket {
 	 * for an unacceptable amount of time.
 	 */
 	void retransmitUnconfirmed();
+
+	/**
+	 * @return the address this socket is transmitting to.
+	 */
+	SocketAddress getAlienAddress();
 
 }

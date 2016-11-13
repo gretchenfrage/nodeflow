@@ -46,4 +46,21 @@ public interface SocketFamily {
 	 */
 	void close();
 
+	/**
+	 * If the receiveTest allows the connection, broadcast a response and add to
+	 * list of children.
+	 */
+	void receiveConnect(int connectionID, SocketAddress from);
+
+	/**
+	 * Realize the potential connection, add to the list of children, and return
+	 * any threads waiting on connect.
+	 */
+	void receiveAccept(int connectionID, SocketAddress from);
+
+	/**
+	 * Return empty any threads waiting on connect.
+	 */
+	void receiveReject(int connectionID, SocketAddress from);
+
 }

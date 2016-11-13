@@ -2,6 +2,11 @@ package com.phoenixkahlo.pnet.socket;
 
 import com.phoenixkahlo.util.EndableThread;
 
+/**
+ * Helper thread for a SocketFamily. Transmits heartbeat to all children every
+ * heartbeat interval, and disconnects children who haven't received a heartbeat
+ * in 3 times the interval.
+ */
 public class FamilyHeartbeatThread extends Thread implements EndableThread {
 
 	private SocketFamily family;
@@ -19,7 +24,7 @@ public class FamilyHeartbeatThread extends Thread implements EndableThread {
 					for (ChildSocket child : family.getChildren()) {
 						child.sendHeartbeat();
 						if (System.currentTimeMillis() - child.getLastHeartbeat() > SocketConstants.HEARTBEAT_INTERVAL
-								* 2) {
+								* 3) {
 							child.disconnect();
 						}
 					}
