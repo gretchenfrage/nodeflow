@@ -6,12 +6,12 @@ import java.util.OptionalInt;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-
 public class BasicMessageBuilder implements MessageBuilder {
 
 	private int messageID;
 	private OptionalInt ordinal;
-	private SortedSet<ReceivedPayload> parts = new TreeSet<>();
+	private SortedSet<ReceivedPayload> parts = new TreeSet<>(
+			(payload1, payload2) -> payload1.getPartNumber() - payload2.getPartNumber());
 
 	public BasicMessageBuilder(int messageID, OptionalInt ordinal) {
 		this.messageID = messageID;
@@ -51,7 +51,7 @@ public class BasicMessageBuilder implements MessageBuilder {
 	public ReceivedMessage toReceived() {
 		if (!isComplete())
 			throw new IllegalStateException("MessageBuilder not complete");
-		
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			for (ReceivedPayload part : parts) {

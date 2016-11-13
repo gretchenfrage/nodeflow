@@ -8,7 +8,7 @@ import java.util.OptionalInt;
  * Messages with lesser ordinals have a greater natural ordering. Any pair of
  * ReceivedMessages in which either is unordered have an equal natural ordering.
  */
-public class ReceivedMessage implements Comparable<ReceivedMessage> {
+public class ReceivedMessage {
 
 	private byte[] message;
 	private OptionalInt ordinal;
@@ -21,13 +21,10 @@ public class ReceivedMessage implements Comparable<ReceivedMessage> {
 	public byte[] getMessage() {
 		return message;
 	}
-
-	@Override
-	public int compareTo(ReceivedMessage other) {
-		if (this.ordinal.isPresent() && other.ordinal.isPresent())
-			return other.ordinal.getAsInt() - this.ordinal.getAsInt();
-		else
-			return 0;
+	
+	public OptionalInt getOrdinal() {
+		return ordinal;
 	}
-
+	
+	
 }

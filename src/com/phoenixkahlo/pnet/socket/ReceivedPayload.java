@@ -7,7 +7,7 @@ import java.util.OptionalInt;
  * as such, this class works for both ordered and unordered messages. Payloads
  * with a greater partNumber have a greater natural ordering.
  */
-public class ReceivedPayload implements Comparable<ReceivedPayload> {
+public class ReceivedPayload {
 
 	private int payloadID;
 	private int messageID;
@@ -57,11 +57,6 @@ public class ReceivedPayload implements Comparable<ReceivedPayload> {
 
 	public byte[] getPayload() {
 		return payload;
-	}
-
-	@Override
-	public int compareTo(ReceivedPayload other) {
-		return this.partNumber - other.partNumber;
 	}
 
 }

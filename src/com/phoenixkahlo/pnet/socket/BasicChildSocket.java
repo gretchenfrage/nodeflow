@@ -26,7 +26,12 @@ public class BasicChildSocket implements ChildSocket {
 	// Synchronize usages of unconfirmed
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
 	private AtomicInteger nextSendOrdinal = new AtomicInteger(0);
-	private BlockingQueue<ReceivedMessage> received = new PriorityBlockingQueue<>(); // TODO: fix the ordering problem
+	private BlockingQueue<ReceivedMessage> received = new PriorityBlockingQueue<>(10, (received1, received2) -> {
+		if (received1.getOrdinal().isPresent() && received2.getOrdinal().isPresent())
+			return received2.getOrdinal().getAsInt() - received1.getOrdinal().getAsInt();
+		else
+			return 0;
+	});
 	// Synchronize usages of partiallyReceived
 	private List<MessageBuilder> partiallyReceived = new ArrayList<>();
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
@@ -46,7 +51,7 @@ public class BasicChildSocket implements ChildSocket {
 		this.sendTo = sendTo;
 		this.messageBuilderFactory = BasicMessageBuilder::new;
 	}
-	
+
 	@Override
 	public void send(byte[] data) throws IOException {
 		sendMessage(data, OptionalInt.empty());
@@ -126,7 +131,7 @@ public class BasicChildSocket implements ChildSocket {
 	public void receivePayload(ReceivedPayload payload) {
 		synchronized (partiallyReceived) {
 			MessageBuilder builder;
-			
+
 			Optional<MessageBuilder> existingBuilder = partiallyReceived.stream()
 					.filter(b -> b.getMessageID() == payload.getMessageID()).findAny();
 			if (existingBuilder.isPresent()) {
@@ -135,7 +140,7 @@ public class BasicChildSocket implements ChildSocket {
 				builder = messageBuilderFactory.apply(payload.getMessageID(), payload.getOrdinal());
 				partiallyReceived.add(builder);
 			}
-			
+
 			builder.add(payload);
 			if (builder.isComplete()) {
 				partiallyReceived.remove(builder);
@@ -160,7 +165,7 @@ public class BasicChildSocket implements ChildSocket {
 	public void receiveHeartbeat() {
 		lastHeartbeat = System.currentTimeMillis();
 	}
-	
+
 	@Override
 	public void sendHeartbeat() {
 		try {

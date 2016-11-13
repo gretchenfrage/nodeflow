@@ -11,9 +11,13 @@ public interface MessageBuilder {
 
 	OptionalInt getOrdinal();
 
+	/**
+	 * Must ignore duplicate payloads.
+	 */
 	void add(ReceivedPayload payload);
 	
 	boolean isComplete();
+	
 	
 	ReceivedMessage toReceived();
 
