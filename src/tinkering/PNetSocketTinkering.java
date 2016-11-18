@@ -43,7 +43,7 @@ public class PNetSocketTinkering {
 					System.out.println("connected socket: " + socket);
 				}
 
-				// socket.send(bin1);
+				socket.send(bin1);
 
 			} catch (Exception e) {
 				e.printStackTrace();

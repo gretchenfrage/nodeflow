@@ -97,6 +97,8 @@ public class BasicChildSocketTest {
 		System.out.println("* subtest3 *");
 		byte[] receiveTest1 = {1, 3, 6, 1, 3, 6, 7, 2};
 		byte[] receiveTest2 = {1, 6, 2, 7, 2, 3, 6, 2, 76};
+		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
+		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
 		socket.receivePayload(new ReceivedPayload(65465487, 984654, (byte) 0, (byte) 1, receiveTest1));
 		new Thread(() -> {
 			try {

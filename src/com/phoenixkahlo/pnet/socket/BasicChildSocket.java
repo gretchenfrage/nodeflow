@@ -1,41 +1,49 @@
 package com.phoenixkahlo.pnet.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.concatenate;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.shortToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.split;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 public class BasicChildSocket implements ChildSocket {
 
 	private Random random = new Random();
+	
 	private SocketFamily family;
 	private int connectionID;
 	private SocketAddress sendTo;
+	
 	// Synchronize usages of unconfirmed
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
 	private AtomicInteger nextSendOrdinal = new AtomicInteger(0);
-	private BlockingQueue<ReceivedMessage> received = new PriorityBlockingQueue<>(10, (received1, received2) -> {
-		if (received1.getOrdinal().isPresent() && received2.getOrdinal().isPresent())
-			return received2.getOrdinal().getAsInt() - received1.getOrdinal().getAsInt();
-		else
-			return 0;
-	});
+	
+	private Queue<ReceivedMessage> receivedOrdered = new PriorityQueue<>(10,
+			(received1, received2) -> received2.getOrdinal().getAsInt() - received1.getOrdinal().getAsInt());
+	private Queue<ReceivedMessage> receivedUnordered = new LinkedList<>();
+	private Object receivedLock = new Object();
+	
 	// Synchronize usages of partiallyReceived
 	private List<MessageBuilder> partiallyReceived = new ArrayList<>();
-	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
+	
 	private volatile long lastHeartbeat;
-	private Runnable disconnectionHandler = () -> System.out.println(BasicChildSocket.this + " disconnected");
 	private long timeOfCreation = System.currentTimeMillis();
+	
+	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
+	private Runnable disconnectionHandler = () -> System.out.println(BasicChildSocket.this + " disconnected");
 
 	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo,
 			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
@@ -105,7 +113,20 @@ public class BasicChildSocket implements ChildSocket {
 	@Override
 	public byte[] receive() {
 		try {
-			return received.take().getMessage();
+			synchronized (receivedLock) {
+				while (receivedOrdered.isEmpty() && receivedUnordered.isEmpty()) {
+					receivedLock.wait();
+				}
+				if (receivedOrdered.size() > 0 && receivedUnordered.size() > 0)
+					if (random.nextBoolean())
+						return receivedOrdered.remove().getMessage();
+					else
+						return receivedUnordered.remove().getMessage();
+				else if (receivedOrdered.size() > 0)
+					return receivedOrdered.remove().getMessage();
+				else
+					return receivedUnordered.remove().getMessage();
+			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted while waiting to receive message", e);
 		}
@@ -161,7 +182,14 @@ public class BasicChildSocket implements ChildSocket {
 			builder.add(payload);
 			if (builder.isComplete()) {
 				partiallyReceived.remove(builder);
-				received.add(builder.toReceived());
+				ReceivedMessage message = builder.toReceived();
+				synchronized (receivedLock) {
+					if (message.getOrdinal().isPresent())
+						receivedOrdered.add(message);
+					else
+						receivedUnordered.add(message);
+					receivedLock.notifyAll();
+				}
 			}
 		}
 	}

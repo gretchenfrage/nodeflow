@@ -2,6 +2,7 @@ package com.phoenixkahlo.ptest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -78,6 +79,10 @@ public class MethodMocker {
 	public void queueAssert(Predicate<Object[]> predicate) {
 		queueResponse(predicate, VOID);
 	}
+	
+	public void expectResponse() {
+		queueResponse(VOID);
+	}
 
 	public void setResponse(Predicate<Object[]> predicate, Function<Object[], ? extends Object> function) {
 		if (mode != Mode.PERSISTENT_RESPONSE)
@@ -127,6 +132,8 @@ public class MethodMocker {
 			throw new IllegalStateException("Mode not determined");
 		switch (mode) {
 		case RESPONSE_QUEUE:
+			if (responses.isEmpty())
+				throw new Error("No responses queued");
 			PredicateFunctionPair pair = responses.remove(responses.size() - 1);
 			assert pair.predicate.test(args);
 			return pair.function.apply(args);
@@ -134,10 +141,12 @@ public class MethodMocker {
 			assert responses.get(0).predicate.test(args);
 			return responses.get(0).function.apply(args);
 		case PREDICATE_RESPONSE_SET:
-			PredicateFunctionPair match = responses.stream().filter(potential -> potential.predicate.test(args))
-					.findAny().get();
-			assert match.predicate.test(args);
-			return match.function.apply(args);
+			Optional<PredicateFunctionPair> match = responses.stream().filter(potential -> potential.predicate.test(args))
+					.findAny();
+			if (!match.isPresent())
+				throw new Error("No response found");
+			assert match.get().predicate.test(args);
+			return match.get().function.apply(args);
 		default:
 			throw new IllegalStateException();
 		}
