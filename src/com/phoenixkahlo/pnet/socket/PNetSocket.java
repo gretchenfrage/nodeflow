@@ -30,4 +30,10 @@ public interface PNetSocket {
 	 */
 	void disconnect();
 
+	/**
+	 * Set a runnable that will be invoked whenever a disconnection occurs from
+	 * either end.
+	 */
+	void setDisconnectHandler(Runnable handler);
+
 }

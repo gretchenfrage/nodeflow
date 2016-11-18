@@ -21,10 +21,12 @@ public class FamilyHeartbeatThread extends Thread implements EndableThread {
 		try {
 			while (shouldContinue) {
 				synchronized (family.getChildren()) {
-					for (ChildSocket child : family.getChildren()) {
+					long currentTime = System.currentTimeMillis();
+					for (int i = 0; i < family.getChildren().size(); i++) {
+						ChildSocket child = family.getChildren().get(i);
 						child.sendHeartbeat();
-						if (System.currentTimeMillis() - child.getLastHeartbeat() > SocketConstants.HEARTBEAT_INTERVAL
-								* 3) {
+						if (currentTime - child.getTimeOfCreation() > SocketConstants.HEARTBEAT_INTERVAL * 3
+								&& currentTime - child.getLastHeartbeat() > SocketConstants.HEARTBEAT_INTERVAL * 3) {
 							child.disconnect();
 						}
 					}

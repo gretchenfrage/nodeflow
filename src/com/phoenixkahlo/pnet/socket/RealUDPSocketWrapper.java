@@ -34,5 +34,10 @@ public class RealUDPSocketWrapper implements UDPSocketWrapper {
 		socket.receive(packet);
 		return packet.getSocketAddress();
 	}
+	
+	@Override
+	public String toString() {
+		return "RealUDPSocketWrapper localAddress=" + socket.getLocalSocketAddress();
+	}
 
 }

@@ -6,10 +6,12 @@ import static com.phoenixkahlo.pnet.serialization.SerializationUtils.bytesToShor
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
 
 import com.phoenixkahlo.pnet.socket.BasicChildSocket;
 import com.phoenixkahlo.pnet.socket.BasicMessageBuilder;
 import com.phoenixkahlo.pnet.socket.ChildSocket;
+import com.phoenixkahlo.pnet.socket.ReceivedPayload;
 import com.phoenixkahlo.pnet.socket.SocketFamily;
 import com.phoenixkahlo.pnet.socket.UDPSocketWrapper;
 import com.phoenixkahlo.ptest.Mockery;
@@ -26,10 +28,13 @@ public class BasicChildSocketTest {
 
 		ChildSocket socket = new BasicChildSocket(family, connectionID, sendTo, BasicMessageBuilder::new);
 
+		/*
+		 * Test the transmission of a simple send
+		 */
 		System.out.println("* subtest1 *");
 		byte[] sendTest1 = { 1, 6, 1, 3, 7, 1, 4, 67, 2, 3 };
 		UDPSocketWrapper wrapper = Testing.mock(UDPSocketWrapper.class);
-		((Mockery) family).method("getSocket").setResponse(wrapper);
+		((Mockery) family).method("getUDPWrapper").setResponse(wrapper);
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
 			assert arr[12] == 0;
@@ -43,6 +48,9 @@ public class BasicChildSocketTest {
 		socket.send(sendTest1);
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
 
+		/*
+		 * Test the transmissions of a series of 3 sendOrdereds
+		 */
 		System.out.println("* subtest2 *");
 		byte[] sendTest2 = { 3, 6, 1, 2, 6, 9, 2, 4, 7, 2 };
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
@@ -82,6 +90,24 @@ public class BasicChildSocketTest {
 		socket.sendOrdered(sendTest2);
 		socket.sendOrdered(sendTest2);
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
+		
+		/*
+		 * Test that it can receive messages from receivePayload, blocking as necessary
+		 */
+		System.out.println("* subtest3 *");
+		byte[] receiveTest1 = {1, 3, 6, 1, 3, 6, 7, 2};
+		byte[] receiveTest2 = {1, 6, 2, 7, 2, 3, 6, 2, 76};
+		socket.receivePayload(new ReceivedPayload(65465487, 984654, (byte) 0, (byte) 1, receiveTest1));
+		new Thread(() -> {
+			try {
+				Thread.sleep(20);
+				socket.receivePayload(new ReceivedPayload(684948, 9876251, (byte) 0, (byte) 1, receiveTest2));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
+		assert Arrays.equals(socket.receive(), receiveTest1);
+		assert Arrays.equals(socket.receive(), receiveTest2);
 	}
 
 }

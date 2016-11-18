@@ -3,6 +3,10 @@ package com.phoenixkahlo.pnet.socket;
 import java.io.IOException;
 import java.net.SocketAddress;
 
+/**
+ * A wrapper for UDP operations, existing as an interface only to be mocked in
+ * testing. All operations must be thread safe.
+ */
 public interface UDPSocketWrapper {
 
 	/**

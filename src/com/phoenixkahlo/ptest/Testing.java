@@ -19,7 +19,7 @@ public class Testing {
 	}
 
 	public static final Random RANDOM = new Random();
-	
+
 	/**
 	 * Execute all {@link com.phoenixkahlo.ptest.Test tests} in the given class.
 	 */
@@ -30,7 +30,7 @@ public class Testing {
 			System.err.println("enable assertions with the -ea VM argument");
 			System.exit(1);
 		}
-		
+
 		Random seeder = new Random();
 		System.out.println("### running class \"" + clazz.getSimpleName() + "\" ###");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
@@ -56,14 +56,13 @@ public class Testing {
 			}
 		});
 	}
-	
+
 	public static void test(Class<?> clazz) {
 		test(clazz, false);
 	}
 
 	/**
-	 * Create a Mockery of the given
-	 * interface.
+	 * Create a Mockery of the given interface.
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> E mock(Class<E> intrface) {
@@ -79,7 +78,8 @@ public class Testing {
 						return entry.getValue();
 					}
 				}
-				throw new NoSuchElementException();
+				throw new NoSuchElementException("MethodMocker does not exist, name=\"" + args[0] + "\" paramTypes="
+						+ Arrays.toString((Object[]) args[1]));
 			} else {
 				return mockers.get(method).handle(args);
 			}

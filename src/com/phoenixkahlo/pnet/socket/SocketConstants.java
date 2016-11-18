@@ -9,7 +9,7 @@ public class SocketConstants {
 
 	public static final int MAX_PAYLOAD_SIZE = 300;
 	public static final int HEARTBEAT_INTERVAL = 1000;
-	public static final int RETRANSMISSION_THRESHHOLD = 100;
+	public static final int RETRANSMISSION_THRESHHOLD = 500;
 	
 	public static final int TRANSMISSION_TYPE_RANGE = 0xF0000000;
 	public static final int CONNECTION_ID_RANGE = ~TRANSMISSION_TYPE_RANGE;
@@ -55,6 +55,7 @@ public class SocketConstants {
 	public static final int REJECT = 0x50000000;
 	/**
 	 * Confirmation that a payload has been received.
+	 * - int header
 	 * - int payloadID
 	 */
 	public static final int CONFIRM = 0x60000000;
@@ -62,5 +63,28 @@ public class SocketConstants {
 	 * Header only heartbeat transmission.
 	 */
 	public static final int HEARTBEAT = 0x70000000;
+	
+	public static String nameOf(int transmissionType) {
+		switch (transmissionType) {
+		case PAYLOAD:
+			return "payload";
+		case ORDERED_PAYLOAD:
+			return "ordered payload";
+		case CONNECT:
+			return "connect";
+		case DISCONNECT:
+			return "disconnect";
+		case ACCEPT:
+			return "accept";
+		case REJECT:
+			return "reject";
+		case CONFIRM:
+			return "confirm";
+		case HEARTBEAT:
+			return "heartbeat";
+		default:
+			return "invalid (" + Integer.toBinaryString(transmissionType >> 28) + ")";
+		}
+	}
 
 }

@@ -1,8 +1,6 @@
 package com.phoenixkahlo.pnet.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.shortToBytes;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.split;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,9 +34,13 @@ public class BasicChildSocket implements ChildSocket {
 	private List<MessageBuilder> partiallyReceived = new ArrayList<>();
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
 	private volatile long lastHeartbeat;
+	private Runnable disconnectionHandler = () -> System.out.println(BasicChildSocket.this + " disconnected");
+	private long timeOfCreation = System.currentTimeMillis();
 
 	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo,
 			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
+		if ((connectionID & SocketConstants.TRANSMISSION_TYPE_RANGE) != 0)
+			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
@@ -46,6 +48,8 @@ public class BasicChildSocket implements ChildSocket {
 	}
 
 	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo) {
+		if ((connectionID & SocketConstants.TRANSMISSION_TYPE_RANGE) != 0)
+			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
@@ -112,12 +116,15 @@ public class BasicChildSocket implements ChildSocket {
 		try {
 			family.getUDPWrapper().send(intToBytes(connectionID | SocketConstants.DISCONNECT), sendTo);
 		} catch (IOException e) {
-			System.err.println("IOException while sending disconnect message");
-			e.printStackTrace();
+			synchronized (System.err) {
+				System.err.println("IOException while sending disconnect message");
+				e.printStackTrace();
+			}
 		}
 		synchronized (family.getChildren()) {
 			family.getChildren().remove(this);
 		}
+		disconnectionHandler.run();
 	}
 
 	@Override
@@ -125,10 +132,20 @@ public class BasicChildSocket implements ChildSocket {
 		synchronized (family.getChildren()) {
 			family.getChildren().remove(this);
 		}
+		disconnectionHandler.run();
 	}
 
 	@Override
 	public void receivePayload(ReceivedPayload payload) {
+		try {
+			family.getUDPWrapper().send(
+					concatenate(intToBytes(connectionID | SocketConstants.CONFIRM), intToBytes(payload.getPayloadID())),
+					sendTo);
+		} catch (IOException e) {
+			System.err.println("IOException while confirming payload");
+			e.printStackTrace();
+		}
+
 		synchronized (partiallyReceived) {
 			MessageBuilder builder;
 
@@ -189,6 +206,7 @@ public class BasicChildSocket implements ChildSocket {
 				if (time - payload.getLastSentTime() > SocketConstants.RETRANSMISSION_THRESHHOLD) {
 					try {
 						family.getUDPWrapper().send(payload.getTransmission(), sendTo);
+						payload.setLastSendTime(time);
 					} catch (IOException e) {
 						System.err.println("IOException while retransmitting");
 						e.printStackTrace();
@@ -201,6 +219,21 @@ public class BasicChildSocket implements ChildSocket {
 	@Override
 	public SocketAddress getAlienAddress() {
 		return sendTo;
+	}
+
+	@Override
+	public void setDisconnectHandler(Runnable handler) {
+		this.disconnectionHandler = handler;
+	}
+
+	@Override
+	public long getTimeOfCreation() {
+		return timeOfCreation;
+	}
+
+	@Override
+	public String toString() {
+		return "BasicChildSocket id=" + connectionID + " sendTo=" + sendTo;
 	}
 
 }

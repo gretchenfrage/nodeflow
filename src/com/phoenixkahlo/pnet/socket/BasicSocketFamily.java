@@ -1,7 +1,6 @@
 package com.phoenixkahlo.pnet.socket;
 
 import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.longToBytes;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -58,6 +57,18 @@ public class BasicSocketFamily implements SocketFamily {
 		retransmissionThread.start();
 	}
 
+	public BasicSocketFamily() throws SocketException {
+		this.udpWrapper = new RealUDPSocketWrapper();
+		receivingThread = new FamilyReceivingThread(this);
+		heartbeatThread = new FamilyHeartbeatThread(this);
+		retransmissionThread = new FamilyRetransmissionThread(this);
+		this.childSocketFactory = BasicChildSocket::new;
+		disableReceiver();
+		receivingThread.start();
+		heartbeatThread.start();
+		retransmissionThread.start();
+	}
+	
 	@Override
 	public void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler) {
 		this.receiveTest = receiveTest;
@@ -66,7 +77,7 @@ public class BasicSocketFamily implements SocketFamily {
 
 	@Override
 	public Optional<PNetSocket> connect(SocketAddress address) {
-		int connectionID = random.nextInt();
+		int connectionID = random.nextInt() & SocketConstants.CONNECTION_ID_RANGE;
 		try {
 			udpWrapper.send(intToBytes(connectionID | SocketConstants.CONNECT), address);
 		} catch (IOException e1) {
@@ -106,7 +117,7 @@ public class BasicSocketFamily implements SocketFamily {
 			children.add(childSocketFactory.apply(this, connectionID, from));
 		}
 		synchronized (unconfirmedConnections) {
-			unconfirmedConnections.remove(connectionID);
+			unconfirmedConnections.removeIf(n -> n == connectionID);
 			unconfirmedConnections.notifyAll();
 		}
 
@@ -155,7 +166,7 @@ public class BasicSocketFamily implements SocketFamily {
 				children.add(socket);
 			}
 			try {
-				udpWrapper.send(longToBytes(connectionID | SocketConstants.ACCEPT), from);
+				udpWrapper.send(intToBytes(connectionID | SocketConstants.ACCEPT), from);
 			} catch (IOException e) {
 				System.err.println("IOException while accepting connection");
 				e.printStackTrace();
@@ -163,7 +174,7 @@ public class BasicSocketFamily implements SocketFamily {
 			receiveHandler.accept(socket);
 		} else {
 			try {
-				udpWrapper.send(longToBytes(connectionID | SocketConstants.REJECT), from);
+				udpWrapper.send(intToBytes(connectionID | SocketConstants.REJECT), from);
 			} catch (IOException e) {
 				System.err.println("IOException while rejecting connection");
 				e.printStackTrace();

@@ -31,6 +31,12 @@ public interface ChildSocket extends PNetSocket {
 	long getLastHeartbeat();
 
 	/**
+	 * @return the time that this socket was created, so that it can be known
+	 *         when a heartbeat is not to be expected.
+	 */
+	long getTimeOfCreation();
+
+	/**
 	 * Update the result of getLastheartbeat() to the current time.
 	 */
 	void receiveHeartbeat();
