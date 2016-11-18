@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.phoenixkahlo.util.EndableThread;
+import com.phoenixkahlo.util.TimeWarningThread;
 import com.phoenixkahlo.util.TriFunction;
 
 public class BasicSocketFamily implements SocketFamily {
@@ -68,7 +69,7 @@ public class BasicSocketFamily implements SocketFamily {
 		heartbeatThread.start();
 		retransmissionThread.start();
 	}
-	
+
 	@Override
 	public void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler) {
 		this.receiveTest = receiveTest;
@@ -160,7 +161,12 @@ public class BasicSocketFamily implements SocketFamily {
 
 	@Override
 	public void receiveConnect(int connectionID, SocketAddress from) {
-		if (receiveTest.test(new PotentialSocketConnection(from))) {
+		Thread acceptTimer = new TimeWarningThread("Warning: " + this + " receive test taking long amount of time.",
+				50);
+		boolean accept = receiveTest.test(new PotentialSocketConnection(from));
+		acceptTimer.interrupt();
+
+		if (accept) {
 			ChildSocket socket = childSocketFactory.apply(this, connectionID, from);
 			synchronized (children) {
 				children.add(socket);
@@ -171,7 +177,10 @@ public class BasicSocketFamily implements SocketFamily {
 				System.err.println("IOException while accepting connection");
 				e.printStackTrace();
 			}
+			Thread handleTimer = new TimeWarningThread(
+					"Warning: " + this + " receive handler taking long amount of time.", 50);
 			receiveHandler.accept(socket);
+			handleTimer.interrupt();
 		} else {
 			try {
 				udpWrapper.send(intToBytes(connectionID | SocketConstants.REJECT), from);
@@ -180,6 +189,11 @@ public class BasicSocketFamily implements SocketFamily {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "BasicSocketFamily children=" + children;
 	}
 
 }
