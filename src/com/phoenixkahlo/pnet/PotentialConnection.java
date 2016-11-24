@@ -1,6 +1,6 @@
 package com.phoenixkahlo.pnet;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.Optional;
 
 /**
@@ -9,13 +9,13 @@ import java.util.Optional;
 public interface PotentialConnection {
 
 	/**
-	 * @return the IP address of the potential connection.
+	 * @return the address of the potential connection.
 	 */
-	InetAddress getAddress();
+	SocketAddress getAddress();
 
 	/**
 	 * Will return the NetworkUser only after the connection has been accepted.
 	 */
-	Optional<NetworkUser> getConnector();
+	Optional<NetworkNode> getConnector();
 
 }

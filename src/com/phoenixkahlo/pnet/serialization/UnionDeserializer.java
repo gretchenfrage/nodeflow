@@ -20,7 +20,10 @@ public class UnionDeserializer implements Deserializer {
 
 	@Override
 	public Object deserialize(InputStream in) throws IOException, ProtocolViolationException {
-		return subDeserializers.get(SerializationUtils.readInt(in)).deserialize(in);
+		Deserializer deserializer = subDeserializers.get(SerializationUtils.readInt(in));
+		if (deserializer == null)
+			throw new ProtocolViolationException("Invalid union header");
+		return deserializer.deserialize(in);
 	}
 
 	@Override

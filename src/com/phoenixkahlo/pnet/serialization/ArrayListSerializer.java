@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ArrayListSerializer implements Serializer {
 
 	private Serializer subSerializer;

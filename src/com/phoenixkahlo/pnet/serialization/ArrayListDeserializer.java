@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.phoenixkahlo.pnet.ProtocolViolationException;
 
+@Deprecated
 public class ArrayListDeserializer implements Deserializer {
 
 	private Deserializer subDeserializer;

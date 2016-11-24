@@ -3,11 +3,9 @@ package com.phoenixkahlo.pnet;
 import java.util.function.Consumer;
 
 /**
- * A reification of a user of the network, which is allowed to be the local
- * user. Objects may be sent to and received from the user, and the user may be
- * disconnected. Object transmission follows a FIFO ordering.
+ * A reification NetworkConnection, local or remote.
  */
-public interface NetworkUser {
+public interface NetworkNode {
 
 	/**
 	 * Attempt to send the object to the user, with which the user may do
@@ -16,7 +14,8 @@ public interface NetworkUser {
 	void send(Object object);
 
 	/**
-	 * Return an object that has been received
+	 * Return an object that has been received. This method will block forever
+	 * if a custom receiver is configured.
 	 */
 	Object receive();
 
@@ -33,8 +32,11 @@ public interface NetworkUser {
 	void unsetReceiver();
 
 	/**
-	 * Disconnect from the NetworkUser the two are directly connected.
+	 * Disconnect any direct connection between the two network users.
+	 * 
+	 * @return if a connection was broken, false if the users were never
+	 *         directly connected.
 	 */
-	void disconnect();
+	boolean disconnect();
 
 }
