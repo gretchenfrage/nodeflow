@@ -16,14 +16,26 @@ import java.util.function.Predicate;
 public interface SocketFamily {
 
 	/**
-	 * Set the test.serialization and handler for receiving new connections. The
-	 * receiver should not take too long to finish execution, or it will block
-	 * the receiver thread for all sockets in the family, including blocking
-	 * heartbeat and triggering disconnection. If the receiver takes to long, it
-	 * is recommended that the receiver instead launch a new thread to handle
-	 * its computationally expensive task.
+	 * Set the receive test and handler for new connections.
 	 */
-	void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler);
+	default void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler) {
+		setReceiveTest(receiveTest);
+		setReceiveHandler(receiveHandler);
+	}
+
+	/**
+	 * Set the test for receiving new connections. Should execute quickly, or
+	 * will cause receiving thread to block, interrupting messages and heartbeat
+	 * from all children..
+	 */
+	void setReceiveTest(Predicate<PotentialSocketConnection> receiveTest);
+
+	/**
+	 * Set the handler for receiving new connections. Should execute quickly, or
+	 * will cause receiving thread to block, interrupting messages and heartbeat
+	 * from all children..
+	 */
+	void setReceiveHandler(Consumer<PNetSocket> receiveHandler);
 
 	/**
 	 * Reject all new connections.

@@ -2,11 +2,12 @@ package com.phoenixkahlo.pnet;
 
 import com.phoenixkahlo.pnet.serialization.FieldSerializer;
 import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.util.PerfectHashable;
 
 /**
  * Represents an address for a node in the network.
  */
-public class NodeAddress {
+public class NodeAddress implements PerfectHashable {
 
 	public static Serializer serializer(Serializer subSerializer) {
 		return new FieldSerializer(NodeAddress.class, subSerializer, NodeAddress::new);

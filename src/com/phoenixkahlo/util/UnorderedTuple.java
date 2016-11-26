@@ -8,7 +8,7 @@ import com.phoenixkahlo.pnet.serialization.Serializer;
 /**
  * An immutable set of two unordered items.
  */
-public class UnorderedTuple<E> {
+public class UnorderedTuple<E extends PerfectHashable> {
 
 	public static Serializer serializer(Serializer subSerializer) {
 		return new FieldSerializer(UnorderedTuple.class, subSerializer, UnorderedTuple::new);

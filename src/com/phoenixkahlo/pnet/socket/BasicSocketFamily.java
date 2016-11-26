@@ -69,10 +69,14 @@ public class BasicSocketFamily implements SocketFamily {
 		heartbeatThread.start();
 		retransmissionThread.start();
 	}
-
+	
 	@Override
-	public void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler) {
+	public void setReceiveTest(Predicate<PotentialSocketConnection> receiveTest) {
 		this.receiveTest = receiveTest;
+	}
+	
+	@Override
+	public void setReceiveHandler(Consumer<PNetSocket> receiveHandler) {
 		this.receiveHandler = receiveHandler;
 	}
 

@@ -17,6 +17,7 @@ public class SerializerInitializer {
 		serializer.add(-2, NodeAddress.serializer(serializer));
 		serializer.add(-3, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
 		serializer.add(-4, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
+		serializer.add(-5, Handshake.serializer(serializer));
 	}
 	
 }

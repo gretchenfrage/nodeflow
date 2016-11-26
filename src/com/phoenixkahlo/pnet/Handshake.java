@@ -8,6 +8,8 @@ import java.util.Random;
 import java.util.Set;
 
 import com.phoenixkahlo.pnet.serialization.AutoSerializer;
+import com.phoenixkahlo.pnet.serialization.FieldSerializer;
+import com.phoenixkahlo.pnet.serialization.Serializer;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 /**
@@ -16,6 +18,10 @@ import com.phoenixkahlo.util.UnorderedTuple;
  */
 public class Handshake implements AutoSerializer {
 
+	public static Serializer serializer(Serializer subSerializer) {
+		return new FieldSerializer(Handshake.class, subSerializer, Handshake::new);
+	}
+	
 	private static long binSeed = 6549849846L;
 	private static byte[] bin;
 	static {

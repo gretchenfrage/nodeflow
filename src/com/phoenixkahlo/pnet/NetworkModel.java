@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -19,7 +20,9 @@ import com.phoenixkahlo.util.UnorderedTuple;
 public class NetworkModel {
 
 	private Set<NodeAddress> nodes = new HashSet<>();
-	private Set<UnorderedTuple<NodeAddress>> connections = new HashSet<>();
+	// Lesser neighbors means neighbors have lesser hashes than keys.
+	private Map<NodeAddress, Set<NodeAddress>> greaterKeys = new HashMap<>();
+	private Map<NodeAddress, Set<NodeAddress>> lesserKeys = new HashMap<>();
 	private NodeAddress local;
 
 	public NetworkModel(NodeAddress local) {
@@ -28,15 +31,48 @@ public class NetworkModel {
 	}
 
 	public void addConnection(NodeAddress node1, NodeAddress node2) {
+		// O(1) time complexity
 		nodes.add(node1);
 		nodes.add(node2);
-		connections.add(new UnorderedTuple<>(node1, node2));
+		
+		NodeAddress greater;
+		NodeAddress lesser;
+		if (node1.hashCode() > node2.hashCode()) {
+			greater = node1;
+			lesser = node2;
+		} else {
+			greater = node2;
+			lesser = node1;
+		}
+		
+		if (!greaterKeys.containsKey(greater))
+			greaterKeys.put(greater, new HashSet<>());
+		greaterKeys.get(greater).add(lesser);
+		
+		if (!lesserKeys.containsKey(lesser))
+			lesserKeys.put(lesser, new HashSet<>());
+		lesserKeys.get(lesser).add(greater);
 	}
 
 	public void removeConnection(NodeAddress node1, NodeAddress node2) {
+		// O(1) time complexity
 		nodes.remove(node1);
 		nodes.remove(node2);
-		connections.remove(new UnorderedTuple<>(node1, node2));
+		
+		NodeAddress greater;
+		NodeAddress lesser;
+		if (node1.hashCode() > node2.hashCode()) {
+			greater = node1;
+			lesser = node2;
+		} else {
+			greater = node2;
+			lesser = node1;
+		}
+		
+		if (greaterKeys.containsKey(greater))
+			greaterKeys.get(greater).remove(lesser);
+		if (lesserKeys.containsKey(lesser))
+			lesserKeys.get(lesser).remove(greater);
 	}
 
 	public Set<NodeAddress> getNodes() {
@@ -44,23 +80,45 @@ public class NetworkModel {
 	}
 
 	public Set<UnorderedTuple<NodeAddress>> getConnections() {
+		// O(n) time complexity
+		Set<UnorderedTuple<NodeAddress>> connections = new HashSet<>();
+		for (Map.Entry<NodeAddress, Set<NodeAddress>> entry : greaterKeys.entrySet()) {
+			for (NodeAddress neighbor : entry.getValue()) {
+				connections.add(new UnorderedTuple<>(entry.getKey(), neighbor));
+			}
+		}
 		return connections;
 	}
 
-	public Set<NodeAddress> getNeighbors(NodeAddress node) {
-		Set<NodeAddress> neighbors = new HashSet<>();
-		for (UnorderedTuple<NodeAddress> connection : connections) {
-			if (connection.get1().equals(node))
-				neighbors.add(connection.get2());
-			if (connection.get2().equals(node))
-				neighbors.add(connection.get1());
-		}
-		return neighbors;
+	public Iterator<NodeAddress> getNeighbors(NodeAddress node) {
+		// O(1) time complexity
+		return new Iterator<NodeAddress>() {
+
+			private Iterator<NodeAddress> iter1 = greaterKeys.get(node).iterator();
+			private Iterator<NodeAddress> iter2 = lesserKeys.get(node).iterator();
+			
+			@Override
+			public boolean hasNext() {
+				return iter1.hasNext() || iter2.hasNext();
+			}
+
+			@Override
+			public NodeAddress next() {
+				if (iter1.hasNext())
+					return iter1.next();
+				else if (iter2.hasNext())
+					return iter2.next();
+				else
+					throw new NoSuchElementException();
+			}
+			
+		};
 	}
 
 	public int getShortestDistance(NodeAddress node1, NodeAddress node2) {
 		// Breadth-first-search algorithm.
-
+		// Worst case time complexity: O(V + E)
+		
 		Map<NodeAddress, Integer> distances = new HashMap<>();
 		
 		Queue<NodeAddress> queue = new LinkedList<>();
@@ -70,7 +128,8 @@ public class NetworkModel {
 		
 		while (!queue.isEmpty()) {
 			NodeAddress current = queue.remove();
-			for (NodeAddress neighbor : getNeighbors(current)) {
+			Iterable<NodeAddress> neighbors = () -> getNeighbors(current);
+			for (NodeAddress neighbor : neighbors) {
 				if (!distances.containsKey(neighbor)) {
 					distances.put(neighbor, distances.get(current) + 1);
 					queue.add(neighbor);
@@ -94,7 +153,8 @@ public class NetworkModel {
 		stack.push(local);
 
 		while (!stack.isEmpty()) {
-			for (NodeAddress node : getNeighbors(stack.pop())) {
+			Iterable<NodeAddress> neighbors = () -> getNeighbors(stack.pop());
+			for (NodeAddress node : neighbors) {
 				if (!touched.contains(node)) {
 					stack.push(node);
 					touched.add(node);
