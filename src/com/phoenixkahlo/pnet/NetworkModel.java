@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.OptionalInt;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -34,7 +35,7 @@ public class NetworkModel {
 		// O(1) time complexity
 		nodes.add(node1);
 		nodes.add(node2);
-		
+
 		NodeAddress greater;
 		NodeAddress lesser;
 		if (node1.hashCode() > node2.hashCode()) {
@@ -44,11 +45,11 @@ public class NetworkModel {
 			greater = node2;
 			lesser = node1;
 		}
-		
+
 		if (!greaterKeys.containsKey(greater))
 			greaterKeys.put(greater, new HashSet<>());
 		greaterKeys.get(greater).add(lesser);
-		
+
 		if (!lesserKeys.containsKey(lesser))
 			lesserKeys.put(lesser, new HashSet<>());
 		lesserKeys.get(lesser).add(greater);
@@ -56,9 +57,7 @@ public class NetworkModel {
 
 	public void removeConnection(NodeAddress node1, NodeAddress node2) {
 		// O(1) time complexity
-		nodes.remove(node1);
-		nodes.remove(node2);
-		
+
 		NodeAddress greater;
 		NodeAddress lesser;
 		if (node1.hashCode() > node2.hashCode()) {
@@ -68,11 +67,20 @@ public class NetworkModel {
 			greater = node2;
 			lesser = node1;
 		}
-		
+
 		if (greaterKeys.containsKey(greater))
 			greaterKeys.get(greater).remove(lesser);
 		if (lesserKeys.containsKey(lesser))
 			lesserKeys.get(lesser).remove(greater);
+	}
+	
+	public void removeNode(NodeAddress node) {
+		// O(n) time complexity
+		for (UnorderedTuple<NodeAddress> connection : getConnections()) {
+			if (connection.contains(node)) {
+				removeConnection(connection.get1(), connection.get2());
+			}
+		}
 	}
 
 	public Set<NodeAddress> getNodes() {
@@ -96,7 +104,7 @@ public class NetworkModel {
 
 			private Iterator<NodeAddress> iter1 = greaterKeys.get(node).iterator();
 			private Iterator<NodeAddress> iter2 = lesserKeys.get(node).iterator();
-			
+
 			@Override
 			public boolean hasNext() {
 				return iter1.hasNext() || iter2.hasNext();
@@ -111,21 +119,21 @@ public class NetworkModel {
 				else
 					throw new NoSuchElementException();
 			}
-			
+
 		};
 	}
 
-	public int getShortestDistance(NodeAddress node1, NodeAddress node2) {
+	public OptionalInt getShortestDistance(NodeAddress node1, NodeAddress node2) {
 		// Breadth-first-search algorithm.
 		// Worst case time complexity: O(V + E)
-		
+
 		Map<NodeAddress, Integer> distances = new HashMap<>();
-		
+
 		Queue<NodeAddress> queue = new LinkedList<>();
-		
+
 		distances.put(node1, 0);
 		queue.add(node1);
-		
+
 		while (!queue.isEmpty()) {
 			NodeAddress current = queue.remove();
 			Iterable<NodeAddress> neighbors = () -> getNeighbors(current);
@@ -134,15 +142,18 @@ public class NetworkModel {
 					distances.put(neighbor, distances.get(current) + 1);
 					queue.add(neighbor);
 				}
-				
+
 				if (neighbor.equals(node2))
-					return distances.get(node2);
+					return OptionalInt.of(distances.get(node2));
 			}
 		}
-		
-		throw new IllegalArgumentException("BFS failure.");
+
+		return OptionalInt.empty();
 	}
 
+	/**
+	 * Remove any nodes not directly or indirectly connected to the local node.
+	 */
 	public void trim() {
 		// The set of nodes that have been added to the stack.
 		Set<NodeAddress> touched = new HashSet<>();
@@ -164,10 +175,31 @@ public class NetworkModel {
 
 		// At this point, touched should contain all nodes connected to local.
 
+		// Remove all untouched nodes
 		Iterator<NodeAddress> iterator = nodes.iterator();
 		while (iterator.hasNext())
 			if (!touched.contains(iterator.next()))
 				iterator.remove();
+		// Remove all untouched keys
+		greaterKeys.keySet().stream().filter(node -> !touched.contains(node)).forEach(greaterKeys::remove);
+		lesserKeys.keySet().stream().filter(node -> !touched.contains(node)).forEach(lesserKeys::remove);
+		// Remove all untouched values
+		greaterKeys.values().stream()
+				.forEach(nodes -> nodes.stream().filter(node -> !touched.contains(node)).forEach(nodes::remove));
+		lesserKeys.values().stream()
+				.forEach(nodes -> nodes.stream().filter(node -> !touched.contains(node)).forEach(nodes::remove));
+
+	}
+
+	public NetworkModel clone() {
+		NetworkModel newModel = new NetworkModel(local);
+		for (UnorderedTuple<NodeAddress> connection : getConnections()) {
+			newModel.addConnection(connection.get1(), connection.get2());
+		}
+		for (NodeAddress node : nodes) {
+			newModel.nodes.add(node);
+		}
+		return newModel;
 	}
 
 }

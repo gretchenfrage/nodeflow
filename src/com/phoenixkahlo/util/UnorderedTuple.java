@@ -30,6 +30,10 @@ public class UnorderedTuple<E extends PerfectHashable> {
 			this.item2 = item1;
 		}
 	}
+	
+	public boolean contains(E item) {
+		return item1.equals(item) || item2.equals(item);
+	}
 
 	public E get1() {
 		return item1;

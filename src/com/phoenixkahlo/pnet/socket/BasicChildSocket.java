@@ -1,9 +1,6 @@
 package com.phoenixkahlo.pnet.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.concatenate;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.shortToBytes;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.split;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,13 +12,11 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 public class BasicChildSocket implements ChildSocket {
-
-	private Random random = new Random();
 	
 	private SocketFamily family;
 	private int connectionID;
@@ -44,6 +39,8 @@ public class BasicChildSocket implements ChildSocket {
 	
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
 	private Runnable disconnectionHandler = () -> System.out.println(BasicChildSocket.this + " disconnected");
+	
+	private volatile boolean disconnected = false;
 
 	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo,
 			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
@@ -75,7 +72,9 @@ public class BasicChildSocket implements ChildSocket {
 	}
 
 	private void sendMessage(byte[] message, OptionalInt ordinal) throws IOException {
-		int messageID = random.nextInt();
+		if (disconnected)
+			throw new IOException("Disconnected");
+		int messageID = ThreadLocalRandom.current().nextInt();
 		byte[][] payloads = split(message, SocketConstants.MAX_PAYLOAD_SIZE);
 		for (byte i = 0; i < payloads.length; i++) {
 			sendPayload(payloads[i], messageID, ordinal, i, (byte) payloads.length);
@@ -84,7 +83,7 @@ public class BasicChildSocket implements ChildSocket {
 
 	private void sendPayload(byte[] payload, int messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
 			throws IOException {
-		int payloadID = random.nextInt();
+		int payloadID = ThreadLocalRandom.current().nextInt();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			if (ordinal.isPresent())
@@ -118,7 +117,7 @@ public class BasicChildSocket implements ChildSocket {
 					receivedLock.wait();
 				}
 				if (receivedOrdered.size() > 0 && receivedUnordered.size() > 0)
-					if (random.nextBoolean())
+					if (ThreadLocalRandom.current().nextBoolean())
 						return receivedOrdered.remove().getMessage();
 					else
 						return receivedUnordered.remove().getMessage();
@@ -134,6 +133,7 @@ public class BasicChildSocket implements ChildSocket {
 
 	@Override
 	public void disconnect() {
+		disconnected = true;
 		try {
 			family.getUDPWrapper().send(intToBytes(connectionID | SocketConstants.DISCONNECT), sendTo);
 		} catch (IOException e) {
@@ -150,6 +150,7 @@ public class BasicChildSocket implements ChildSocket {
 
 	@Override
 	public void receiveDisconnect() {
+		disconnected = true;
 		synchronized (family.getChildren()) {
 			family.getChildren().remove(this);
 		}

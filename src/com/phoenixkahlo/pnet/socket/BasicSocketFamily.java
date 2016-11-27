@@ -1,6 +1,6 @@
 package com.phoenixkahlo.pnet.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.intToBytes;
+import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -18,7 +18,6 @@ import com.phoenixkahlo.util.TriFunction;
 
 public class BasicSocketFamily implements SocketFamily {
 
-	private Random random = new Random();
 	private UDPSocketWrapper udpWrapper;
 	// Synchronize usages
 	private List<ChildSocket> children = new ArrayList<>();
@@ -31,6 +30,8 @@ public class BasicSocketFamily implements SocketFamily {
 	private Predicate<PotentialSocketConnection> receiveTest;
 	private Consumer<PNetSocket> receiveHandler;
 	private TriFunction<SocketFamily, Integer, SocketAddress, ChildSocket> childSocketFactory;
+	
+	private volatile boolean disconnected = false;
 
 	public BasicSocketFamily(UDPSocketWrapper wrapper, EndableThread receivingThread, EndableThread heartbeatThread,
 			EndableThread retransmissionThread,
@@ -82,7 +83,10 @@ public class BasicSocketFamily implements SocketFamily {
 
 	@Override
 	public Optional<PNetSocket> connect(SocketAddress address) {
-		int connectionID = random.nextInt() & SocketConstants.CONNECTION_ID_RANGE;
+		if (disconnected)
+			return Optional.empty();
+		
+		int connectionID = ThreadLocalRandom.current().nextInt() & SocketConstants.CONNECTION_ID_RANGE;
 		try {
 			udpWrapper.send(intToBytes(connectionID | SocketConstants.CONNECT), address);
 		} catch (IOException e1) {

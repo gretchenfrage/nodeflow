@@ -48,7 +48,8 @@ public interface NetworkConnection {
 
 	/**
 	 * Provide a listener that will be invoked whenever an incoming connection
-	 * is accepted.
+	 * is accepted. Will not notify when a connection is created from the local
+	 * end.
 	 */
 	void listenForConnection(Consumer<NetworkNode> listener);
 
@@ -56,6 +57,11 @@ public interface NetworkConnection {
 	 * @return all users connected to this network, directly or indirectly.
 	 */
 	List<NetworkNode> getNodes();
+
+	/**
+	 * @return all users directly connected to this local node.
+	 */
+	List<NetworkNode> getAdjacentNodes();
 
 	/**
 	 * Disconnect from all users and release all resources.
