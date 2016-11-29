@@ -2,6 +2,7 @@ package com.phoenixkahlo.pnet;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A concurrency-based object, based on resource IDs and corresponding resource
@@ -9,20 +10,49 @@ import java.util.Map;
  * ID. Threads waiting on IDs will block until the resource is fulfilled, after
  * which they will return that resource.
  */
-public class ResourceWaiter {
+public class ResourceWaiter<E> {
 
-	private Map<Integer, Object> resources = new HashMap<>();
+	private Map<Integer, E> resources = new HashMap<>();
 	
-	public Object waitForResource(int id) throws InterruptedException {
+	public E waitForResource(int id) {
 		synchronized (resources) {
 			while (!resources.containsKey(id)) {
-				resources.wait();
+				try {
+					resources.wait();
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 			return resources.get(id);
 		}
 	}
 	
-	public void fulfillResource(int id, Object resource) {
+	public Optional<E> waitForResource(int id, long timeout) {
+		//TODO: Optimize to avoid thread-creation.
+		Thread waiter = Thread.currentThread();
+		Thread interrupter = new Thread(() -> {
+			try {
+				Thread.sleep(timeout);
+				waiter.interrupt();
+			} catch (InterruptedException e) {
+			}
+		});
+		interrupter.start();
+		try {
+			synchronized (resources) {
+				while (!resources.containsKey(id)) {
+					resources.wait();
+				}
+				interrupter.interrupt();
+				return Optional.of(resources.get(id));
+			}
+		} catch (InterruptedException e) {
+			interrupter.interrupt();
+			return Optional.empty();
+		}
+	}
+	
+	public void fulfillResource(int id, E resource) {
 		synchronized (resources) {
 			resources.put(id, resource);
 			resources.notifyAll();

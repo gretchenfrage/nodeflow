@@ -21,6 +21,7 @@ public class SerializerInitializer {
 		serializer.add(-6, ViralPayload.serializer(serializer));
 		serializer.add(-7, ConnectionNotification.serializer(serializer));
 		serializer.add(-8, DisconnectionNotification.serializer(serializer));
+		serializer.add(-9, AddressedPayloadResult.serializer(serializer));
 	}
 	
 }

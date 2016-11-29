@@ -37,7 +37,8 @@ public class BasicNetworkConnection implements NetworkConnection {
 	private Map<NodeAddress, BasicNetworkNode> nodeReifications = new HashMap<>(); // Synchronize
 	private List<Consumer<NetworkNode>> newConnectionListeners = new ArrayList<>(); // Synchronize
 	private Set<Integer> handledVirii = new HashSet<>();
-	private ResourceWaiter resourceWaiter = new ResourceWaiter();
+
+	private ResourceWaiter<AddressedPayloadResult> addressedResults = new ResourceWaiter<>();
 
 	private BasicNetworkConnection(SocketFamily socketFamily) {
 		serializer = new UnionSerializer();
@@ -167,9 +168,9 @@ public class BasicNetworkConnection implements NetworkConnection {
 					attemptSequence.add(new Tuple<>(neighbor, distance.getAsInt()));
 			}
 			attemptSequence.sort((tuple1, tuple2) -> tuple1.getB() - tuple2.getB());
-			
-			boolean succeeded = false;
 			Iterator<NodeAddress> attempt = attemptSequence.stream().map(Tuple::getA).iterator();
+
+			boolean succeeded = false;
 			while (!succeeded && attempt.hasNext()) {
 				NodeAddress attemptNext = attempt.next();
 				addressed.randomizeID();
@@ -178,11 +179,21 @@ public class BasicNetworkConnection implements NetworkConnection {
 					socket = neighborConnections.get(attemptNext);
 				}
 				socket.send(addressed);
-				Object response = resourceWaiter.waitForResource(addressed.getID());
-				
-				
+				long patience = 500; // TODO: actually calculate this somehow
+				Optional<AddressedPayloadResult> result = addressedResults.waitForResource(addressed.getID(), patience);
+				if (result.isPresent() && result.get().wasSuccessful())
+					succeeded = true;
 			}
-			/// blah blah blah ablhablahlbalhbdskljhskdhfug
+			PNetObjectSocket fromSocket;
+			synchronized (neighborConnections) {
+				fromSocket = neighborConnections.get(from);
+			}
+			if (fromSocket == null) {
+				System.err.println("From-socket disconnected before having chance to send result.");
+				return;
+			}
+			
+			fromSocket.send(new AddressedPayloadResult(addressed.getOriginalID(), succeeded));
 		}
 	}
 
