@@ -6,9 +6,11 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -21,6 +23,7 @@ import com.phoenixkahlo.pnet.socket.BasicSocketFamily;
 import com.phoenixkahlo.pnet.socket.PNetObjectSocket;
 import com.phoenixkahlo.pnet.socket.PNetSocket;
 import com.phoenixkahlo.pnet.socket.SocketFamily;
+import com.phoenixkahlo.util.Tuple;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 public class BasicNetworkConnection implements NetworkConnection {
@@ -33,8 +36,8 @@ public class BasicNetworkConnection implements NetworkConnection {
 	private Map<NodeAddress, PNetObjectSocket> neighborConnections = new HashMap<>(); // Synchronize
 	private Map<NodeAddress, BasicNetworkNode> nodeReifications = new HashMap<>(); // Synchronize
 	private List<Consumer<NetworkNode>> newConnectionListeners = new ArrayList<>(); // Synchronize
-
 	private Set<Integer> handledVirii = new HashSet<>();
+	private ResourceWaiter resourceWaiter = new ResourceWaiter();
 
 	private BasicNetworkConnection(SocketFamily socketFamily) {
 		serializer = new UnionSerializer();
@@ -143,6 +146,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 			// Deal with payload
 		} else {
 			// TODO: do this all in a new thread, but make it closeable
+			// also, synchronize everything
 			// Prepare a model of the network that is legal to transverse
 			NetworkModel transversible = model.clone();
 			for (NodeAddress visited : addressed.getVisited()) {
@@ -156,11 +160,28 @@ public class BasicNetworkConnection implements NetworkConnection {
 			NodeAddress destination = addressed.getDestination();
 
 			// Get the sequence of addresses to attempt transmitting through
-			NodeAddress[] toAttempt = neighborConnections.keySet().stream()
-					.filter(node -> transversible.getShortestDistance(node, destination).isPresent())
-					.sorted((node1, node2) -> transversible.getShortestDistance(node1, destination).getAsInt()
-							- transversible.getShortestDistance(node2, destination).getAsInt())
-					.toArray(NodeAddress[]::new);
+			List<Tuple<NodeAddress, Integer>> attemptSequence = new ArrayList<>();
+			for (NodeAddress neighbor : neighborConnections.keySet()) {
+				OptionalInt distance = transversible.getShortestDistance(neighbor, destination);
+				if (distance.isPresent())
+					attemptSequence.add(new Tuple<>(neighbor, distance.getAsInt()));
+			}
+			attemptSequence.sort((tuple1, tuple2) -> tuple1.getB() - tuple2.getB());
+			
+			boolean succeeded = false;
+			Iterator<NodeAddress> attempt = attemptSequence.stream().map(Tuple::getA).iterator();
+			while (!succeeded && attempt.hasNext()) {
+				NodeAddress attemptNext = attempt.next();
+				addressed.randomizeID();
+				PNetObjectSocket socket;
+				synchronized (neighborConnections) {
+					socket = neighborConnections.get(attemptNext);
+				}
+				socket.send(addressed);
+				Object response = resourceWaiter.waitForResource(addressed.getID());
+				
+				
+			}
 			/// blah blah blah ablhablahlbalhbdskljhskdhfug
 		}
 	}
