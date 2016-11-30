@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -97,7 +100,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 	 * Deal with the ViralPayload as described in the ViralPayload
 	 * documentation.
 	 */
-	public void handleViralPayload(ViralPayload virus) {
+	public void handleViralMessage(ViralPayload virus) {
 		boolean shouldHandle = false;
 		synchronized (handledVirii) {
 			if (!handledVirii.contains(virus.getID())) {
@@ -121,35 +124,118 @@ public class BasicNetworkConnection implements NetworkConnection {
 				});
 			}
 			// Deal with payload
-			if (virus.getPayload() instanceof ConnectionNotification) {
-				ConnectionNotification payload = (ConnectionNotification) virus.getPayload();
-				synchronized (model) {
-					model.addConnection(payload.get1(), payload.get2());
-				}
-			} else if (virus.getPayload() instanceof DisconnectionNotification) {
-				DisconnectionNotification payload = (DisconnectionNotification) virus.getPayload();
-				synchronized (model) {
-					model.removeConnection(payload.get1(), payload.get2());
-				}
-			} else {
-				System.err.println("Invalid viral payload type: " + virus.getPayload());
+			handleViralPayload(virus.getPayload());
+		}
+	}
+	
+	private void handleViralPayload(Object payload) {
+		if (payload instanceof ConnectionNotification) {
+			ConnectionNotification notification = (ConnectionNotification) payload;
+			synchronized (model) {
+				model.addConnection(notification.get1(), notification.get2());
 			}
+		} else if (payload instanceof DisconnectionNotification) {
+			DisconnectionNotification notification = (DisconnectionNotification) payload;
+			synchronized (model) {
+				model.removeConnection(notification.get1(), notification.get2());
+			}
+		} else {
+			System.err.println("Invalid viral payload type: " + payload);
 		}
 	}
 
+	private void sendAddressedResult(NodeAddress to, int id, boolean success) {
+		PNetObjectSocket socket;
+		synchronized (neighborConnections) {
+			socket = neighborConnections.get(to);
+		}
+		if (socket == null) {
+			System.err.println("Could not find socket to which to send addressed result.");
+			return;
+		}
+		try {
+			socket.send(new AddressedPayloadResult(id, success));
+		} catch (IOException e) {
+			System.err.println("IOException while sending addressed result:");
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleAddressedPayload(Object payload) {
+		System.err.println("Invalid addressed payload type: " + payload);
+	}
+	
+	private Iterator<NodeAddress> addressedAttemptSequence(NodeAddress destination, Set<NodeAddress> illegal) {
+		// Prepare a model of the subset of the network that is legal to transverse
+		NetworkModel transversible;
+		synchronized (model) {
+			transversible = model.clone();
+		}
+		for (NodeAddress node : illegal) {
+			transversible.removeNode(node);
+		}
+		transversible.removeNode(localAddress);
+		// Form a SortedMap of existing distances, sorted by shortest distances
+		SortedMap<Integer, NodeAddress> distances = new TreeMap<>((n1, n2) -> n1 - n2);
+		synchronized (neighborConnections) {
+			for (NodeAddress neighbor : neighborConnections.keySet()) {
+				OptionalInt distance = transversible.getShortestDistance(neighbor, destination);
+				if (distance.isPresent())
+					distances.put(distance.getAsInt(), neighbor);
+			}
+		}
+		// Return the value iterator
+		return distances.values().iterator();
+	}
+	
+	private long addressedPatience(NodeAddress attempt, NodeAddress destination) {
+		//TODO: actually calculate something
+		return 500;
+	}
+	
 	/**
 	 * Deal with the AddressedPayload as described in the AddressedPayload
 	 * documentation.
 	 */
-	public void handleAddressedPayload(NodeAddress from, AddressedPayload addressed) {
+	public void handleAddressedMessage(NodeAddress from, AddressedPayload addressed) {
 		if (addressed.getDestination().equals(localAddress)) {
-			// Transmit success
-			// Deal with payload
+			sendAddressedResult(from, addressed.getOriginalID(), true);
+			handleAddressedPayload(addressed.getPayload());
 		} else {
+			//TODO: make this endable
+			// Launch thread to attempt to get message to destination
+			Thread attemptor = new Thread(() -> {
+				Thread parent = Thread.currentThread();
+				// List of children waiting on success/failure of particular neighbor
+				List<Thread> children = Collections.synchronizedList(new ArrayList<>());
+				// List of neighbors that have succeeded
+				List<NodeAddress> successful = Collections.synchronizedList(new ArrayList<>());
+				// Iterator for sequence of neigbors to attempt
+				Iterator<NodeAddress> sequence = addressedAttemptSequence(addressed.getDestination(), addressed.getVisited());
+				
+				while (sequence.hasNext() && successful.isEmpty()) {
+					NodeAddress attempt = sequence.next();
+					Thread child = new Thread(() -> {
+						
+					});
+					children.add(child);
+					child.start();
+					long patience = addressedPatience(attempt, addressed.getDestination());
+					try {
+						Thread.sleep(patience);
+					} catch (InterruptedException e) {
+					}
+				}
+			});
+			attemptor.start();
+			/*
 			// TODO: do this all in a new thread, but make it closeable
 			// also, synchronize everything
 			// Prepare a model of the network that is legal to transverse
-			NetworkModel transversible = model.clone();
+			NetworkModel transversible;
+			synchronized (model) {
+				transversible = model.clone();
+			}
 			for (NodeAddress visited : addressed.getVisited()) {
 				transversible.removeNode(visited);
 			}
@@ -162,14 +248,16 @@ public class BasicNetworkConnection implements NetworkConnection {
 
 			// Get the sequence of addresses to attempt transmitting through
 			List<Tuple<NodeAddress, Integer>> attemptSequence = new ArrayList<>();
-			for (NodeAddress neighbor : neighborConnections.keySet()) {
-				OptionalInt distance = transversible.getShortestDistance(neighbor, destination);
-				if (distance.isPresent())
-					attemptSequence.add(new Tuple<>(neighbor, distance.getAsInt()));
+			synchronized (neighborConnections) {
+				for (NodeAddress neighbor : neighborConnections.keySet()) {
+					OptionalInt distance = transversible.getShortestDistance(neighbor, destination);
+					if (distance.isPresent())
+						attemptSequence.add(new Tuple<>(neighbor, distance.getAsInt()));
+				}
 			}
 			attemptSequence.sort((tuple1, tuple2) -> tuple1.getB() - tuple2.getB());
 			Iterator<NodeAddress> attempt = attemptSequence.stream().map(Tuple::getA).iterator();
-
+			
 			boolean succeeded = false;
 			while (!succeeded && attempt.hasNext()) {
 				NodeAddress attemptNext = attempt.next();
@@ -193,7 +281,13 @@ public class BasicNetworkConnection implements NetworkConnection {
 				return;
 			}
 			
-			fromSocket.send(new AddressedPayloadResult(addressed.getOriginalID(), succeeded));
+			try {
+				fromSocket.send(new AddressedPayloadResult(addressed.getOriginalID(), succeeded));
+			} catch (IOException e) {
+				System.err.println("IOException while sending success message.");
+				e.printStackTrace();
+			}
+			*/
 		}
 	}
 
@@ -214,7 +308,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 			nodeReifications.remove(address);
 		}
 		// Virally inform all nodes of disconnection
-		handleViralPayload(new ViralPayload(new DisconnectionNotification(localAddress, address)));
+		handleViralMessage(new ViralPayload(new DisconnectionNotification(localAddress, address)));
 	}
 
 	/**
@@ -280,7 +374,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 		socket.setDisconnectHandler(() -> handleDisconnect(connectedTo));
 
 		// Virally inform all nodes of new connection
-		handleViralPayload(new ViralPayload(new ConnectionNotification(localAddress, connectedTo)));
+		handleViralMessage(new ViralPayload(new ConnectionNotification(localAddress, connectedTo)));
 
 		// Return the created node
 		return Optional.of(node);
