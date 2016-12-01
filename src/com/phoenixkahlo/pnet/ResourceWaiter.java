@@ -14,7 +14,7 @@ public class ResourceWaiter<E> {
 
 	private Map<Integer, E> resources = new HashMap<>();
 	
-	public E waitForResource(int id) {
+	public E get(int id) {
 		synchronized (resources) {
 			while (!resources.containsKey(id)) {
 				try {
@@ -27,7 +27,20 @@ public class ResourceWaiter<E> {
 		}
 	}
 	
-	public Optional<E> waitForResource(int id, long timeout) {
+	public Optional<E> tryGet(int id) {
+		synchronized (resources) {
+			while (!resources.containsKey(id)) {
+				try {
+					resources.wait();
+				} catch (InterruptedException e) {
+					return Optional.empty();
+				}
+			}
+			return Optional.of(resources.get(id));
+		}
+	}
+	
+	public Optional<E> tryGet(int id, long timeout) {
 		//TODO: Optimize to avoid thread-creation.
 		Thread waiter = Thread.currentThread();
 		Thread interrupter = new Thread(() -> {
@@ -52,7 +65,7 @@ public class ResourceWaiter<E> {
 		}
 	}
 	
-	public void fulfillResource(int id, E resource) {
+	public void put(int id, E resource) {
 		synchronized (resources) {
 			resources.put(id, resource);
 			resources.notifyAll();

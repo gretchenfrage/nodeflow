@@ -40,8 +40,8 @@ public class BasicNetworkConnection implements NetworkConnection {
 	private Map<NodeAddress, BasicNetworkNode> nodeReifications = new HashMap<>(); // Synchronize
 	private List<Consumer<NetworkNode>> newConnectionListeners = new ArrayList<>(); // Synchronize
 	private Set<Integer> handledVirii = new HashSet<>();
-
 	private ResourceWaiter<AddressedPayloadResult> addressedResults = new ResourceWaiter<>();
+	private List<Thread> workerThreads = new ArrayList<>(); // Synchronize
 
 	private BasicNetworkConnection(SocketFamily socketFamily) {
 		serializer = new UnionSerializer();
@@ -127,7 +127,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 			handleViralPayload(virus.getPayload());
 		}
 	}
-	
+
 	private void handleViralPayload(Object payload) {
 		if (payload instanceof ConnectionNotification) {
 			ConnectionNotification notification = (ConnectionNotification) payload;
@@ -160,13 +160,31 @@ public class BasicNetworkConnection implements NetworkConnection {
 			e.printStackTrace();
 		}
 	}
-	
+
+	private void sendAddressedMessage(AddressedPayload message, NodeAddress to) {
+		PNetObjectSocket socket;
+		synchronized (neighborConnections) {
+			socket = neighborConnections.get(to);
+		}
+		if (socket == null) {
+			System.err.println("Could not find socket to which to send addressed message.");
+			return;
+		}
+		try {
+			socket.send(message);
+		} catch (IOException e) {
+			System.err.println("IOException while sending addressed message:");
+			e.printStackTrace();
+		}
+	}
+
 	private void handleAddressedPayload(Object payload) {
 		System.err.println("Invalid addressed payload type: " + payload);
 	}
-	
+
 	private Iterator<NodeAddress> addressedAttemptSequence(NodeAddress destination, Set<NodeAddress> illegal) {
-		// Prepare a model of the subset of the network that is legal to transverse
+		// Prepare a model of the subset of the network that is legal to
+		// transverse
 		NetworkModel transversible;
 		synchronized (model) {
 			transversible = model.clone();
@@ -187,12 +205,12 @@ public class BasicNetworkConnection implements NetworkConnection {
 		// Return the value iterator
 		return distances.values().iterator();
 	}
-	
+
 	private long addressedPatience(NodeAddress attempt, NodeAddress destination) {
-		//TODO: actually calculate something
+		// TODO: actually calculate something
 		return 500;
 	}
-	
+
 	/**
 	 * Deal with the AddressedPayload as described in the AddressedPayload
 	 * documentation.
@@ -202,92 +220,64 @@ public class BasicNetworkConnection implements NetworkConnection {
 			sendAddressedResult(from, addressed.getOriginalID(), true);
 			handleAddressedPayload(addressed.getPayload());
 		} else {
-			//TODO: make this endable
-			// Launch thread to attempt to get message to destination
-			Thread attemptor = new Thread(() -> {
+			Thread forwarder = new Thread(() -> {
+				// Parent thread
 				Thread parent = Thread.currentThread();
-				// List of children waiting on success/failure of particular neighbor
-				List<Thread> children = Collections.synchronizedList(new ArrayList<>());
+				// List of children waiting on success/failure of particular
+				// neighbor
+				List<Thread> waiters = Collections.synchronizedList(new ArrayList<>());
 				// List of neighbors that have succeeded
-				List<NodeAddress> successful = Collections.synchronizedList(new ArrayList<>());
+				List<Thread> successful = Collections.synchronizedList(new ArrayList<>());
 				// Iterator for sequence of neigbors to attempt
-				Iterator<NodeAddress> sequence = addressedAttemptSequence(addressed.getDestination(), addressed.getVisited());
-				
-				while (sequence.hasNext() && successful.isEmpty()) {
-					NodeAddress attempt = sequence.next();
-					Thread child = new Thread(() -> {
-						
-					});
-					children.add(child);
-					child.start();
-					long patience = addressedPatience(attempt, addressed.getDestination());
-					try {
+				Iterator<NodeAddress> sequence = addressedAttemptSequence(addressed.getDestination(),
+						addressed.getVisited());
+
+				/*
+				 * Sequentially attempt sending the message to each neighbor,
+				 * with pauses in between, until either one of them succeeds,
+				 * all of them fail, or all of them timeout. In the event that
+				 * this thread is interrupted, stop all child threads.
+				 */
+				try {
+					while (sequence.hasNext()) {
+						// Get next neighbor in sequence
+						NodeAddress attempt = sequence.next();
+						// Send neighbor message
+						addressed.randomizeID();
+						sendAddressedMessage(addressed, attempt);
+						// Launch waiter thread
+						int resultID = addressed.getID();
+						Thread waiter = new Thread(() -> {
+							Optional<AddressedPayloadResult> result = addressedResults.tryGet(resultID);
+							waiters.remove(Thread.currentThread());
+							if (result.isPresent() && result.get().wasSuccessful()) {
+								successful.add(Thread.currentThread());
+								parent.interrupt();
+							} else if (waiters.isEmpty()) {
+								parent.interrupt();
+							}
+						});
+						waiters.add(waiter);
+						waiter.start();
+						// Sleep for patience
+						long patience = addressedPatience(attempt, addressed.getDestination());
 						Thread.sleep(patience);
-					} catch (InterruptedException e) {
+					}
+					// All children will be given an ultra-generous 10 seconds to succeed.
+					Thread.sleep(10_000);
+				} catch (InterruptedException e) {
+				} finally {
+					synchronized (waiters) {
+						waiters.stream().forEach(Thread::interrupt);
 					}
 				}
+
+				sendAddressedResult(from, addressed.getOriginalID(), !successful.isEmpty());
 			});
-			attemptor.start();
-			/*
-			// TODO: do this all in a new thread, but make it closeable
-			// also, synchronize everything
-			// Prepare a model of the network that is legal to transverse
-			NetworkModel transversible;
-			synchronized (model) {
-				transversible = model.clone();
+			synchronized (workerThreads) {
+				workerThreads.add(forwarder);
+				forwarder.start();
 			}
-			for (NodeAddress visited : addressed.getVisited()) {
-				transversible.removeNode(visited);
-			}
-			transversible.trim();
-			transversible.removeNode(localAddress);
-			// Add local address to the list of visited addresses
-			addressed.addVisited(localAddress);
-
-			NodeAddress destination = addressed.getDestination();
-
-			// Get the sequence of addresses to attempt transmitting through
-			List<Tuple<NodeAddress, Integer>> attemptSequence = new ArrayList<>();
-			synchronized (neighborConnections) {
-				for (NodeAddress neighbor : neighborConnections.keySet()) {
-					OptionalInt distance = transversible.getShortestDistance(neighbor, destination);
-					if (distance.isPresent())
-						attemptSequence.add(new Tuple<>(neighbor, distance.getAsInt()));
-				}
-			}
-			attemptSequence.sort((tuple1, tuple2) -> tuple1.getB() - tuple2.getB());
-			Iterator<NodeAddress> attempt = attemptSequence.stream().map(Tuple::getA).iterator();
-			
-			boolean succeeded = false;
-			while (!succeeded && attempt.hasNext()) {
-				NodeAddress attemptNext = attempt.next();
-				addressed.randomizeID();
-				PNetObjectSocket socket;
-				synchronized (neighborConnections) {
-					socket = neighborConnections.get(attemptNext);
-				}
-				socket.send(addressed);
-				long patience = 500; // TODO: actually calculate this somehow
-				Optional<AddressedPayloadResult> result = addressedResults.waitForResource(addressed.getID(), patience);
-				if (result.isPresent() && result.get().wasSuccessful())
-					succeeded = true;
-			}
-			PNetObjectSocket fromSocket;
-			synchronized (neighborConnections) {
-				fromSocket = neighborConnections.get(from);
-			}
-			if (fromSocket == null) {
-				System.err.println("From-socket disconnected before having chance to send result.");
-				return;
-			}
-			
-			try {
-				fromSocket.send(new AddressedPayloadResult(addressed.getOriginalID(), succeeded));
-			} catch (IOException e) {
-				System.err.println("IOException while sending success message.");
-				e.printStackTrace();
-			}
-			*/
 		}
 	}
 
@@ -403,6 +393,9 @@ public class BasicNetworkConnection implements NetworkConnection {
 	@Override
 	public void disconnect() {
 		socketFamily.close();
+		synchronized (workerThreads) {
+			workerThreads.forEach(Thread::interrupt);
+		}
 	}
 
 	@Override
