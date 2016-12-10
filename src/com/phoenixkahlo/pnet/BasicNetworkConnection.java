@@ -20,18 +20,18 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.phoenixkahlo.pnet.serialization.NullableSerializer;
 import com.phoenixkahlo.pnet.serialization.Serializer;
 import com.phoenixkahlo.pnet.serialization.UnionSerializer;
 import com.phoenixkahlo.pnet.socket.BasicSocketFamily;
 import com.phoenixkahlo.pnet.socket.PNetObjectSocket;
 import com.phoenixkahlo.pnet.socket.PNetSocket;
 import com.phoenixkahlo.pnet.socket.SocketFamily;
-import com.phoenixkahlo.util.Tuple;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 public class BasicNetworkConnection implements NetworkConnection {
 
-	private UnionSerializer serializer; // Synchronize
+	private UnionSerializer union; // Synchronize
 
 	private final NodeAddress localAddress;
 	private final SocketFamily socketFamily;
@@ -44,11 +44,12 @@ public class BasicNetworkConnection implements NetworkConnection {
 	private List<Thread> workerThreads = new ArrayList<>(); // Synchronize
 
 	private BasicNetworkConnection(SocketFamily socketFamily) {
-		serializer = new UnionSerializer();
-		SerializerInitializer.init(serializer);
+		union = new UnionSerializer();
+		SerializerInitializer.init(union);
 
 		this.localAddress = new NodeAddress(ThreadLocalRandom.current().nextInt());
 		this.socketFamily = socketFamily;
+		this.model = new NetworkModel(localAddress);
 
 		socketFamily.setReceiveHandler(this::receiveSocketConnection);
 	}
@@ -66,7 +67,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 		if (header < 0)
 			throw new IllegalArgumentException("Illegal header " + header + ", negative headers are reserved");
 		synchronized (serializer) {
-			this.serializer.add(header, serializer);
+			this.union.add(header, serializer);
 			neighborConnections.values().stream().forEach(PNetObjectSocket::rebuildDeserializer);
 		}
 	}
@@ -308,7 +309,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 	 */
 	private Optional<NetworkNode> setupConnection(PNetSocket socket) {
 		// Turn byte[] stream to Object stream.
-		PNetObjectSocket objectSocket = new PNetObjectSocket(socket, serializer);
+		PNetObjectSocket objectSocket = new PNetObjectSocket(socket, new NullableSerializer(union));
 
 		// Create and send our own handshake.
 		Handshake sendHandshake = new Handshake(localAddress, new HashSet<>(model.getConnections()));
