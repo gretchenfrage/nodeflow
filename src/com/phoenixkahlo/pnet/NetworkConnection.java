@@ -9,7 +9,14 @@ import java.util.function.Predicate;
 import com.phoenixkahlo.pnet.serialization.Serializer;
 
 /**
- * A local node in a network.
+ * Is a local connection to a node in a network. Connections can be formed with
+ * any other node, even if that node is not in the network. The network is
+ * considered to be a graph structure, in which any node can communicate with
+ * any other node. If enough connections are severed that the network is divided
+ * in two, they will become to disjoint networks. If a connection is formed
+ * between two seperate networks, they will become one network. Communication
+ * with different nodes in the network is achieved through NetworkNodes, which
+ * represent nodes in a network, and can be obtained be NetworkConnection.getNodes().
  */
 public interface NetworkConnection {
 
