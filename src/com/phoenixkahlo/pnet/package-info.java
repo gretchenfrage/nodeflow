@@ -61,29 +61,70 @@
  * <li>AddressedResult</li>
  * </ul>
  * </p>
+ * <h4>Handshake</h4>
  * <p>
  * The first class of object, Handshake, should be sent immediately whenever a
- * new connection is established. The Handshake contains 3 pieces of data:<br>
- * <ul>
- * <li>A chunk of binary data, constant to all programs. If not received
- * correctly - an exception should be thrown on deserialization. This ensures
- * that the other side is a legitimate NodeNetwork implementation, and not some
- * random computer. This constant should be changed between incompatible version
- * of the protocol to prevent bad connections.</li>
- * <li>A list of all node connections known to the sender. All of these should
- * be added to the receiver's set of known connections, so that it can have an
- * accurate model of the graph.</li>
- * <li>The node address of the sender, which is necessary for the receiver to
- * update the network model with the newly formed connection.</li> After a new
- * connection is formed, both sides should virally inform the network of the new
- * connection.
+ * new connection is established. The Handshake contains 3 pieces of data.
  * </p>
  * <p>
- * ViralMessages carry a payload, and are designed to get that payload to every
- * node in the network, without requiring any node to be aware of the state of
- * the network beyond its immediate neighbors. The purpose of ViralMessages is
- * to notify nodes in the network of connections or disconnections.
- * <h1>TO BE CONTINUED</h1>
+ * The first is a chunk of binary data, constant to all programs. If not
+ * received correctly - an exception should be thrown on deserialization. This
+ * ensures that the other side is a legitimate NodeNetwork implementation, and
+ * not some random computer. This constant should be changed between
+ * incompatible version of the protocol to prevent bad connections.
+ * </p>
+ * <p>
+ * The second is a list of all node connections known to the sender. All of
+ * these should be added to the receiver's set of known connections, so that it
+ * can have an accurate model of the graph.
+ * </p>
+ * <p>
+ * The third is the node address of the sender, which is necessary for the
+ * receiver to update the network model with the newly formed connection. After
+ * a new connection is formed, both sides should virally propagate an
+ * UpdateTrigger to inform all nodes of the new connection.
+ * </p>
+ * <h4>ViralMessage</h4>
+ * <p>
+ * The second class of object, ViralMessage, carries a payload, and is designed
+ * to get that payload to every node in the network, without requiring any node
+ * to be aware of the state of the network beyond its immediate neighbors. The
+ * usage of ViralMessages is to notify nodes in the network of connections or
+ * disconnections.
+ * </p>
+ * <p>
+ * A ViralMessage contains 3 pieces of data: a randomly generated virus ID, a
+ * set of node addresses that it has infected, and its payload Object. All nodes
+ * must keep track of which virii ID they have already handled, so that they
+ * will not infect neighbors with the same virus twice (if they did, sending a
+ * ViralMessage would cost O(n!) to the network). If a node receives a virus
+ * that it has already handled, it not handle it.
+ * </p>
+ * <p>
+ * To handle of ViralMessage, a node must first add the virus ID to its set of
+ * virii it has handled, and add the local node address to the virus' set of
+ * nodes it has infected. It must then transmit the ViralMessage to each
+ * neighbor that is not in the virus' set of nodes it has already infected. Once
+ * this is complete, the node should handle the virus' payload.
+ * </p>
+ * <p>
+ * There are two objects that are valid for a virus' payload - a
+ * NeighborSetUpdate and a UpdateTrigger. The NeighborSetUpdate is an update of
+ * the set of neighbors that a particular node has. For a node to handle a
+ * NeighborSetUpdate, it should remove all connections involving the update's
+ * node from its network model, and then add to its network model all the
+ * connections described in the update. The UpdateTrigger is a trigger for all
+ * nodes to send a NeighborSetUpdate of themselves, which is what a node should
+ * do to handle an UpdateTrigger.
+ * </p>
+ * <h4>AddressedMessage</h4>
+ * <p>
+ * The third class of object, AddressedMessage, carries a payload, and is
+ * designed to efficiently get that payload to specific node in the network.
+ * AddressedMessages are the most complicated type of transmission due to their
+ * highly asynchronous and responsive nature, and rely on an accurate network
+ * model to be maintained by through the ViralMessage system. AddressedMessages
+ * are used to send client objects between nodes.
  * </p>
  */
 package com.phoenixkahlo.pnet;
