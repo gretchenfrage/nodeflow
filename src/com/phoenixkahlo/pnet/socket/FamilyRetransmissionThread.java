@@ -8,10 +8,10 @@ import com.phoenixkahlo.util.EndableThread;
  */
 public class FamilyRetransmissionThread extends Thread implements EndableThread {
 
-	private SocketFamily family;
+	private StreamFamily family;
 	private volatile boolean shouldContinue = true;
 	
-	public FamilyRetransmissionThread(SocketFamily family) {
+	public FamilyRetransmissionThread(StreamFamily family) {
 		this.family = family;
 	}
 
@@ -19,7 +19,7 @@ public class FamilyRetransmissionThread extends Thread implements EndableThread 
 	public void run() {
 		while (shouldContinue) {
 			synchronized (family.getChildren()) {
-				for (ChildSocket socket : family.getChildren()) {
+				for (ChildStream socket : family.getChildren()) {
 					socket.retransmitUnconfirmed();
 				}
 			}

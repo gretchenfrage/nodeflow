@@ -16,26 +16,26 @@ import com.phoenixkahlo.util.EndableThread;
 import com.phoenixkahlo.util.TimeWarningThread;
 import com.phoenixkahlo.util.TriFunction;
 
-public class BasicSocketFamily implements SocketFamily {
+public class BasicStreamFamily implements StreamFamily {
 
 	private UDPSocketWrapper udpWrapper;
 	// Synchronize usages
-	private List<ChildSocket> children = new ArrayList<>();
+	private List<ChildStream> children = new ArrayList<>();
 	private EndableThread receivingThread;
 	private EndableThread heartbeatThread;
 	private EndableThread retransmissionThread;
 	// Usage of unconfirmedConnections should be synchronized, and it should be
 	// notified upon removal.
 	private List<Integer> unconfirmedConnections = new ArrayList<>();
-	private Predicate<PotentialSocketConnection> receiveTest;
-	private Consumer<PNetSocket> receiveHandler;
-	private TriFunction<SocketFamily, Integer, SocketAddress, ChildSocket> childSocketFactory;
+	private Predicate<PotentialConnection> receiveTest;
+	private Consumer<DatagramStream> receiveHandler;
+	private TriFunction<StreamFamily, Integer, SocketAddress, ChildStream> childSocketFactory;
 	
 	private volatile boolean disconnected = false;
 
-	public BasicSocketFamily(UDPSocketWrapper wrapper, EndableThread receivingThread, EndableThread heartbeatThread,
+	public BasicStreamFamily(UDPSocketWrapper wrapper, EndableThread receivingThread, EndableThread heartbeatThread,
 			EndableThread retransmissionThread,
-			TriFunction<SocketFamily, Integer, SocketAddress, ChildSocket> childSocketFactory) {
+			TriFunction<StreamFamily, Integer, SocketAddress, ChildStream> childSocketFactory) {
 		this.udpWrapper = wrapper;
 		this.receivingThread = receivingThread;
 		this.heartbeatThread = heartbeatThread;
@@ -47,24 +47,24 @@ public class BasicSocketFamily implements SocketFamily {
 		retransmissionThread.start();
 	}
 
-	public BasicSocketFamily(int port) throws SocketException {
+	public BasicStreamFamily(int port) throws SocketException {
 		this.udpWrapper = new RealUDPSocketWrapper(port);
 		receivingThread = new FamilyReceivingThread(this);
 		heartbeatThread = new FamilyHeartbeatThread(this);
 		retransmissionThread = new FamilyRetransmissionThread(this);
-		this.childSocketFactory = BasicChildSocket::new;
+		this.childSocketFactory = BasicChildStream::new;
 		disableReceiver();
 		receivingThread.start();
 		heartbeatThread.start();
 		retransmissionThread.start();
 	}
 
-	public BasicSocketFamily() throws SocketException {
+	public BasicStreamFamily() throws SocketException {
 		this.udpWrapper = new RealUDPSocketWrapper();
 		receivingThread = new FamilyReceivingThread(this);
 		heartbeatThread = new FamilyHeartbeatThread(this);
 		retransmissionThread = new FamilyRetransmissionThread(this);
-		this.childSocketFactory = BasicChildSocket::new;
+		this.childSocketFactory = BasicChildStream::new;
 		disableReceiver();
 		receivingThread.start();
 		heartbeatThread.start();
@@ -72,23 +72,23 @@ public class BasicSocketFamily implements SocketFamily {
 	}
 	
 	@Override
-	public void setReceiveTest(Predicate<PotentialSocketConnection> receiveTest) {
+	public void setReceiveTest(Predicate<PotentialConnection> receiveTest) {
 		this.receiveTest = receiveTest;
 	}
 	
 	@Override
-	public void setReceiveHandler(Consumer<PNetSocket> receiveHandler) {
+	public void setReceiveHandler(Consumer<DatagramStream> receiveHandler) {
 		this.receiveHandler = receiveHandler;
 	}
 
 	@Override
-	public Optional<PNetSocket> connect(SocketAddress address) {
+	public Optional<DatagramStream> connect(SocketAddress address) {
 		if (disconnected)
 			return Optional.empty();
 		
-		int connectionID = ThreadLocalRandom.current().nextInt() & SocketConstants.CONNECTION_ID_RANGE;
+		int connectionID = ThreadLocalRandom.current().nextInt() & DatagramStreamConfig.CONNECTION_ID_RANGE;
 		try {
-			udpWrapper.send(intToBytes(connectionID | SocketConstants.CONNECT), address);
+			udpWrapper.send(intToBytes(connectionID | DatagramStreamConfig.CONNECT), address);
 		} catch (IOException e1) {
 			return Optional.empty();
 		}
@@ -105,7 +105,7 @@ public class BasicSocketFamily implements SocketFamily {
 			}
 		}
 
-		Optional<ChildSocket> optional = children.stream().filter(child -> child.getConnectionID() == connectionID)
+		Optional<ChildStream> optional = children.stream().filter(child -> child.getConnectionID() == connectionID)
 				.findAny();
 		if (optional.isPresent())
 			return Optional.of(optional.get());
@@ -146,7 +146,7 @@ public class BasicSocketFamily implements SocketFamily {
 	}
 
 	@Override
-	public List<ChildSocket> getChildren() {
+	public List<ChildStream> getChildren() {
 		return children;
 	}
 
@@ -158,7 +158,7 @@ public class BasicSocketFamily implements SocketFamily {
 	@Override
 	public void close() {
 		synchronized (children) {
-			for (ChildSocket child : children) {
+			for (ChildStream child : children) {
 				child.disconnect();
 			}
 		}
@@ -171,16 +171,16 @@ public class BasicSocketFamily implements SocketFamily {
 	public void receiveConnect(int connectionID, SocketAddress from) {
 		Thread acceptTimer = new TimeWarningThread("Warning: " + this + " receive test taking long amount of time.",
 				50);
-		boolean accept = receiveTest.test(new PotentialSocketConnection(from));
+		boolean accept = receiveTest.test(new PotentialConnection(from));
 		acceptTimer.interrupt();
 
 		if (accept) {
-			ChildSocket socket = childSocketFactory.apply(this, connectionID, from);
+			ChildStream socket = childSocketFactory.apply(this, connectionID, from);
 			synchronized (children) {
 				children.add(socket);
 			}
 			try {
-				udpWrapper.send(intToBytes(connectionID | SocketConstants.ACCEPT), from);
+				udpWrapper.send(intToBytes(connectionID | DatagramStreamConfig.ACCEPT), from);
 			} catch (IOException e) {
 				System.err.println("IOException while accepting connection");
 				e.printStackTrace();
@@ -191,7 +191,7 @@ public class BasicSocketFamily implements SocketFamily {
 			handleTimer.interrupt();
 		} else {
 			try {
-				udpWrapper.send(intToBytes(connectionID | SocketConstants.REJECT), from);
+				udpWrapper.send(intToBytes(connectionID | DatagramStreamConfig.REJECT), from);
 			} catch (IOException e) {
 				System.err.println("IOException while rejecting connection");
 				e.printStackTrace();
@@ -201,7 +201,7 @@ public class BasicSocketFamily implements SocketFamily {
 	
 	@Override
 	public String toString() {
-		return "BasicSocketFamily children=" + children;
+		return "BasicStreamFamily children=" + children;
 	}
 
 }

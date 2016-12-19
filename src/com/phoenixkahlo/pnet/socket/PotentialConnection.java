@@ -3,14 +3,14 @@ package com.phoenixkahlo.pnet.socket;
 import java.net.SocketAddress;
 
 /**
- * A bean for potential PNetSocket connections. Currently only contains the
+ * A bean for potential DatagramStream connections. Currently only contains the
  * SocketAddress.
  */
-public class PotentialSocketConnection {
+public class PotentialConnection {
 
 	private SocketAddress address;
 	
-	public PotentialSocketConnection(SocketAddress address) {
+	public PotentialConnection(SocketAddress address) {
 		this.address = address;
 	}
 	

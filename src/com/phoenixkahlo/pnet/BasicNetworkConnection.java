@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 import com.phoenixkahlo.pnet.serialization.NullableSerializer;
 import com.phoenixkahlo.pnet.serialization.Serializer;
 import com.phoenixkahlo.pnet.serialization.UnionSerializer;
-import com.phoenixkahlo.pnet.socket.BasicSocketFamily;
-import com.phoenixkahlo.pnet.socket.PNetObjectSocket;
-import com.phoenixkahlo.pnet.socket.PNetSocket;
-import com.phoenixkahlo.pnet.socket.SocketFamily;
+import com.phoenixkahlo.pnet.socket.BasicStreamFamily;
+import com.phoenixkahlo.pnet.socket.ObjectStream;
+import com.phoenixkahlo.pnet.socket.DatagramStream;
+import com.phoenixkahlo.pnet.socket.StreamFamily;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 public class BasicNetworkConnection implements NetworkConnection {
@@ -34,16 +34,16 @@ public class BasicNetworkConnection implements NetworkConnection {
 	private UnionSerializer union; // Synchronize
 
 	private final NodeAddress localAddress;
-	private final SocketFamily socketFamily;
+	private final StreamFamily socketFamily;
 	private NetworkModel model; // Synchronize
-	private Map<NodeAddress, PNetObjectSocket> neighborConnections = new HashMap<>(); // Synchronize
+	private Map<NodeAddress, ObjectStream> neighborConnections = new HashMap<>(); // Synchronize
 	private Map<NodeAddress, BasicNetworkNode> nodeReifications = new HashMap<>(); // Synchronize
 	private List<Consumer<NetworkNode>> newConnectionListeners = new ArrayList<>(); // Synchronize
 	private Set<Integer> handledVirii = new HashSet<>();
 	private ResourceWaiter<AddressedPayloadResult> addressedResults = new ResourceWaiter<>();
 	private List<Thread> workerThreads = new ArrayList<>(); // Synchronize
 
-	private BasicNetworkConnection(SocketFamily socketFamily) {
+	private BasicNetworkConnection(StreamFamily socketFamily) {
 		union = new UnionSerializer();
 		SerializerInitializer.init(union);
 
@@ -55,11 +55,11 @@ public class BasicNetworkConnection implements NetworkConnection {
 	}
 
 	public BasicNetworkConnection(int port) throws SocketException {
-		this(new BasicSocketFamily(port));
+		this(new BasicStreamFamily(port));
 	}
 
 	public BasicNetworkConnection() throws SocketException {
-		this(new BasicSocketFamily());
+		this(new BasicStreamFamily());
 	}
 
 	@Override
@@ -68,16 +68,16 @@ public class BasicNetworkConnection implements NetworkConnection {
 			throw new IllegalArgumentException("Illegal header " + header + ", negative headers are reserved");
 		synchronized (serializer) {
 			this.union.add(header, serializer);
-			neighborConnections.values().stream().forEach(PNetObjectSocket::rebuildDeserializer);
+			neighborConnections.values().stream().forEach(ObjectStream::rebuildDeserializer);
 		}
 	}
 
 	@Override
 	public Optional<NetworkNode> connect(SocketAddress address) {
-		// Attempt to form the PNetSocket
-		Optional<PNetSocket> socket = socketFamily.connect(address);
+		// Attempt to form the DatagramStream
+		Optional<DatagramStream> socket = socketFamily.connect(address);
 
-		// Fail if PNetSocket form failed.
+		// Fail if DatagramStream form failed.
 		if (!socket.isPresent())
 			return Optional.empty();
 
@@ -86,9 +86,9 @@ public class BasicNetworkConnection implements NetworkConnection {
 	}
 
 	/**
-	 * Invoked by the underlying SocketFamily.
+	 * Invoked by the underlying StreamFamily.
 	 */
-	private void receiveSocketConnection(PNetSocket socket) {
+	private void receiveSocketConnection(DatagramStream socket) {
 		Optional<NetworkNode> connection = setupConnection(socket);
 		if (connection.isPresent()) {
 			synchronized (newConnectionListeners) {
@@ -146,7 +146,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 	}
 
 	private void sendAddressedResult(NodeAddress to, int id, boolean success) {
-		PNetObjectSocket socket;
+		ObjectStream socket;
 		synchronized (neighborConnections) {
 			socket = neighborConnections.get(to);
 		}
@@ -163,7 +163,7 @@ public class BasicNetworkConnection implements NetworkConnection {
 	}
 
 	private void sendAddressedMessage(AddressedPayload message, NodeAddress to) {
-		PNetObjectSocket socket;
+		ObjectStream socket;
 		synchronized (neighborConnections) {
 			socket = neighborConnections.get(to);
 		}
@@ -307,9 +307,9 @@ public class BasicNetworkConnection implements NetworkConnection {
 	 * structures, virally inform all nodes of new connection, and return the
 	 * associated node.
 	 */
-	private Optional<NetworkNode> setupConnection(PNetSocket socket) {
+	private Optional<NetworkNode> setupConnection(DatagramStream socket) {
 		// Turn byte[] stream to Object stream.
-		PNetObjectSocket objectSocket = new PNetObjectSocket(socket, new NullableSerializer(union));
+		ObjectStream objectSocket = new ObjectStream(socket, new NullableSerializer(union));
 
 		// Create and send our own handshake.
 		Handshake sendHandshake = new Handshake(localAddress, new HashSet<>(model.getConnections()));

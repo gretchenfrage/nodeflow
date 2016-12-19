@@ -3,9 +3,9 @@ package tinkering;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.socket.BasicSocketFamily;
-import com.phoenixkahlo.pnet.socket.PNetSocket;
-import com.phoenixkahlo.pnet.socket.SocketFamily;
+import com.phoenixkahlo.pnet.socket.BasicStreamFamily;
+import com.phoenixkahlo.pnet.socket.DatagramStream;
+import com.phoenixkahlo.pnet.socket.StreamFamily;
 
 public class PNetSocketTinkering {
 
@@ -15,7 +15,7 @@ public class PNetSocketTinkering {
 
 		new Thread(() -> {
 			try {
-				SocketFamily family = new BasicSocketFamily(34567);
+				StreamFamily family = new BasicStreamFamily(34567);
 				family.setReceiver(p -> true, socket -> new Thread(() -> {
 					try {
 						// not receiving pulses
@@ -37,8 +37,8 @@ public class PNetSocketTinkering {
 			try {
 
 				Thread.sleep(20);
-				SocketFamily family = new BasicSocketFamily(65432);
-				PNetSocket socket = family.connect(new InetSocketAddress("localhost", 34567)).get();
+				StreamFamily family = new BasicStreamFamily(65432);
+				DatagramStream socket = family.connect(new InetSocketAddress("localhost", 34567)).get();
 				synchronized (System.out) {
 					System.out.println("connected socket: " + socket);
 				}

@@ -15,10 +15,11 @@ import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
-public class BasicChildSocket implements ChildSocket {
+public class BasicChildStream implements ChildStream {
 	
-	private SocketFamily family;
+	private StreamFamily family;
 	private int connectionID;
 	private SocketAddress sendTo;
 	
@@ -38,13 +39,13 @@ public class BasicChildSocket implements ChildSocket {
 	private long timeOfCreation = System.currentTimeMillis();
 	
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
-	private Runnable disconnectionHandler = () -> System.out.println(BasicChildSocket.this + " disconnected");
+	private Runnable disconnectionHandler = () -> System.out.println(BasicChildStream.this + " disconnected");
 	
 	private volatile boolean disconnected = false;
 
-	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo,
+	public BasicChildStream(StreamFamily family, int connectionID, SocketAddress sendTo,
 			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
-		if ((connectionID & SocketConstants.TRANSMISSION_TYPE_RANGE) != 0)
+		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
@@ -52,8 +53,8 @@ public class BasicChildSocket implements ChildSocket {
 		this.messageBuilderFactory = messageBuilderFactory;
 	}
 
-	public BasicChildSocket(SocketFamily family, int connectionID, SocketAddress sendTo) {
-		if ((connectionID & SocketConstants.TRANSMISSION_TYPE_RANGE) != 0)
+	public BasicChildStream(StreamFamily family, int connectionID, SocketAddress sendTo) {
+		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
@@ -62,34 +63,34 @@ public class BasicChildSocket implements ChildSocket {
 	}
 
 	@Override
-	public void send(byte[] data) throws IOException {
+	public void send(byte[] data) throws DisconnectionException {
 		sendMessage(data, OptionalInt.empty());
 	}
 
 	@Override
-	public void sendOrdered(byte[] data) throws IOException {
+	public void sendOrdered(byte[] data) throws DisconnectionException {
 		sendMessage(data, OptionalInt.of(nextSendOrdinal.getAndIncrement()));
 	}
 
-	private void sendMessage(byte[] message, OptionalInt ordinal) throws IOException {
+	private void sendMessage(byte[] message, OptionalInt ordinal) throws DisconnectionException {
 		if (disconnected)
-			throw new IOException("Disconnected");
+			throw new DisconnectionException();
 		int messageID = ThreadLocalRandom.current().nextInt();
-		byte[][] payloads = split(message, SocketConstants.MAX_PAYLOAD_SIZE);
+		byte[][] payloads = split(message, DatagramStreamConfig.MAX_PAYLOAD_SIZE);
 		for (byte i = 0; i < payloads.length; i++) {
 			sendPayload(payloads[i], messageID, ordinal, i, (byte) payloads.length);
 		}
 	}
 
 	private void sendPayload(byte[] payload, int messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
-			throws IOException {
+			throws DisconnectionException {
 		int payloadID = ThreadLocalRandom.current().nextInt();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			if (ordinal.isPresent())
-				baos.write(intToBytes(connectionID | SocketConstants.ORDERED_PAYLOAD));
+				baos.write(intToBytes(connectionID | DatagramStreamConfig.ORDERED_PAYLOAD));
 			else
-				baos.write(intToBytes(connectionID | SocketConstants.PAYLOAD));
+				baos.write(intToBytes(connectionID | DatagramStreamConfig.PAYLOAD));
 			baos.write(intToBytes(payloadID));
 			baos.write(intToBytes(messageID));
 			if (ordinal.isPresent())
@@ -106,7 +107,12 @@ public class BasicChildSocket implements ChildSocket {
 			unconfirmed.add(new UnconfirmedPayload(payloadID, baos.toByteArray()));
 		}
 
-		family.getUDPWrapper().send(baos.toByteArray(), sendTo);
+		try {
+			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
+		} catch (IOException e) {
+			System.err.println("IOException on initial attempt of transmission");
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -135,7 +141,7 @@ public class BasicChildSocket implements ChildSocket {
 	public void disconnect() {
 		disconnected = true;
 		try {
-			family.getUDPWrapper().send(intToBytes(connectionID | SocketConstants.DISCONNECT), sendTo);
+			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.DISCONNECT), sendTo);
 		} catch (IOException e) {
 			synchronized (System.err) {
 				System.err.println("IOException while sending disconnect message");
@@ -161,7 +167,7 @@ public class BasicChildSocket implements ChildSocket {
 	public void receivePayload(ReceivedPayload payload) {
 		try {
 			family.getUDPWrapper().send(
-					concatenate(intToBytes(connectionID | SocketConstants.CONFIRM), intToBytes(payload.getPayloadID())),
+					concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM), intToBytes(payload.getPayloadID())),
 					sendTo);
 		} catch (IOException e) {
 			System.err.println("IOException while confirming payload");
@@ -215,7 +221,7 @@ public class BasicChildSocket implements ChildSocket {
 	@Override
 	public void sendHeartbeat() {
 		try {
-			family.getUDPWrapper().send(intToBytes(connectionID | SocketConstants.HEARTBEAT), sendTo);
+			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.HEARTBEAT), sendTo);
 		} catch (IOException e) {
 			System.err.println("IOException while sending heartbeat");
 			e.printStackTrace();
@@ -232,7 +238,7 @@ public class BasicChildSocket implements ChildSocket {
 		synchronized (unconfirmed) {
 			long time = System.currentTimeMillis();
 			for (UnconfirmedPayload payload : unconfirmed) {
-				if (time - payload.getLastSentTime() > SocketConstants.RETRANSMISSION_THRESHHOLD) {
+				if (time - payload.getLastSentTime() > DatagramStreamConfig.RETRANSMISSION_THRESHHOLD) {
 					try {
 						family.getUDPWrapper().send(payload.getTransmission(), sendTo);
 						payload.setLastSendTime(time);
@@ -262,7 +268,17 @@ public class BasicChildSocket implements ChildSocket {
 
 	@Override
 	public String toString() {
-		return "BasicChildSocket id=" + connectionID + " sendTo=" + sendTo;
+		return "BasicChildStream id=" + connectionID + " sendTo=" + sendTo;
+	}
+
+	@Override
+	public boolean isDisconnected() {
+		return disconnected;
+	}
+
+	@Override
+	public List<byte[]> getUnconfirmed() {
+		return unconfirmed.stream().map(UnconfirmedPayload::getTransmission).collect(Collectors.toList());
 	}
 
 }

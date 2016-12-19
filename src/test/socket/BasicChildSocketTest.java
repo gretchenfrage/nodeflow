@@ -8,11 +8,11 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.socket.BasicChildSocket;
+import com.phoenixkahlo.pnet.socket.BasicChildStream;
 import com.phoenixkahlo.pnet.socket.BasicMessageBuilder;
-import com.phoenixkahlo.pnet.socket.ChildSocket;
+import com.phoenixkahlo.pnet.socket.ChildStream;
 import com.phoenixkahlo.pnet.socket.ReceivedPayload;
-import com.phoenixkahlo.pnet.socket.SocketFamily;
+import com.phoenixkahlo.pnet.socket.StreamFamily;
 import com.phoenixkahlo.pnet.socket.UDPSocketWrapper;
 import com.phoenixkahlo.ptest.Mockery;
 import com.phoenixkahlo.ptest.Test;
@@ -22,11 +22,11 @@ public class BasicChildSocketTest {
 
 	@Test
 	public static void test1() throws IOException {
-		SocketFamily family = Testing.mock(SocketFamily.class);
+		StreamFamily family = Testing.mock(StreamFamily.class);
 		int connectionID = 9283765;
 		SocketAddress sendTo = new InetSocketAddress("localhost", 42684);
 
-		ChildSocket socket = new BasicChildSocket(family, connectionID, sendTo, BasicMessageBuilder::new);
+		ChildStream socket = new BasicChildStream(family, connectionID, sendTo, BasicMessageBuilder::new);
 
 		/*
 		 * Test the transmission of a simple send

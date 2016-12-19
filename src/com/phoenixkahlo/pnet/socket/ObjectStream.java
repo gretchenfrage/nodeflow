@@ -10,16 +10,16 @@ import com.phoenixkahlo.pnet.serialization.Deserializer;
 import com.phoenixkahlo.pnet.serialization.Serializer;
 
 /**
- * A wrapper around a PNetSocket that uses a serialization/deserialization
+ * A wrapper around a DatagramStream that uses a serialization/deserialization
  * service to send and receive objects instead of byte arrays.
  */
-public class PNetObjectSocket {
+public class ObjectStream {
 
 	private Serializer serializer;
 	private Deserializer deserializer;
-	private PNetSocket socket;
+	private DatagramStream socket;
 
-	public PNetObjectSocket(PNetSocket socket, Serializer serializer) {
+	public ObjectStream(DatagramStream socket, Serializer serializer) {
 		this.socket = socket;
 		this.serializer = serializer;
 		rebuildDeserializer();
@@ -29,15 +29,27 @@ public class PNetObjectSocket {
 		deserializer = serializer.toDeserializer();
 	}
 
-	public void send(Object object) throws IOException {
+	public void send(Object object) throws DisconnectionException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		serializer.serialize(object, baos);
+		try {
+			serializer.serialize(object, baos);
+		} catch (IOException e) {
+			System.err.println("IOException while writing to BAOS");
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
 		socket.send(baos.toByteArray());
 	}
 
-	public void sendOrdered(Object object) throws IOException {
+	public void sendOrdered(Object object) throws DisconnectionException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		serializer.serialize(object, baos);
+		try {
+			serializer.serialize(object, baos);
+		} catch (IOException e) {
+			System.err.println("IOException while writing to BAOS");
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
 		socket.sendOrdered(baos.toByteArray());
 	}
 

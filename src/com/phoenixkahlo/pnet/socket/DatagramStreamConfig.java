@@ -3,9 +3,9 @@ package com.phoenixkahlo.pnet.socket;
 /**
  * Constants for the protocol of PNetSockets.
  */
-public class SocketConstants {
+public class DatagramStreamConfig {
 
-	private SocketConstants() {}
+	private DatagramStreamConfig() {}
 
 	public static final int MAX_PAYLOAD_SIZE = 300;
 	public static final int HEARTBEAT_INTERVAL = 1000;

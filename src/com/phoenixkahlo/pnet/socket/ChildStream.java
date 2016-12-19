@@ -3,11 +3,11 @@ package com.phoenixkahlo.pnet.socket;
 import java.net.SocketAddress;
 
 /**
- * A PNetSocket that belongs to a SocketFamily. Depends on the SocketFamily's
+ * A DatagramStream that belongs to a StreamFamily. Depends on the StreamFamily's
  * helper threads to receive its messages and delegate them to it through the
- * ChildSocket interface.
+ * ChildStream interface.
  */
-public interface ChildSocket extends PNetSocket {
+public interface ChildStream extends DatagramStream {
 
 	/**
 	 * Receive a invocation of disconnect() from the other side.

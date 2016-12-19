@@ -12,15 +12,15 @@ import java.util.Optional;
 import com.phoenixkahlo.util.EndableThread;
 
 /**
- * Helper thread for a SocketFamily. Waits on the UDPSocketWrapper to receive
+ * Helper thread for a StreamFamily. Waits on the UDPSocketWrapper to receive
  * datagrams, and delegates their data to the appropriates object.
  */
 public class FamilyReceivingThread extends Thread implements EndableThread {
 
-	private SocketFamily family;
+	private StreamFamily family;
 	private volatile boolean shouldContinue = true;
 
-	public FamilyReceivingThread(SocketFamily family) {
+	public FamilyReceivingThread(StreamFamily family) {
 		this.family = family;
 	}
 
@@ -28,15 +28,15 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 	public void run() {
 		while (shouldContinue) {
 			try {				
-				byte[] buffer = new byte[SocketConstants.MAX_PAYLOAD_SIZE * 2];
+				byte[] buffer = new byte[DatagramStreamConfig.MAX_PAYLOAD_SIZE * 2];
 				SocketAddress from = family.getUDPWrapper().receive(buffer);
 
 				InputStream in = new ByteArrayInputStream(buffer);
 				int header = readInt(in);
-				int transmissionType = header & SocketConstants.TRANSMISSION_TYPE_RANGE;
-				int connectionID = header & SocketConstants.CONNECTION_ID_RANGE;
+				int transmissionType = header & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE;
+				int connectionID = header & DatagramStreamConfig.CONNECTION_ID_RANGE;
 								
-				Optional<ChildSocket> child;
+				Optional<ChildStream> child;
 				synchronized (family.getChildren()) {
 					child = family.getChildren().stream().filter(c -> c.getConnectionID() == connectionID).findAny();
 				}
@@ -49,16 +49,16 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 					continue;
 				}
 
-				if (transmissionType == SocketConstants.CONNECT) {
+				if (transmissionType == DatagramStreamConfig.CONNECT) {
 					family.receiveConnect(connectionID, from);
-				} else if (transmissionType == SocketConstants.ACCEPT) {
+				} else if (transmissionType == DatagramStreamConfig.ACCEPT) {
 					family.receiveAccept(connectionID, from);
-				} else if (transmissionType == SocketConstants.REJECT) {
+				} else if (transmissionType == DatagramStreamConfig.REJECT) {
 					family.receiveReject(connectionID, from);
 				} else { // All of these conditions require a connection to
 							// already exist.
 					if (child.isPresent()) {
-						if (transmissionType == SocketConstants.PAYLOAD) {
+						if (transmissionType == DatagramStreamConfig.PAYLOAD) {
 							int payloadID = readInt(in);
 							int messageID = readInt(in);
 							byte partNumber = (byte) in.read();
@@ -69,7 +69,7 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 
 							child.get().receivePayload(
 									new ReceivedPayload(payloadID, messageID, partNumber, totalParts, payload));
-						} else if (transmissionType == SocketConstants.ORDERED_PAYLOAD) {
+						} else if (transmissionType == DatagramStreamConfig.ORDERED_PAYLOAD) {
 							int payloadID = readInt(in);
 							int messageID = readInt(in);
 							int ordinal = readInt(in);
@@ -81,24 +81,24 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 
 							child.get().receivePayload(new ReceivedPayload(payloadID, messageID, ordinal, partNumber,
 									totalParts, payload));
-						} else if (transmissionType == SocketConstants.DISCONNECT) {
+						} else if (transmissionType == DatagramStreamConfig.DISCONNECT) {
 							child.get().receiveDisconnect();
-						} else if (transmissionType == SocketConstants.CONFIRM) {
+						} else if (transmissionType == DatagramStreamConfig.CONFIRM) {
 							int payloadID = readInt(in);
 							child.get().receivePayloadConfirmation(payloadID);
-						} else if (transmissionType == SocketConstants.HEARTBEAT) {
+						} else if (transmissionType == DatagramStreamConfig.HEARTBEAT) {
 							child.get().receiveHeartbeat();
 						} else {
 							synchronized (System.err) {
 								System.err.println("Invalid transmission type "
-										+ SocketConstants.nameOf(transmissionType) + " received from " + from + ".");
+										+ DatagramStreamConfig.nameOf(transmissionType) + " received from " + from + ".");
 							}
 						}
 					} else {
 						synchronized (System.err) {
 							System.err.println("Transmission received from " + from + " of type "
-									+ SocketConstants.nameOf(transmissionType) + " and connectionID " + connectionID
-									+ ", but no associated ChildSocket exists.");
+									+ DatagramStreamConfig.nameOf(transmissionType) + " and connectionID " + connectionID
+									+ ", but no associated ChildStream exists.");
 						}
 					}
 				}

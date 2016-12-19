@@ -1,22 +1,22 @@
 package com.phoenixkahlo.pnet.socket;
 
-import java.io.IOException;
+import java.util.List;
 
 /**
- * A connection to another PNetSocket.
+ * A connection to another DatagramStream.
  */
-public interface PNetSocket {
+public interface DatagramStream {
 
 	/**
 	 * Guarentee that data arrives at the other socket to be receive()d.
 	 */
-	void send(byte[] data) throws IOException;
+	void send(byte[] data) throws DisconnectionException;
 
 	/**
 	 * Send the data, and guarentee that it is receive()d in relative order to
 	 * all other data send with sendOrdered().
 	 */
-	void sendOrdered(byte[] data) throws IOException;
+	void sendOrdered(byte[] data) throws DisconnectionException;
 
 	/**
 	 * Return data send from the other side, blocking until there is data
@@ -35,5 +35,16 @@ public interface PNetSocket {
 	 * either end.
 	 */
 	void setDisconnectHandler(Runnable handler);
+
+	/**
+	 * @return whether this stream is disconnected to the other side.
+	 */
+	boolean isDisconnected();
+
+	/**
+	 * @return all of the transmissions that have not been confirmed to have
+	 *         been received on the other side.
+	 */
+	List<byte[]> getUnconfirmed();
 
 }

@@ -13,12 +13,12 @@ import java.util.function.Predicate;
  * to accept new connections, and to a settable consumer for when new
  * connections are formed.
  */
-public interface SocketFamily {
+public interface StreamFamily {
 
 	/**
 	 * Set the receive test and handler for new connections.
 	 */
-	default void setReceiver(Predicate<PotentialSocketConnection> receiveTest, Consumer<PNetSocket> receiveHandler) {
+	default void setReceiver(Predicate<PotentialConnection> receiveTest, Consumer<DatagramStream> receiveHandler) {
 		setReceiveTest(receiveTest);
 		setReceiveHandler(receiveHandler);
 	}
@@ -28,14 +28,14 @@ public interface SocketFamily {
 	 * will cause receiving thread to block, interrupting messages and heartbeat
 	 * from all children..
 	 */
-	void setReceiveTest(Predicate<PotentialSocketConnection> receiveTest);
+	void setReceiveTest(Predicate<PotentialConnection> receiveTest);
 
 	/**
 	 * Set the handler for receiving new connections. Should execute quickly, or
 	 * will cause receiving thread to block, interrupting messages and heartbeat
 	 * from all children..
 	 */
-	void setReceiveHandler(Consumer<PNetSocket> receiveHandler);
+	void setReceiveHandler(Consumer<DatagramStream> receiveHandler);
 
 	/**
 	 * Reject all new connections.
@@ -49,12 +49,12 @@ public interface SocketFamily {
 	 * Attempt to connect to the address. Failure may result from timeout,
 	 * IOException, rejectance, etc.
 	 */
-	Optional<PNetSocket> connect(SocketAddress address);
+	Optional<DatagramStream> connect(SocketAddress address);
 
 	/**
 	 * Useage of children list should be synchronized.
 	 */
-	List<ChildSocket> getChildren();
+	List<ChildStream> getChildren();
 
 	UDPSocketWrapper getUDPWrapper();
 
