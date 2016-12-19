@@ -117,14 +117,56 @@
  * nodes to send a NeighborSetUpdate of themselves, which is what a node should
  * do to handle an UpdateTrigger.
  * </p>
- * <h4>AddressedMessage</h4>
+ * <h4>AddressedMessage and AddressedMessageResult</h4>
  * <p>
  * The third class of object, AddressedMessage, carries a payload, and is
  * designed to efficiently get that payload to specific node in the network.
  * AddressedMessages are the most complicated type of transmission due to their
- * highly asynchronous and responsive nature, and rely on an accurate network
- * model to be maintained by through the ViralMessage system. AddressedMessages
- * are used to send client objects between nodes.
+ * asynchronous and responsive nature, and rely on an accurate network model to
+ * be maintained by the ViralMessage system. AddressedMessages are used to send
+ * client objects between nodes.
+ * </p>
+ * <p>
+ * AddressedMessages contain 4 pieces of data. They have a payload object and a
+ * destination address, which should not be changed. They have a collection of
+ * visited nodes, which should be added to upon a node being received. Finally,
+ * they have a random ID. The ID is not meant to represent the message
+ * throughout its entire lifespan, but rather to represent the transmission of a
+ * message between two nodes. Thus, the AddressedMessage's ID should be
+ * randomized between transmissions.
+ * </p>
+ * <p>
+ * For each transmission of an AddressedMessage, a AddressedMessageResult should
+ * be transmitted in the opposite direction, as a notification that either the
+ * message has reached its destination, or that the receiver of the
+ * AddressedMessage was ultimately unable to get the message to its destination.
+ * AddressedMessageResults have IDs, which should be equal to the ID of the
+ * corresponding AddressedMessage transmission.
+ * </p>
+ * <p>
+ * When a node receives an AddressedMessage, and the AddressedMessage's
+ * destination address is the local address, it should simply respond with a
+ * success AddressedMessageResult, and then handle the payload. Otherwise, the
+ * node's goal is to try to get the AddressedMessage to its destination and then
+ * transmit an appropriate AddressedMessageResult. It should send the
+ * AddressedMessage to the unvisited neighbor with the shortest distance to the
+ * destination, and wait for a response. If the neighbor responds with failure,
+ * or doesn't respond within an optimistic amount of time, the node should send
+ * the message to its next most direct unvisited neighbor. If it does this
+ * because the previous neighbor did not respond in a certain amount of time,
+ * the node should still be prepared to receive a response from any such node.
+ * If any neighbor responds with a success message, the node should conclude
+ * attempts to get the message to its destination, and send a success
+ * AddressedMessageResult to the node from which it received the message in the
+ * first place. If all unvisited neighbors respond with failure, or a certain
+ * large amount of time passes without any success, the node should send a
+ * failure AddressedMessageResult.
+ * </p>
+ * <p>
+ * There is only one valid class of payload for an AddressedMessage, which is
+ * ClientTransmission. This carries objects sent by client code from one node to
+ * another. This payload should be handled by making the ClientTransmission's
+ * own payload available to the client.
  * </p>
  */
 package com.phoenixkahlo.pnet;
