@@ -2,7 +2,6 @@ package test;
 
 import com.phoenixkahlo.ptest.Testing;
 
-import test.serialization.ArrayListSerializationTest;
 import test.serialization.ArraySerializationTest;
 import test.serialization.ArraySplitTest;
 import test.serialization.CollectionSerializationTest;
@@ -19,7 +18,6 @@ public class MasterTest {
 	public static void main(String[] args) {
 		Testing.test(ArraySerializationTest.class);
 		Testing.test(StringSerializationTest.class);
-		Testing.test(ArrayListSerializationTest.class);
 		Testing.test(HashMapSerializationTest.class);
 		Testing.test(NullableSerializationTest.class);
 		Testing.test(FieldSerializerTest.class);

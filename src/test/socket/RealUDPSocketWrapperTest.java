@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.socket.RealUDPSocketWrapper;
-import com.phoenixkahlo.pnet.socket.UDPSocketWrapper;
+import com.phoenixkahlo.nodenet.stream.RealUDPSocketWrapper;
+import com.phoenixkahlo.nodenet.stream.UDPSocketWrapper;
 import com.phoenixkahlo.ptest.Test;
 
 public class RealUDPSocketWrapperTest {

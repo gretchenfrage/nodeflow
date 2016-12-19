@@ -1,5 +1,4 @@
-package com.phoenixkahlo.pnet;
-
+package com.phoenixkahlo.nodenet;
 /**
  * Represents failure to follow a communication or serialization protocol.
  */

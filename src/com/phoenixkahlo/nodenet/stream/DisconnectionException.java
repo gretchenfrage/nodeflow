@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
 /**
  * Thrown when a network operation is attempted on a disconnected stream.

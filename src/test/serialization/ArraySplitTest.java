@@ -2,7 +2,7 @@ package test.serialization;
 
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.serialization.SerializationUtils;
+import com.phoenixkahlo.nodenet.serialization.SerializationUtils;
 import com.phoenixkahlo.ptest.Test;
 
 public class ArraySplitTest {

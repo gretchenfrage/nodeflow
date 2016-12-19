@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.serialization;
+package com.phoenixkahlo.nodenet.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Supplier;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
 import com.phoenixkahlo.util.ReflectionUtil;
 
 public class FieldDeserializer implements Deserializer {

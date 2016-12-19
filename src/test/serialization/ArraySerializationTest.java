@@ -2,8 +2,8 @@ package test.serialization;
 
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.serialization.ArraySerializer;
-import com.phoenixkahlo.pnet.serialization.StringSerializer;
+import com.phoenixkahlo.nodenet.serialization.ArraySerializer;
+import com.phoenixkahlo.nodenet.serialization.StringSerializer;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
 

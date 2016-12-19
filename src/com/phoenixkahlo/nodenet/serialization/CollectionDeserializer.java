@@ -1,11 +1,11 @@
-package com.phoenixkahlo.pnet.serialization;
+package com.phoenixkahlo.nodenet.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
 
 public class CollectionDeserializer<E extends Collection<?>> implements Deserializer {
 

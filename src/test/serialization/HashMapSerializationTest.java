@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
-import com.phoenixkahlo.pnet.serialization.HashMapSerializer;
-import com.phoenixkahlo.pnet.serialization.StringSerializer;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.serialization.HashMapSerializer;
+import com.phoenixkahlo.nodenet.serialization.StringSerializer;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
 

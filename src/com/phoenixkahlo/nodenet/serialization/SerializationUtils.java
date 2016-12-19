@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.serialization;
+package com.phoenixkahlo.nodenet.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
 
 public class SerializationUtils {
 

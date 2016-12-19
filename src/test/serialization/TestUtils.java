@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.ptest.Testing;
 
 public class TestUtils {

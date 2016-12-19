@@ -1,6 +1,6 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.*;
 
 import java.io.IOException;
 import java.net.SocketAddress;

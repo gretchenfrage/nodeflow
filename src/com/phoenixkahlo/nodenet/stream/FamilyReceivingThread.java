@@ -1,7 +1,7 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.readInt;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.readShort;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readInt;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readShort;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

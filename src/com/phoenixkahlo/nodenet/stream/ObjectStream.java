@@ -1,13 +1,13 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
-import com.phoenixkahlo.pnet.serialization.Deserializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.serialization.Deserializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
  * A wrapper around a DatagramStream that uses a serialization/deserialization

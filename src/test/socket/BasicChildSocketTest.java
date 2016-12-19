@@ -1,19 +1,20 @@
 package test.socket;
 
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.bytesToInt;
-import static com.phoenixkahlo.pnet.serialization.SerializationUtils.bytesToShort;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.socket.BasicChildStream;
-import com.phoenixkahlo.pnet.socket.BasicMessageBuilder;
-import com.phoenixkahlo.pnet.socket.ChildStream;
-import com.phoenixkahlo.pnet.socket.ReceivedPayload;
-import com.phoenixkahlo.pnet.socket.StreamFamily;
-import com.phoenixkahlo.pnet.socket.UDPSocketWrapper;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.bytesToInt;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.bytesToShort;
+
+import com.phoenixkahlo.nodenet.stream.BasicChildStream;
+import com.phoenixkahlo.nodenet.stream.BasicMessageBuilder;
+import com.phoenixkahlo.nodenet.stream.ChildStream;
+import com.phoenixkahlo.nodenet.stream.DisconnectionException;
+import com.phoenixkahlo.nodenet.stream.ReceivedPayload;
+import com.phoenixkahlo.nodenet.stream.StreamFamily;
+import com.phoenixkahlo.nodenet.stream.UDPSocketWrapper;
 import com.phoenixkahlo.ptest.Mockery;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
@@ -21,7 +22,7 @@ import com.phoenixkahlo.ptest.Testing;
 public class BasicChildSocketTest {
 
 	@Test
-	public static void test1() throws IOException {
+	public static void test1() throws IOException, DisconnectionException {
 		StreamFamily family = Testing.mock(StreamFamily.class);
 		int connectionID = 9283765;
 		SocketAddress sendTo = new InetSocketAddress("localhost", 42684);
@@ -55,7 +56,7 @@ public class BasicChildSocketTest {
 		byte[] sendTest2 = { 3, 6, 1, 2, 6, 9, 2, 4, 7, 2 };
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
-			assert bytesToInt(new byte[] {arr[12], arr[13], arr[14], arr[15]}) == 0;
+			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 0;
 			assert arr[16] == 0;
 			assert arr[17] == 1;
 			assert bytesToShort(new byte[] { arr[18], arr[19] }) == 10;
@@ -66,7 +67,7 @@ public class BasicChildSocketTest {
 		});
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
-			assert bytesToInt(new byte[] {arr[12], arr[13], arr[14], arr[15]}) == 1;
+			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 1;
 			assert arr[16] == 0;
 			assert arr[17] == 1;
 			assert bytesToShort(new byte[] { arr[18], arr[19] }) == 10;
@@ -77,7 +78,7 @@ public class BasicChildSocketTest {
 		});
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
-			assert bytesToInt(new byte[] {arr[12], arr[13], arr[14], arr[15]}) == 2;
+			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 2;
 			assert arr[16] == 0;
 			assert arr[17] == 1;
 			assert bytesToShort(new byte[] { arr[18], arr[19] }) == 10;
@@ -90,13 +91,14 @@ public class BasicChildSocketTest {
 		socket.sendOrdered(sendTest2);
 		socket.sendOrdered(sendTest2);
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
-		
+
 		/*
-		 * Test that it can receive messages from receivePayload, blocking as necessary
+		 * Test that it can receive messages from receivePayload, blocking as
+		 * necessary
 		 */
 		System.out.println("* subtest3 *");
-		byte[] receiveTest1 = {1, 3, 6, 1, 3, 6, 7, 2};
-		byte[] receiveTest2 = {1, 6, 2, 7, 2, 3, 6, 2, 76};
+		byte[] receiveTest1 = { 1, 3, 6, 1, 3, 6, 7, 2 };
+		byte[] receiveTest2 = { 1, 6, 2, 7, 2, 3, 6, 2, 76 };
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
 		socket.receivePayload(new ReceivedPayload(65465487, 984654, (byte) 0, (byte) 1, receiveTest1));

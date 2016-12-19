@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
 import com.phoenixkahlo.util.EndableThread;
 

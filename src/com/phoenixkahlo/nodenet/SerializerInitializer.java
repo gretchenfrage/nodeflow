@@ -1,10 +1,10 @@
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.phoenixkahlo.pnet.serialization.CollectionSerializer;
-import com.phoenixkahlo.pnet.serialization.UnionSerializer;
+import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
+import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 public class SerializerInitializer {

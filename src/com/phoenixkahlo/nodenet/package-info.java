@@ -169,4 +169,4 @@
  * own payload available to the client.
  * </p>
  */
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;

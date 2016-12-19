@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;
 
 /**
  * A bean for payloads that have been sent but not confirmed.

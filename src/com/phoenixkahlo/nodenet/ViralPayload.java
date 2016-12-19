@@ -1,11 +1,11 @@
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.phoenixkahlo.pnet.serialization.FieldSerializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
  * <p>

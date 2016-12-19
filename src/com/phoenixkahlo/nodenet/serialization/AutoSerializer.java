@@ -1,10 +1,10 @@
-package com.phoenixkahlo.pnet.serialization;
+package com.phoenixkahlo.nodenet.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
 
 /**
  * AutoSerializers will be allowed to take control of their final stage of
@@ -13,7 +13,7 @@ import com.phoenixkahlo.pnet.ProtocolViolationException;
 public interface AutoSerializer {
 
 	void autoSerialize(OutputStream out) throws IOException;
-	
+
 	void autoDeserialize(InputStream in) throws IOException, ProtocolViolationException;
-	
+
 }

@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -20,13 +20,13 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.phoenixkahlo.pnet.serialization.NullableSerializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
-import com.phoenixkahlo.pnet.serialization.UnionSerializer;
-import com.phoenixkahlo.pnet.socket.BasicStreamFamily;
-import com.phoenixkahlo.pnet.socket.DatagramStream;
-import com.phoenixkahlo.pnet.socket.ObjectStream;
-import com.phoenixkahlo.pnet.socket.StreamFamily;
+import com.phoenixkahlo.nodenet.serialization.NullableSerializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
+import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
+import com.phoenixkahlo.nodenet.stream.DatagramStream;
+import com.phoenixkahlo.nodenet.stream.ObjectStream;
+import com.phoenixkahlo.nodenet.stream.StreamFamily;
 import com.phoenixkahlo.util.UnorderedTuple;
 
 public class BasicNetworkConnection implements NetworkConnection {

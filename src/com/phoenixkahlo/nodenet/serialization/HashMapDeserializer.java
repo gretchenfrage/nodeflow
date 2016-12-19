@@ -1,11 +1,11 @@
-package com.phoenixkahlo.pnet.serialization;
+package com.phoenixkahlo.nodenet.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
 
 public class HashMapDeserializer implements Deserializer {
 

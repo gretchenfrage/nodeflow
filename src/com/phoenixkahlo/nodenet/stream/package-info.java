@@ -132,4 +132,4 @@
  * heartbeats at half the recommended interval.
  * </p>
  */
-package com.phoenixkahlo.pnet.socket;
+package com.phoenixkahlo.nodenet.stream;

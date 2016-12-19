@@ -1,4 +1,4 @@
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;
 
 import java.net.SocketAddress;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
  * Is a local connection to a node in a network. Connections can be formed with

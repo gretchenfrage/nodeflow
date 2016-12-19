@@ -3,9 +3,9 @@ package tinkering;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-import com.phoenixkahlo.pnet.socket.BasicStreamFamily;
-import com.phoenixkahlo.pnet.socket.DatagramStream;
-import com.phoenixkahlo.pnet.socket.StreamFamily;
+import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
+import com.phoenixkahlo.nodenet.stream.DatagramStream;
+import com.phoenixkahlo.nodenet.stream.StreamFamily;
 
 public class PNetSocketTinkering {
 

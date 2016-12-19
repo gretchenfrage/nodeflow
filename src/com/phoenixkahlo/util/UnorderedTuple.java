@@ -2,8 +2,8 @@ package com.phoenixkahlo.util;
 
 import java.util.Objects;
 
-import com.phoenixkahlo.pnet.serialization.FieldSerializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
  * An immutable set of two unordered items.
@@ -13,14 +13,14 @@ public class UnorderedTuple<E extends PerfectHashable> {
 	public static Serializer serializer(Serializer subSerializer) {
 		return new FieldSerializer(UnorderedTuple.class, subSerializer, UnorderedTuple::new);
 	}
-	
+
 	// item1 must always store the item with the lesser hash.
 	private E item1;
 	private E item2;
 
 	private UnorderedTuple() {
 	}
-	
+
 	public UnorderedTuple(E item1, E item2) {
 		if (item1.hashCode() < item2.hashCode()) {
 			this.item1 = item1;
@@ -30,7 +30,7 @@ public class UnorderedTuple<E extends PerfectHashable> {
 			this.item2 = item1;
 		}
 	}
-	
+
 	public boolean contains(E item) {
 		return item1.equals(item) || item2.equals(item);
 	}
@@ -50,7 +50,7 @@ public class UnorderedTuple<E extends PerfectHashable> {
 		else
 			return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(item1, item2);

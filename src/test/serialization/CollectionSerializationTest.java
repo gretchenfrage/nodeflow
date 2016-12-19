@@ -7,9 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.phoenixkahlo.pnet.ProtocolViolationException;
-import com.phoenixkahlo.pnet.serialization.CollectionSerializer;
-import com.phoenixkahlo.pnet.serialization.StringSerializer;
+import com.phoenixkahlo.nodenet.ProtocolViolationException;
+import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
+import com.phoenixkahlo.nodenet.serialization.StringSerializer;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
 

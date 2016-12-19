@@ -1,7 +1,7 @@
-package com.phoenixkahlo.pnet;
+package com.phoenixkahlo.nodenet;
 
-import com.phoenixkahlo.pnet.serialization.FieldSerializer;
-import com.phoenixkahlo.pnet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
  * A payload to be transmitted virally representing that a connection has been severed.
