@@ -24,8 +24,8 @@ import com.phoenixkahlo.pnet.serialization.NullableSerializer;
 import com.phoenixkahlo.pnet.serialization.Serializer;
 import com.phoenixkahlo.pnet.serialization.UnionSerializer;
 import com.phoenixkahlo.pnet.socket.BasicStreamFamily;
-import com.phoenixkahlo.pnet.socket.ObjectStream;
 import com.phoenixkahlo.pnet.socket.DatagramStream;
+import com.phoenixkahlo.pnet.socket.ObjectStream;
 import com.phoenixkahlo.pnet.socket.StreamFamily;
 import com.phoenixkahlo.util.UnorderedTuple;
 
