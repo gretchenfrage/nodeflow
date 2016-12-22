@@ -1,10 +1,15 @@
 package com.phoenixkahlo.nodenet;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Queue;
 import java.util.Set;
 
@@ -37,6 +42,34 @@ public class NetworkModel {
 		
 		distances = new HashMap<>();
 		parents = new HashMap<>();
+	}
+	
+	public boolean connected(NodeAddress from, NodeAddress to) {
+		BFS(from);
+		return distances.get(from).containsKey(to);
+	}
+	
+	public OptionalInt distance(NodeAddress from, NodeAddress to) {
+		BFS(from);
+		if (connected(from, to))
+			return OptionalInt.of(distances.get(from).get(to));
+		else
+			return OptionalInt.empty();
+	}
+	
+	public List<NodeAddress> path(NodeAddress from, NodeAddress to) {
+		BFS(from);
+		if (!connected(from, to))
+			throw new NoSuchElementException();
+		List<NodeAddress> path = new ArrayList<>();
+		NodeAddress current = to;
+		while (!current.equals(from)) {
+			path.add(current);
+			current = parents.get(from).get(current);
+		}
+		path.add(from);
+		Collections.reverse(path);
+		return path;
 	}
 	
 	private void BFS(NodeAddress root) {

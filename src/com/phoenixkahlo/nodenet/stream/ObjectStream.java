@@ -62,6 +62,15 @@ public class ObjectStream {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <E> E receive(Class<E> type) throws ProtocolViolationException {
+		Object received = receive();
+		if (type.isAssignableFrom(received.getClass()))
+			return (E) received;
+		else
+			throw new ProtocolViolationException("Object is of wrong class: " + received);
+	}
 
 	void disconnect() {
 		socket.disconnect();
