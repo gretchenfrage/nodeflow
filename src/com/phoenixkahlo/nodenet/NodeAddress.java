@@ -4,9 +4,6 @@ import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.util.PerfectHashable;
 
-/**
- * Represents an address for a node in the network.
- */
 public class NodeAddress implements PerfectHashable {
 
 	public static Serializer serializer(Serializer subSerializer) {

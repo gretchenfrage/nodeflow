@@ -18,10 +18,9 @@ public class SerializerInitializer {
 		serializer.add(-3, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
 		serializer.add(-4, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
 		serializer.add(-5, Handshake.serializer(serializer));
-		serializer.add(-6, ViralPayload.serializer(serializer));
-		serializer.add(-7, ConnectionNotification.serializer(serializer));
-		serializer.add(-8, DisconnectionNotification.serializer(serializer));
-		serializer.add(-9, AddressedPayloadResult.serializer(serializer));
+		serializer.add(-6, ViralMessage.serializer(serializer));
+		serializer.add(-9, AddressedMessageResult.serializer(serializer));
+		serializer.add(-10, AddressedMessage.serializer(serializer));
 	}
 	
 }

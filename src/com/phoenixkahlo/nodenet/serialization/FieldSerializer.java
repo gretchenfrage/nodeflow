@@ -44,8 +44,8 @@ public class FieldSerializer implements Serializer {
 				theUnsafeField.setAccessible(true);
 				Object theUnsafe = theUnsafeField.get(null);
 				Method allocateInstance = unsafeClass.getMethod("allocateInstance", Class.class);
-				Object straightOuttaTheOperatingSystem = allocateInstance.invoke(theUnsafe, dataType);
-				return straightOuttaTheOperatingSystem;
+				Object straightOuttaTheHeapAllocator = allocateInstance.invoke(theUnsafe, dataType);
+				return straightOuttaTheHeapAllocator;
 			} catch (Throwable t) {
 				throw new RuntimeException(t);
 			}

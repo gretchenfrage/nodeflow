@@ -64,7 +64,7 @@
  * <h4>Handshake</h4>
  * <p>
  * The first class of object, Handshake, should be sent immediately whenever a
- * new connection is established. The Handshake contains 3 pieces of data.
+ * new connection is established. The Handshake contains 2 pieces of data.
  * </p>
  * <p>
  * The first is a chunk of binary data, constant to all programs. If not
@@ -74,12 +74,7 @@
  * incompatible version of the protocol to prevent bad connections.
  * </p>
  * <p>
- * The second is a list of all node connections known to the sender. All of
- * these should be added to the receiver's set of known connections, so that it
- * can have an accurate model of the graph.
- * </p>
- * <p>
- * The third is the node address of the sender, which is necessary for the
+ * The second is the node address of the sender, which is necessary for the
  * receiver to update the network model with the newly formed connection. After
  * a new connection is formed, both sides should virally propagate an
  * UpdateTrigger to inform all nodes of the new connection.
@@ -109,11 +104,11 @@
  * </p>
  * <p>
  * There are two objects that are valid for a virus' payload - a
- * NeighborSetUpdate and a UpdateTrigger. The NeighborSetUpdate is an update of
+ * NeighborSetUpdate and a NeighborSetUpdateTrigger. The NeighborSetUpdate is an update of
  * the set of neighbors that a particular node has. For a node to handle a
  * NeighborSetUpdate, it should remove all connections involving the update's
  * node from its network model, and then add to its network model all the
- * connections described in the update. The UpdateTrigger is a trigger for all
+ * connections described in the update. The NeighborSetUpdateTrigger is a trigger for all
  * nodes to send a NeighborSetUpdate of themselves, which is what a node should
  * do to handle an UpdateTrigger.
  * </p>
