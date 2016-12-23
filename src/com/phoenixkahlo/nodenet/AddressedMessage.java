@@ -13,7 +13,7 @@ public class AddressedMessage {
 		return new FieldSerializer(AddressedMessage.class, subSerializer, AddressedMessage::new);
 	}
 
-	private Object payload;
+	private AddressedPayload payload;
 	private NodeAddress destination;
 	private Set<NodeAddress> visited;
 	private int transmissionID;
@@ -21,7 +21,7 @@ public class AddressedMessage {
 	private AddressedMessage() {
 	}
 
-	public AddressedMessage(Object payload, NodeAddress destination) {
+	public AddressedMessage(AddressedPayload payload, NodeAddress destination) {
 		this.payload = payload;
 		this.destination = destination;
 		this.visited = new HashSet<>();
@@ -32,7 +32,7 @@ public class AddressedMessage {
 		transmissionID = ThreadLocalRandom.current().nextInt();
 	}
 
-	public Object getPayload() {
+	public AddressedPayload getPayload() {
 		return payload;
 	}
 

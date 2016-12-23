@@ -116,7 +116,9 @@ public class BasicChildStream implements ChildStream {
 	}
 
 	@Override
-	public byte[] receive() {
+	public byte[] receive() throws DisconnectionException {
+		if (disconnected)
+			throw new DisconnectionException();
 		try {
 			synchronized (receivedLock) {
 				while (receivedOrdered.isEmpty() && receivedUnordered.isEmpty()) {
@@ -133,7 +135,10 @@ public class BasicChildStream implements ChildStream {
 					return receivedUnordered.remove().getMessage();
 			}
 		} catch (InterruptedException e) {
-			throw new RuntimeException("Interrupted while waiting to receive message", e);
+			if (disconnected)
+				throw new DisconnectionException();
+			else
+				throw new RuntimeException("Interrupted while receiving, but not disconnected.");
 		}
 	}
 
@@ -151,6 +156,7 @@ public class BasicChildStream implements ChildStream {
 		synchronized (family.getChildren()) {
 			family.getChildren().remove(this);
 		}
+		receivedLock.notifyAll();
 		disconnectionHandler.run();
 	}
 

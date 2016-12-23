@@ -9,11 +9,13 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.phoenixkahlo.nodenet.serialization.NullableSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
+import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.nodenet.stream.StreamFamily;
 
@@ -32,10 +34,11 @@ public class BasicLocalNode implements LocalNode {
 
 	private ViralMessageHandler viralHandler = new ViralMessageHandler();
 	private AddressedMessageHandler addressedHandler = new AddressedMessageHandler();
-
+	
 	private BasicLocalNode(StreamFamily family) {
 		SerializerInitializer.init(serializer);
 		this.family = family;
+		family.setReceiveHandler(this::setup);
 		viralHandler.start();
 		addressedHandler.start();
 	}
@@ -44,7 +47,7 @@ public class BasicLocalNode implements LocalNode {
 	public void addSerializer(Serializer serializer, int header) {
 		if (header < 0)
 			throw new IllegalArgumentException("Serializer headers must be positive");
-		
+
 		synchronized (this.serializer) {
 			this.serializer.add(header, serializer);
 			connections.values().stream().forEach(ObjectStream::rebuildDeserializer);
@@ -54,19 +57,24 @@ public class BasicLocalNode implements LocalNode {
 	@Override
 	public Optional<Node> connect(SocketAddress address) {
 		Optional<DatagramStream> connection = family.connect(address);
-		
 		if (!connection.isPresent())
 			return Optional.empty();
+		return setup(connection.get());
+	}
+	
+	private Optional<Node> setup(DatagramStream connection) {
+		ObjectStream stream = new ObjectStream(connection, new NullableSerializer(serializer));
 		
-		ObjectStream stream = new ObjectStream(connection.get(), new NullableSerializer(serializer));
-		
-		stream.send(new Handshake(localAddress));
-		
-		Handshake received = stream.receive(Handshake.class);
-		
+		Handshake received;
+		try {
+			stream.send(new Handshake(localAddress));
+			received = stream.receive(Handshake.class);
+		} catch (ProtocolViolationException | DisconnectionException e) {
+			return Optional.empty();
+		}
 		NodeAddress remoteAddress = received.getSenderAddress();
 		
-		
+		boolean alreadyConnected = model.connected(localAddress, remoteAddress);
 		
 		synchronized (model) {
 			model.connect(localAddress, remoteAddress);
@@ -76,44 +84,64 @@ public class BasicLocalNode implements LocalNode {
 			connections.put(remoteAddress, stream);
 		}
 		
+		Node node = null; // TODO
+		synchronized (nodes) {
+			nodes.put(remoteAddress, node);
+		}
 		
+		viralHandler.transmit(new NeighborSetUpdateTrigger());
 		
+		if (!alreadyConnected) {
+			synchronized (joinListeners) {
+				joinListeners.forEach(listener -> listener.accept(node));
+			}
+		}
+		
+		return Optional.of(node);		
 	}
 
 	@Override
 	public void setGreeter(Predicate<SocketAddress> test) {
-		// TODO Auto-generated method stub
-
+		family.setReceiveTest(potential -> test.test(potential.getAddress()));
 	}
 
 	@Override
 	public void listenForJoin(Consumer<Node> listener) {
-		// TODO Auto-generated method stub
-
+		synchronized (joinListeners) {
+			joinListeners.add(listener);
+		}
 	}
 
 	@Override
 	public void listenForLeave(Consumer<Node> listener) {
-		// TODO Auto-generated method stub
-
+		synchronized (leaveListeners) {
+			leaveListeners.add(listener);
+		}
 	}
 
 	@Override
 	public List<Node> getNodes() {
-		// TODO Auto-generated method stub
-		return null;
+		synchronized (nodes) {
+			return nodes.values().stream().collect(Collectors.toList());
+		}
 	}
 
 	@Override
 	public List<Node> getAdjacent() {
-		// TODO Auto-generated method stub
-		return null;
+		List<NodeAddress> addresses;
+		synchronized (connections) {
+			addresses = connections.keySet().stream().collect(Collectors.toList());
+		}
+		synchronized (nodes) {
+			return addresses.stream().map(nodes::get).collect(Collectors.toList());
+		}
 	}
 
 	@Override
 	public void disconnect() {
-		// TODO Auto-generated method stub
-
+		family.close();
+		viralHandler.stop();
+		addressedHandler.stop();
 	}
 
 }

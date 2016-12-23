@@ -53,7 +53,7 @@ public class ObjectStream {
 		socket.sendOrdered(baos.toByteArray());
 	}
 
-	public Object receive() throws ProtocolViolationException {
+	public Object receive() throws ProtocolViolationException, DisconnectionException {
 		byte[] bin = socket.receive();
 		InputStream in = new ByteArrayInputStream(bin);
 		try {
@@ -64,7 +64,7 @@ public class ObjectStream {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <E> E receive(Class<E> type) throws ProtocolViolationException {
+	public <E> E receive(Class<E> type) throws ProtocolViolationException, DisconnectionException {
 		Object received = receive();
 		if (type.isAssignableFrom(received.getClass()))
 			return (E) received;

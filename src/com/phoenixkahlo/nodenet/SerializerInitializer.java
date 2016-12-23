@@ -21,6 +21,8 @@ public class SerializerInitializer {
 		serializer.add(-6, ViralMessage.serializer(serializer));
 		serializer.add(-9, AddressedMessageResult.serializer(serializer));
 		serializer.add(-10, AddressedMessage.serializer(serializer));
+		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
+		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
 	}
 	
 }

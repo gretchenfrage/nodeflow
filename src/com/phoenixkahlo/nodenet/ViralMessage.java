@@ -15,12 +15,12 @@ public class ViralMessage {
 
 	private int virusID = ThreadLocalRandom.current().nextInt();
 	private Set<NodeAddress> infectedNodes = new HashSet<>();
-	private Object payload;
+	private ViralPayload payload;
 
 	private ViralMessage() {
 	}
 
-	public ViralMessage(Object payload) {
+	public ViralMessage(ViralPayload payload) {
 		this.virusID = ThreadLocalRandom.current().nextInt();
 		this.infectedNodes = new HashSet<>();
 		this.payload = payload;
@@ -38,7 +38,7 @@ public class ViralMessage {
 		infectedNodes.add(node);
 	}
 
-	public Object getPayload() {
+	public ViralPayload getPayload() {
 		return payload;
 	}
 

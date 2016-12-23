@@ -22,7 +22,7 @@ public interface DatagramStream {
 	 * Return data send from the other side, blocking until there is data
 	 * available.
 	 */
-	byte[] receive();
+	byte[] receive() throws DisconnectionException;
 
 	/**
 	 * Sever the connection to the other side, releasing all resources, and

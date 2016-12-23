@@ -26,6 +26,14 @@ public interface LocalNode {
 	 */
 	void setGreeter(Predicate<SocketAddress> test);
 
+	default void acceptAllIncoming() {
+		setGreeter(address -> true);
+	}
+	
+	default void rejectAllIncoming() {
+		setGreeter(address -> false);
+	}
+	
 	/**
 	 * Add a listener for new nodes connected to the network.
 	 */
