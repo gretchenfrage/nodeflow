@@ -32,7 +32,12 @@ public interface DatagramStream {
 
 	/**
 	 * Set a runnable that will be invoked whenever a disconnection occurs from
+<<<<<<< HEAD
+	 * either end. If this stream is already disconnected, invoke the handler
+	 * immediately.
+=======
 	 * either end.
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 	 */
 	void setDisconnectHandler(Runnable handler);
 

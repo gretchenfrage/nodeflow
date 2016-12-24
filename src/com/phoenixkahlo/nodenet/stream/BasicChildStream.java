@@ -264,6 +264,11 @@ public class BasicChildStream implements ChildStream {
 
 	@Override
 	public void setDisconnectHandler(Runnable handler) {
+<<<<<<< HEAD
+		if (disconnected)
+			handler.run();
+=======
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 		this.disconnectionHandler = handler;
 	}
 

@@ -2,6 +2,12 @@ package com.phoenixkahlo.nodenet;
 
 import java.util.function.Consumer;
 
+<<<<<<< HEAD
+/**
+ * Representation of a node in the network.
+ */
+=======
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 public interface Node {
 
 	/**

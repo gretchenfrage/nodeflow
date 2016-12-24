@@ -4,6 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+<<<<<<< HEAD
+import java.util.List;
+import java.util.stream.Collectors;
+=======
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 
 import com.phoenixkahlo.nodenet.ProtocolViolationException;
 import com.phoenixkahlo.nodenet.serialization.Deserializer;
@@ -72,6 +77,29 @@ public class ObjectStream {
 			throw new ProtocolViolationException("Object is of wrong class: " + received);
 	}
 
+<<<<<<< HEAD
+	public void disconnect() {
+		socket.disconnect();
+	}
+
+	public void setDisconnectHandler(Runnable handler) {
+		socket.setDisconnectHandler(handler);
+	}
+	
+	public boolean isDisconnected() {
+		return socket.isDisconnected();
+	}
+	
+	public List<Object> getUnconfirmed() {
+		return socket.getUnconfirmed().stream().map(bin -> {
+			try {
+				return deserializer.deserialize(new ByteArrayInputStream(bin));
+			} catch (IOException | ProtocolViolationException e) {
+				return "[this object failed to deserialize because of " + e + "]";
+			}
+		}).collect(Collectors.toList());
+	}
+=======
 	void disconnect() {
 		socket.disconnect();
 	}
@@ -79,5 +107,6 @@ public class ObjectStream {
 	void setDisconnectHandler(Runnable handler) {
 		socket.setDisconnectHandler(handler);
 	}
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 
 }

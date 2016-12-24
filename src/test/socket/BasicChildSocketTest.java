@@ -30,7 +30,11 @@ public class BasicChildSocketTest {
 		ChildStream socket = new BasicChildStream(family, connectionID, sendTo, BasicMessageBuilder::new);
 
 		/*
+<<<<<<< HEAD
+		 * NeighborReceiver the transmission of a simple send
+=======
 		 * Test the transmission of a simple send
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 		 */
 		System.out.println("* subtest1 *");
 		byte[] sendTest1 = { 1, 6, 1, 3, 7, 1, 4, 67, 2, 3 };
@@ -50,7 +54,11 @@ public class BasicChildSocketTest {
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
 
 		/*
+<<<<<<< HEAD
+		 * NeighborReceiver the transmissions of a series of 3 sendOrdereds
+=======
 		 * Test the transmissions of a series of 3 sendOrdereds
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 		 */
 		System.out.println("* subtest2 *");
 		byte[] sendTest2 = { 3, 6, 1, 2, 6, 9, 2, 4, 7, 2 };
@@ -93,7 +101,11 @@ public class BasicChildSocketTest {
 		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
 
 		/*
+<<<<<<< HEAD
+		 * NeighborReceiver that it can receive messages from receivePayload, blocking as
+=======
 		 * Test that it can receive messages from receivePayload, blocking as
+>>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 		 * necessary
 		 */
 		System.out.println("* subtest3 *");
