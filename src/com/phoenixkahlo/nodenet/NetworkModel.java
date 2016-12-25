@@ -62,7 +62,7 @@ public class NetworkModel {
 	}
 
 	public void disconnectAll(NodeAddress node) {
-		while (!connections.get(node).isEmpty()) {
+		while (connections.containsKey(node) && !connections.get(node).isEmpty()) {
 			disconnect(node, connections.get(node).iterator().next());
 		}
 	}
@@ -109,11 +109,13 @@ public class NetworkModel {
 
 		while (!queue.isEmpty()) {
 			NodeAddress current = queue.remove();
-			for (NodeAddress adj : connections.get(current)) {
-				if (!distances.containsKey(adj)) {
-					distances.put(adj, distances.get(current) + 1);
-					parents.put(adj, current);
-					queue.add(adj);
+			if (connections.containsKey(current)) {
+				for (NodeAddress adj : connections.get(current)) {
+					if (!distances.containsKey(adj)) {
+						distances.put(adj, distances.get(current) + 1);
+						parents.put(adj, current);
+						queue.add(adj);
+					}
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package test;
 
 import com.phoenixkahlo.ptest.Testing;
 
+import test.nodenet.AddressedAttemptSequenceTest;
 import test.nodenet.NetworkModelTest;
 import test.serialization.ArraySerializationTest;
 import test.serialization.ArraySplitTest;
@@ -30,6 +31,7 @@ public class MasterTest {
 		Testing.test(BasicChildSocketTest.class);
 		
 		Testing.test(NetworkModelTest.class);
+		Testing.test(AddressedAttemptSequenceTest.class);
 	}
 	
 }

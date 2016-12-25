@@ -53,7 +53,7 @@ public class AddressedAttemptSequence implements Iterator<NodeAddress> {
 		Comparator<NodeAddress> closer = (node1, node2) -> {
 			int dist1 = legal.distance(node1, message.getDestination()).getAsInt();
 			int dist2 = legal.distance(node2, message.getDestination()).getAsInt();
-			return dist2 - dist1;
+			return dist1 - dist2;
 		};
 		// Find the closest possible neighbor
 		return possible.stream().sorted(closer).findFirst();
