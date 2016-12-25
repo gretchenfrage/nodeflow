@@ -7,12 +7,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 
-<<<<<<< HEAD
 /**
  * Described in package description.
  */
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 public class ViralMessage {
 
 	public static Serializer serializer(Serializer subSerializer) {

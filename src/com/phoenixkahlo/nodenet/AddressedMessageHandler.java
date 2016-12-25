@@ -1,6 +1,5 @@
 package com.phoenixkahlo.nodenet;
 
-<<<<<<< HEAD
 import java.util.Map;
 
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
@@ -8,14 +7,11 @@ import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;
 
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 /**
  * An object owned by a LocalNode to handle the AddressedMessage system.
  */
 public class AddressedMessageHandler {
 
-<<<<<<< HEAD
 	private NodeAddress localAddress;
 	private NetworkModel model;
 	private Map<NodeAddress, ObjectStream> connections;
@@ -70,15 +66,5 @@ public class AddressedMessageHandler {
 			System.err.println("Failed to handle AddressedMessagePayload: " + payload);
 		}
 	}
-
-=======
-	public void start() {
-		
-	}
 	
-	public void stop() {
-		
-	}
-	
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 }

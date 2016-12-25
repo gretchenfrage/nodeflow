@@ -1,16 +1,12 @@
 package com.phoenixkahlo.nodenet;
 
-<<<<<<< HEAD
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-<<<<<<< HEAD
 import com.phoenixkahlo.nodenet.serialization.AutoSerializer;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
@@ -19,12 +15,6 @@ import com.phoenixkahlo.nodenet.serialization.Serializer;
  * Described in package description.
  */
 public class AddressedMessage implements AutoSerializer {
-=======
-import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
-import com.phoenixkahlo.nodenet.serialization.Serializer;
-
-public class AddressedMessage {
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 
 	public static Serializer serializer(Serializer subSerializer) {
 		return new FieldSerializer(AddressedMessage.class, subSerializer, AddressedMessage::new);
@@ -34,10 +24,7 @@ public class AddressedMessage {
 	private NodeAddress destination;
 	private Set<NodeAddress> visited;
 	private int transmissionID;
-<<<<<<< HEAD
 	private transient int originalTransmissionID;
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 
 	private AddressedMessage() {
 	}
@@ -72,7 +59,6 @@ public class AddressedMessage {
 	public int getTransmissionID() {
 		return transmissionID;
 	}
-<<<<<<< HEAD
 	
 	public int getOriginalTransmissionID() {
 		return originalTransmissionID;
@@ -86,7 +72,5 @@ public class AddressedMessage {
 	public void autoDeserialize(InputStream in) throws IOException, ProtocolViolationException {
 		originalTransmissionID = transmissionID;
 	}
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 
 }

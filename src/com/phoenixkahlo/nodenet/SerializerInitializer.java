@@ -7,12 +7,9 @@ import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
 import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
 import com.phoenixkahlo.util.UnorderedTuple;
 
-<<<<<<< HEAD
 /**
  * Static utility to initializer a UnionSerializer.
  */
-=======
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 public class SerializerInitializer {
 
 	private SerializerInitializer() {
@@ -30,9 +27,5 @@ public class SerializerInitializer {
 		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
 		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
 	}
-<<<<<<< HEAD
 
-=======
-	
->>>>>>> eb56286c0399094b26770a91c1ceb3d22c73ee44
 }
