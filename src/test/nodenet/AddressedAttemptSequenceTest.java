@@ -39,5 +39,32 @@ public class AddressedAttemptSequenceTest {
 		assert sequence.next().equals(new NodeAddress(4));
 		assert !sequence.hasNext();
 	}
+	
+	@Test
+	public static void test2() {
+		NetworkModel model = new NetworkModel();
+		model.connect(new NodeAddress(1), new NodeAddress(2));
+		model.connect(new NodeAddress(1), new NodeAddress(3));
+		model.connect(new NodeAddress(1), new NodeAddress(4));
+		model.connect(new NodeAddress(3), new NodeAddress(5));
+		model.connect(new NodeAddress(4), new NodeAddress(6));
+		model.connect(new NodeAddress(6), new NodeAddress(7));
+		model.connect(new NodeAddress(2), new NodeAddress(8));
+		model.connect(new NodeAddress(5), new NodeAddress(8));
+		model.connect(new NodeAddress(7), new NodeAddress(8));
+
+		Map<NodeAddress, ObjectStream> connections = new HashMap<>();
+		connections.put(new NodeAddress(2), null);
+		connections.put(new NodeAddress(3), null);
+		connections.put(new NodeAddress(4), null);
+
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+
+		Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, new NodeAddress(1), connections);
+		assert sequence.next().equals(new NodeAddress(2));
+		model.disconnect(new NodeAddress(5), new NodeAddress(8));
+		assert sequence.next().equals(new NodeAddress(4));
+		assert !sequence.hasNext();
+	}
 
 }

@@ -73,10 +73,13 @@ public class AddressedDelegatorThread extends Thread {
 			synchronized (connections) {
 				stream = connections.get(next);
 			}
+			if (stream == null) {
+				System.err.println("Failed to send AddressedMessage to " + sender + " - stream not found");
+			}
 			try {
 				stream.send(message);
 			} catch (DisconnectionException e) {
-				System.err.println("Failed to send AddressedMessage to " + sender);
+				System.err.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
 				addressedResults.put(transmissionID, false);
 			}
 
