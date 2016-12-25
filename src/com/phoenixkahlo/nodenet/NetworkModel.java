@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Queue;
 import java.util.Set;
@@ -47,12 +46,16 @@ public class NetworkModel {
 	}
 
 	public void disconnect(NodeAddress node1, NodeAddress node2) {
-		Optional.ofNullable(connections.get(node1)).ifPresent(set -> set.remove(node2));
-		if (connections.get(node1).isEmpty())
-			connections.remove(node1);
-		Optional.ofNullable(connections.get(node2)).ifPresent(set -> set.remove(node1));
-		if (connections.get(node2).isEmpty())
-			connections.remove(node2);
+		if (connections.containsKey(node1)) {
+			connections.get(node1).remove(node2);
+			if (connections.get(node1).isEmpty())
+				connections.remove(node1);
+		}
+		if (connections.containsKey(node1)) {
+			connections.get(node2).remove(node1);
+			if (connections.get(node2).isEmpty())
+				connections.remove(node2);
+		}
 
 		distances = new HashMap<>();
 		parents = new HashMap<>();
@@ -117,6 +120,11 @@ public class NetworkModel {
 
 		this.distances.put(root, distances);
 		this.parents.put(root, parents);
+	}
+	
+	@Override
+	public String toString() {
+		return connections.toString();
 	}
 
 }

@@ -34,5 +34,10 @@ public class NodeAddress implements PerfectHashable {
 	public int hashCode() {
 		return id;
 	}
+	
+	@Override
+	public String toString() {
+		return "#" + id;
+	}
 
 }

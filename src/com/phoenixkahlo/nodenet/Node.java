@@ -36,4 +36,6 @@ public interface Node {
 	 */
 	boolean disconect();
 
+	NodeAddress getAddress();
+	
 }

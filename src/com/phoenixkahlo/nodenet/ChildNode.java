@@ -72,4 +72,9 @@ public class ChildNode implements Node {
 		receiver.accept(object);
 	}
 
+	@Override
+	public NodeAddress getAddress() {
+		return remoteAddress;
+	}
+
 }
