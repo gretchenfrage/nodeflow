@@ -21,18 +21,22 @@ public class AddressedMessage implements AutoSerializer {
 	}
 
 	private AddressedPayload payload;
+	private NodeAddress sender;
 	private NodeAddress destination;
 	private Set<NodeAddress> visited;
+	private int messageID;
 	private int transmissionID;
 	private transient int originalTransmissionID;
 
 	private AddressedMessage() {
 	}
 
-	public AddressedMessage(AddressedPayload payload, NodeAddress destination) {
+	public AddressedMessage(AddressedPayload payload, NodeAddress sender, NodeAddress destination) {
 		this.payload = payload;
+		this.sender = sender;
 		this.destination = destination;
 		this.visited = new HashSet<>();
+		this.messageID = ThreadLocalRandom.current().nextInt();
 		randomizeTransmissionID();
 		this.originalTransmissionID = transmissionID;
 	}
@@ -43,6 +47,10 @@ public class AddressedMessage implements AutoSerializer {
 
 	public AddressedPayload getPayload() {
 		return payload;
+	}
+	
+	public NodeAddress getSender() {
+		return sender;
 	}
 
 	public NodeAddress getDestination() {
@@ -57,6 +65,10 @@ public class AddressedMessage implements AutoSerializer {
 		visited.add(node);
 	}
 
+	public int getMessageID() {
+		return messageID;
+	}
+	
 	public int getTransmissionID() {
 		return transmissionID;
 	}

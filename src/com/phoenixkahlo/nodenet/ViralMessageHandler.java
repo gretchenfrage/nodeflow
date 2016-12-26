@@ -8,7 +8,10 @@ import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 
 /**
- * An object owned by a LocalNode to handle the ViralMessage system.
+ * An object owned by a LocalNode to handle the ViralMessage system. When a
+ * StreamReceiverThread receives a ViralMessage, it is delegated to the
+ * ViralMessageHandler. The ViralMessageHandler handles the payload/sends it to
+ * neighbors as appropriate.
  */
 public class ViralMessageHandler {
 
@@ -51,7 +54,7 @@ public class ViralMessageHandler {
 			handlePayload(message.getPayload());
 		}
 	}
-	
+
 	private void handlePayload(ViralPayload payload) {
 		if (payload instanceof NeighborSetUpdate) {
 			NeighborSetUpdate update = (NeighborSetUpdate) payload;
@@ -71,5 +74,5 @@ public class ViralMessageHandler {
 			System.err.println("Invalid viral payload: " + payload);
 		}
 	}
-	
+
 }

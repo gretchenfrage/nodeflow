@@ -104,13 +104,13 @@
  * </p>
  * <p>
  * There are two objects that are valid for a virus' payload - a
- * NeighborSetUpdate and a NeighborSetUpdateTrigger. The NeighborSetUpdate is an update of
- * the set of neighbors that a particular node has. For a node to handle a
- * NeighborSetUpdate, it should remove all connections involving the update's
- * node from its network model, and then add to its network model all the
- * connections described in the update. The NeighborSetUpdateTrigger is a trigger for all
- * nodes to send a NeighborSetUpdate of themselves, which is what a node should
- * do to handle an UpdateTrigger.
+ * NeighborSetUpdate and a NeighborSetUpdateTrigger. The NeighborSetUpdate is an
+ * update of the set of neighbors that a particular node has. For a node to
+ * handle a NeighborSetUpdate, it should remove all connections involving the
+ * update's node from its network model, and then add to its network model all
+ * the connections described in the update. The NeighborSetUpdateTrigger is a
+ * trigger for all nodes to send a NeighborSetUpdate of themselves, which is
+ * what a node should do to handle an UpdateTrigger.
  * </p>
  * <h4>AddressedMessage and AddressedMessageResult</h4>
  * <p>
@@ -122,13 +122,13 @@
  * client objects between nodes.
  * </p>
  * <p>
- * AddressedMessages contain 4 pieces of data. They have a payload object and a
- * destination address, which should not be changed. They have a collection of
- * visited nodes, which should be added to upon a node being received. Finally,
- * they have a random ID. The ID is not meant to represent the message
- * throughout its entire lifespan, but rather to represent the transmission of a
- * message between two nodes. Thus, the AddressedMessage's ID should be
- * randomized between transmissions.
+ * AddressedMessages contain 6 pieces of data. They have a payload object,
+ * random messageID, sender address, and a destination address, which should not be changed.
+ * They have a collection of visited nodes, which should be added to upon a node
+ * being received. Finally, they have a random ID. The ID is not meant to
+ * represent the message throughout its entire lifespan, but rather to represent
+ * the transmission of a message between two nodes. Thus, the AddressedMessage's
+ * ID should be randomized between transmissions.
  * </p>
  * <p>
  * For each transmission of an AddressedMessage, a AddressedMessageResult should
@@ -141,8 +141,10 @@
  * <p>
  * When a node receives an AddressedMessage, and the AddressedMessage's
  * destination address is the local address, it should simply respond with a
- * success AddressedMessageResult, and then handle the payload. Otherwise, the
- * node's goal is to try to get the AddressedMessage to its destination and then
+ * success AddressedMessageResult, and then handle the payload, unless it has
+ * already handled a payload with this messageID (it must maintain a collection
+ * of the messageID's of which it has handled payloads). Otherwise, the node's
+ * goal is to try to get the AddressedMessage to its destination and then
  * transmit an appropriate AddressedMessageResult. It should send the
  * AddressedMessage to the unvisited neighbor with the shortest distance to the
  * destination, and wait for a response. If the neighbor responds with failure,

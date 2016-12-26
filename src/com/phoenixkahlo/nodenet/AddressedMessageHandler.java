@@ -1,6 +1,8 @@
 package com.phoenixkahlo.nodenet;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
@@ -8,7 +10,11 @@ import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;
 
 /**
- * An object owned by a LocalNode to handle the AddressedMessage system.
+ * An object owned by a LocalNode to handle the AddressedMessage system. When a
+ * StreamReceiverThread receives an AddressedMessage or AddressedMessageResult,
+ * it is delegated to the AddressedMessageHandler, which will be responsible for
+ * handling the payload/sending it to a neighbor, and responding with an
+ * AddressedPayloadResult to the neighbor who sent it.
  */
 public class AddressedMessageHandler {
 
@@ -17,6 +23,7 @@ public class AddressedMessageHandler {
 	private Map<NodeAddress, ObjectStream> connections;
 	private Map<NodeAddress, ChildNode> nodes;
 	private BlockingMap<Integer, Boolean> addressedResults = new BlockingHashMap<>();
+	private Set<Integer> handledPayloadMessageIDs = new HashSet<>();
 
 	public AddressedMessageHandler(NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes) {
@@ -41,7 +48,7 @@ public class AddressedMessageHandler {
 			} catch (DisconnectionException e) {
 				System.err.println("DisconnectionException sending AddressedMessageResult to " + from);
 			}
-			handlePayload(from, message.getPayload());
+			handlePayload(message.getSender(), message.getPayload(), message.getMessageID());
 		} else {
 			new AddressedDelegatorThread(message, localAddress, model, connections, addressedResults, from).start();
 		}
@@ -51,20 +58,31 @@ public class AddressedMessageHandler {
 		addressedResults.put(message.getTransmissionID(), message.wasSuccessful());
 	}
 
-	private void handlePayload(NodeAddress from, AddressedPayload payload) {
-		if (payload instanceof ClientTransmission) {
-			ChildNode node;
-			synchronized (nodes) {
-				node = nodes.get(from);
+	private void handlePayload(NodeAddress sender, AddressedPayload payload, int messageID) {
+		boolean shouldHandle;
+		synchronized (handledPayloadMessageIDs) {
+			if (handledPayloadMessageIDs.contains(messageID)) {
+				shouldHandle = false;
+			} else {
+				shouldHandle = true;
+				handledPayloadMessageIDs.add(messageID);
 			}
-			if (node == null) {
-				System.err.println("Failed to get client payload to node - node not found");
-				return;
+		}
+		if (shouldHandle) {
+			if (payload instanceof ClientTransmission) {
+				ChildNode node;
+				synchronized (nodes) {
+					node = nodes.get(sender);
+				}
+				if (node == null) {
+					System.err.println("Failed to get client payload to node - node not found");
+					return;
+				}
+				node.receiveFromParent(((ClientTransmission) payload).getObject());
+			} else {
+				System.err.println("Failed to handle AddressedMessagePayload: " + payload);
 			}
-			node.receiveFromParent(((ClientTransmission) payload).getObject());
-		} else {
-			System.err.println("Failed to handle AddressedMessagePayload: " + payload);
 		}
 	}
-	
+
 }

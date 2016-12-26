@@ -48,7 +48,8 @@ public class ChildNode implements Node {
 
 	@Override
 	public void send(Object object) {
-		addressedHandler.handle(new AddressedMessage(new ClientTransmission(object), remoteAddress), localAddress);
+		addressedHandler.handle(new AddressedMessage(new ClientTransmission(object), localAddress, remoteAddress),
+				localAddress);
 	}
 
 	@Override

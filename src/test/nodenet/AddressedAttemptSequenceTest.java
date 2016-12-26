@@ -31,7 +31,7 @@ public class AddressedAttemptSequenceTest {
 		connections.put(new NodeAddress(3), null);
 		connections.put(new NodeAddress(4), null);
 
-		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1), new NodeAddress(8));
 
 		Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, new NodeAddress(1), connections);
 		assert sequence.next().equals(new NodeAddress(2));
@@ -58,7 +58,7 @@ public class AddressedAttemptSequenceTest {
 		connections.put(new NodeAddress(3), null);
 		connections.put(new NodeAddress(4), null);
 
-		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1), new NodeAddress(8));
 
 		Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, new NodeAddress(1), connections);
 		assert sequence.next().equals(new NodeAddress(2));

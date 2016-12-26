@@ -6,10 +6,13 @@ import java.util.Map;
 import com.phoenixkahlo.nodenet.AddressedMessage;
 import com.phoenixkahlo.nodenet.AddressedMessageHandler;
 import com.phoenixkahlo.nodenet.AddressedMessageResult;
+import com.phoenixkahlo.nodenet.AddressedPayload;
 import com.phoenixkahlo.nodenet.ChildNode;
+import com.phoenixkahlo.nodenet.ClientTransmission;
 import com.phoenixkahlo.nodenet.NetworkModel;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
+import com.phoenixkahlo.ptest.MethodMocker;
 import com.phoenixkahlo.ptest.Mockery;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
@@ -17,7 +20,7 @@ import com.phoenixkahlo.ptest.Testing;
 public class AddressedMessageHandlerTest {
 
 	public static void main(String[] args) {
-		test3();
+		handlePayloadTest();
 	}
 	
 	@Test
@@ -47,7 +50,7 @@ public class AddressedMessageHandlerTest {
 		connections.put(new NodeAddress(4), stream3);
 		connections.put(new NodeAddress(-1), returnStream);
 
-		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
 		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
 
@@ -106,7 +109,7 @@ public class AddressedMessageHandlerTest {
 		connections.put(new NodeAddress(4), stream3);
 		connections.put(new NodeAddress(-1), returnStream);
 
-		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
 		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
 
@@ -185,7 +188,7 @@ public class AddressedMessageHandlerTest {
 		connections.put(new NodeAddress(4), stream3);
 		connections.put(new NodeAddress(-1), returnStream);
 
-		AddressedMessage message = new AddressedMessage(null, new NodeAddress(8));
+		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
 		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
 
@@ -228,6 +231,34 @@ public class AddressedMessageHandlerTest {
 		}
 
 		((Mockery) returnStream).method("send", Object.class).assertQueueEmpty();
+	}
+	
+	@Test
+	public static void handlePayloadTest() {
+		NetworkModel model = new NetworkModel();
+		model.connect(new NodeAddress(1), new NodeAddress(2));
+		model.connect(new NodeAddress(2), new NodeAddress(3));
+		
+		Map<NodeAddress, ObjectStream> connections = new HashMap<>();
+		ObjectStream str1 = Testing.mock(ObjectStream.class);
+		((Mockery) str1).method("send", Object.class).setResponse(MethodMocker.VOID);
+		connections.put(new NodeAddress(2), str1);
+		
+		Map<NodeAddress, ChildNode> nodes = new HashMap<>();
+		
+		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
+		
+		nodes.put(new NodeAddress(1), new ChildNode(handler, connections, new NodeAddress(1), new NodeAddress(1)));
+		nodes.put(new NodeAddress(2), new ChildNode(handler, connections, new NodeAddress(1), new NodeAddress(2)));
+		nodes.put(new NodeAddress(3), new ChildNode(handler, connections, new NodeAddress(1), new NodeAddress(3)));
+		
+		Object object = "hello world";
+		AddressedPayload payload = new ClientTransmission(object);
+		AddressedMessage message = new AddressedMessage(payload, new NodeAddress(3), new NodeAddress(1));
+		
+		handler.handle(message, new NodeAddress(2));
+		
+		assert nodes.get(new NodeAddress(3)).receive().equals("hello world");
 	}
 
 }
