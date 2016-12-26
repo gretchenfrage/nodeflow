@@ -15,6 +15,7 @@ import test.serialization.StringSerializationTest;
 import test.serialization.UnionSerializerTest;
 import test.socket.BasicChildSocketTest;
 import test.socket.RealUDPSocketWrapperTest;
+import test.util.BlockingHashMapTest;
 
 public class MasterTest {
 
@@ -34,6 +35,8 @@ public class MasterTest {
 		Testing.test(NetworkModelTest.class);
 		Testing.test(AddressedAttemptSequenceTest.class);
 		Testing.test(AddressedMessageHandlerTest.class);
+		
+		Testing.test(BlockingHashMapTest.class);
 	}
 	
 }

@@ -20,6 +20,7 @@ import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
+import com.phoenixkahlo.nodenet.stream.SerializerObjectStream;
 import com.phoenixkahlo.nodenet.stream.StreamFamily;
 
 /**
@@ -77,7 +78,7 @@ public class BasicLocalNode implements LocalNode {
 
 	
 	private Optional<Node> setup(DatagramStream connection) {
-		ObjectStream stream = new ObjectStream(connection, new NullableSerializer(serializer));
+		ObjectStream stream = new SerializerObjectStream(connection, new NullableSerializer(serializer));
 		
 		Handshake received;
 		try {

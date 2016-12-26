@@ -34,6 +34,7 @@ public class AddressedMessage implements AutoSerializer {
 		this.destination = destination;
 		this.visited = new HashSet<>();
 		randomizeTransmissionID();
+		this.originalTransmissionID = transmissionID;
 	}
 
 	public void randomizeTransmissionID() {
@@ -71,6 +72,11 @@ public class AddressedMessage implements AutoSerializer {
 	@Override
 	public void autoDeserialize(InputStream in) throws IOException, ProtocolViolationException {
 		originalTransmissionID = transmissionID;
+	}
+	
+	@Override
+	public String toString() {
+		return "payload=" + payload + " dest=" + destination + " id=" + transmissionID;
 	}
 
 }

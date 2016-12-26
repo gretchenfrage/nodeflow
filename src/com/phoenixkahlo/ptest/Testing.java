@@ -32,20 +32,20 @@ public class Testing {
 		}
 
 		Random seeder = new Random();
-		System.out.println("### running class \"" + clazz.getSimpleName() + "\" ###");
+		System.out.println("### testing class \"" + clazz.getSimpleName() + "\" ###");
 		Arrays.stream(clazz.getMethods()).filter(method -> method.isAnnotationPresent(Test.class)).forEach(method -> {
 			Test annotation = method.getAnnotation(Test.class);
 			if (annotation.name().equals("$unnamed"))
-				System.out.print("running test.serialization \"" + method.getName() + "\"");
+				System.out.print("running \"" + method.getName() + "\"");
 			else
-				System.out.print("running test.serialization \"" + annotation.name() + "\"");
+				System.out.print("running \"" + annotation.name() + "\"");
 			long seed = seeder.nextLong();
 			System.out.println(" (seed=" + seed + ")");
 			RANDOM.setSeed(seed);
 			try {
 				method.invoke(null);
 			} catch (InvocationTargetException e) {
-				System.err.println("test.serialization failed with exception:");
+				System.err.println("test failed with exception:");
 				if (crash)
 					throw new RuntimeException(e.getTargetException());
 				else

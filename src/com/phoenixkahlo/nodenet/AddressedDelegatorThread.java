@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
@@ -24,6 +25,8 @@ public class AddressedDelegatorThread extends Thread {
 	private BlockingMap<Integer, Boolean> addressedResults;
 	private NodeAddress sender;
 
+	private Object sleepLock = new Object();
+	
 	private volatile boolean done = false;
 	private volatile boolean succeeded = false;
 
@@ -41,75 +44,86 @@ public class AddressedDelegatorThread extends Thread {
 		this.sender = sender;
 	}
 
-	private synchronized void receiveResult(NodeAddress from, boolean suceeded) {
-		if (succeeded) {
-			this.succeeded = true;
-			this.done = true;
-			interrupt();
-		} else if (sequenceComplete) {
-			boolean allFailed;
-			synchronized (addressedResults) {
-				allFailed = sequenceAccumulation.stream()
-						.allMatch(node -> addressedResults.containsKey(node) && addressedResults.get(node) == false);
-			}
-			if (allFailed) {
+	private void receiveResult(NodeAddress from, boolean wasSuccessful) {
+		synchronized (sleepLock) {
+			if (wasSuccessful) {
+				this.succeeded = true;
 				this.done = true;
-				interrupt();
+				sleepLock.notifyAll();
+			} else if (sequenceComplete) {
+				boolean allFailed;
+				synchronized (addressedResults) {
+					allFailed = sequenceAccumulation.stream()
+							.allMatch(node -> addressedResults.containsKey(node) && addressedResults.get(node) == false);
+				}
+				if (allFailed) {
+					this.done = true;
+					sleepLock.notifyAll();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void run() {
-		Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, localAddress, connections);
-		while (sequence.hasNext() && !done) {
-			NodeAddress next = sequence.next();
-			sequenceAccumulation.add(next);
-
-			message.randomizeTransmissionID();
-			int transmissionID = message.getTransmissionID();
-
+		synchronized (sleepLock) {
+			Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, localAddress, connections);
+			while (sequence.hasNext() && !done) {
+				NodeAddress next = sequence.next();
+				sequenceAccumulation.add(next);
+	
+				message.randomizeTransmissionID();
+				int transmissionID = message.getTransmissionID();
+	
+				ObjectStream stream;
+				synchronized (connections) {
+					stream = connections.get(next);
+				}
+				if (stream == null) {
+					System.err.println("Failed to send AddressedMessage to " + sender + " - stream not found");
+				}
+				try {
+					stream.send(message);
+				} catch (DisconnectionException e) {
+					System.err.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
+					addressedResults.put(transmissionID, false);
+				}
+	
+				Thread waiter = new Thread(() -> {
+					Optional<Boolean> result = addressedResults.tryGet(transmissionID, 10_000);
+					if (result.isPresent()) {
+						receiveResult(next, result.get());
+					}
+				});
+				waiter.start();
+	
+				try {
+					sleepLock.wait(500);
+				} catch (InterruptedException e) {
+				}
+			}
+			sequenceComplete = true;
+	
+			if (!done) {
+				try {
+					sleepLock.wait(10_000);
+				} catch (InterruptedException e) {
+				}
+			}
+	
 			ObjectStream stream;
 			synchronized (connections) {
-				stream = connections.get(next);
+				stream = connections.get(sender);
 			}
 			if (stream == null) {
-				System.err.println("Failed to send AddressedMessage to " + sender + " - stream not found");
+				System.err.println("Failed to send result to " + sender + " - stream not found");
+				return;
 			}
 			try {
-				stream.send(message);
+				stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), succeeded));
 			} catch (DisconnectionException e) {
-				System.err.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
-				addressedResults.put(transmissionID, false);
+				System.err.println("Failed to send result to " + sender + " - stream disconnected");
 			}
-
-			Thread waiter = new Thread(() -> receiveResult(next, addressedResults.get(transmissionID)));
-			waiter.start();
-
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-			}
-		}
-		sequenceComplete = true;
-
-		try {
-			Thread.sleep(10_000);
-		} catch (InterruptedException e) {
-		}
-
-		ObjectStream stream;
-		synchronized (connections) {
-			stream = connections.get(sender);
-		}
-		if (stream == null) {
-			System.err.println("Failed to send result to " + sender + " - stream not found");
-			return;
-		}
-		try {
-			stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), succeeded));
-		} catch (DisconnectionException e) {
-			System.err.println("Failed to send result to " + sender + " - stream disconnected");
 		}
 	}
 

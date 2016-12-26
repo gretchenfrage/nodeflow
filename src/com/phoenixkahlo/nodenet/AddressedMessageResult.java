@@ -31,4 +31,9 @@ public class AddressedMessageResult {
 		return success;
 	}
 
+	@Override
+	public String toString() {
+		return transmissionID + " was " + (success ? "" : "not") + " successful";
+	}
+	
 }
