@@ -48,6 +48,16 @@ public interface LocalNode {
 	void listenForLeave(Consumer<Node> listener);
 
 	/**
+	 * Opposite of listenForJoin.
+	 */
+	void removeJoinListener(Consumer<Node> listener);
+	
+	/**
+	 * Opposite of listenForLeave.
+	 */
+	void removeLeaveListener(Consumer<Node> listener);
+	
+	/**
 	 * Get all the nodes in the network.
 	 */
 	List<Node> getNodes();
