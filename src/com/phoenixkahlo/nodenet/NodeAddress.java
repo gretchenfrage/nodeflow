@@ -2,12 +2,11 @@ package com.phoenixkahlo.nodenet;
 
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
-import com.phoenixkahlo.util.PerfectHashable;
 
 /**
  * Unique, random identifier for nodes.
  */
-public class NodeAddress implements PerfectHashable {
+public class NodeAddress {
 
 	public static Serializer serializer(Serializer subSerializer) {
 		return new FieldSerializer(NodeAddress.class, subSerializer, NodeAddress::new);
