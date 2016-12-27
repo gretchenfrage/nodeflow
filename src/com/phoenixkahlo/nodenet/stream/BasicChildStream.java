@@ -283,7 +283,7 @@ public class BasicChildStream implements ChildStream {
 
 	@Override
 	public String toString() {
-		return "BasicChildStream id=" + connectionID + " sendTo=" + sendTo;
+		return "-->" + sendTo;
 	}
 
 	@Override

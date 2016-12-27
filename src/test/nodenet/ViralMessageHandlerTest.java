@@ -1,5 +1,6 @@
 package test.nodenet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class ViralMessageHandlerTest {
 		model.connect(new NodeAddress(1), new NodeAddress(3));
 		model.connect(new NodeAddress(1), new NodeAddress(4));
 
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, model);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, new HashMap<>(), model,
+				null, new ArrayList<>(), new ArrayList<>());
 		ViralMessage message = new ViralMessage(new NeighborSetUpdate(new NodeAddress(987234), new HashSet<>()));
 		message.addInfected(new NodeAddress(2));
 
@@ -69,7 +71,8 @@ public class ViralMessageHandlerTest {
 		model.connect(new NodeAddress(1), new NodeAddress(3));
 		model.connect(new NodeAddress(1), new NodeAddress(4));
 
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, model);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, new HashMap<>(), model,
+				null, new ArrayList<>(), new ArrayList<>());
 		ViralMessage message = new ViralMessage(new NeighborSetUpdate(new NodeAddress(987234), new HashSet<>()));
 		message.addInfected(new NodeAddress(2));
 		message.addInfected(new NodeAddress(3));
@@ -103,7 +106,8 @@ public class ViralMessageHandlerTest {
 		ViralPayload payload = new NeighborSetUpdate(new NodeAddress(2), connectedTo2);
 		ViralMessage message = new ViralMessage(payload);
 
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, model);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, new HashMap<>(), model,
+				null, new ArrayList<>(), new ArrayList<>());
 
 		handler.handle(message);
 
@@ -132,7 +136,8 @@ public class ViralMessageHandlerTest {
 		message.addInfected(new NodeAddress(3));
 		message.addInfected(new NodeAddress(4));
 
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, model);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, new HashMap<>(), model,
+				null, new ArrayList<>(), new ArrayList<>());
 
 		for (ObjectStream stream : connections.values()) {
 			((Mockery) stream).method("send", Object.class)

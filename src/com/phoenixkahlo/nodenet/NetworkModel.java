@@ -124,6 +124,10 @@ public class NetworkModel {
 		this.parents.put(root, parents);
 	}
 	
+	public Set<NodeAddress> nodeSet() {
+		return new HashSet<>(connections.keySet());
+	}
+	
 	@Override
 	public String toString() {
 		return connections.toString();

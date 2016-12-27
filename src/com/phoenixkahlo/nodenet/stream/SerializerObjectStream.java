@@ -34,6 +34,7 @@ public class SerializerObjectStream implements ObjectStream {
 
 	@Override
 	public void send(Object object) throws DisconnectionException {
+		//System.out.println("sending " + object + " to " + socket);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			serializer.serialize(object, baos);
@@ -63,7 +64,9 @@ public class SerializerObjectStream implements ObjectStream {
 		byte[] bin = socket.receive();
 		InputStream in = new ByteArrayInputStream(bin);
 		try {
-			return deserializer.deserialize(in);
+			Object received = deserializer.deserialize(in);
+			//System.out.println("received " + received + " from " + socket);
+			return received;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

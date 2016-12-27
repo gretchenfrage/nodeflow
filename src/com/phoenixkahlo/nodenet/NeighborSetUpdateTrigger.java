@@ -12,4 +12,9 @@ public class NeighborSetUpdateTrigger implements ViralPayload {
 		return new FieldSerializer(NeighborSetUpdateTrigger.class, subSerializer, NeighborSetUpdateTrigger::new);
 	}
 	
+	@Override
+	public String toString() {
+		return "neighbor set update trigger";
+	}
+	
 }

@@ -33,5 +33,10 @@ public class NeighborSetUpdate implements ViralPayload {
 	public Set<NodeAddress> getNeighbors() {
 		return neighbors;
 	}
+	
+	@Override
+	public String toString() {
+		return "neighbor set update of " + node;
+	}
 
 }

@@ -2,6 +2,7 @@ package com.phoenixkahlo.nodenet;
 
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,15 @@ public class BasicLocalNode implements LocalNode {
 	private Map<NodeAddress, ObjectStream> connections = new HashMap<>();
 	private Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 
-	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, model);
+	private List<Consumer<Node>> joinListeners = new ArrayList<>();
+	private List<Consumer<Node>> leaveListeners = new ArrayList<>();
+
 	private AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections,
 			nodes);
+	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, nodes, model, addressedHandler,
+			joinListeners, leaveListeners);
 	private HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, model, connections,
-			nodes, viralHandler, addressedHandler);
+			nodes, viralHandler, addressedHandler, joinListeners, leaveListeners);
 
 	private BasicLocalNode(StreamFamily family) {
 		SerializerInitializer.init(serializer);
@@ -78,22 +83,30 @@ public class BasicLocalNode implements LocalNode {
 
 	@Override
 	public void listenForJoin(Consumer<Node> listener) {
-		handshakeHandler.addJoinListener(listener);
+		synchronized (joinListeners) {
+			joinListeners.add(listener);
+		}
 	}
 
 	@Override
 	public void listenForLeave(Consumer<Node> listener) {
-		handshakeHandler.addLeaveListener(listener);
+		synchronized (leaveListeners) {
+			leaveListeners.add(listener);
+		}
 	}
-	
+
 	@Override
 	public void removeJoinListener(Consumer<Node> listener) {
-		handshakeHandler.removeJoinListener(listener);
+		synchronized (joinListeners) {
+			joinListeners.remove(listener);
+		}
 	}
-	
+
 	@Override
 	public void removeLeaveListener(Consumer<Node> listener) {
-		handshakeHandler.removeLeaveListener(listener);
+		synchronized (leaveListeners) {
+			leaveListeners.remove(listener);
+		}
 	}
 
 	@Override
@@ -117,6 +130,11 @@ public class BasicLocalNode implements LocalNode {
 	@Override
 	public void disconnect() {
 		family.close();
+	}
+
+	@Override
+	public NodeAddress getAddress() {
+		return localAddress;
 	}
 
 }

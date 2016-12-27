@@ -32,7 +32,7 @@ public class NodeNetTinkering {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {}
-				//node.send("goodbye world");
+				node.send("goodbye world");
 			}).start());
 			network.setGreeter(address -> {
 				boolean accept = true; // address.getAddress().isAnyLocalAddress();

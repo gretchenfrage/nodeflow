@@ -32,11 +32,11 @@ public interface LocalNode {
 	default void acceptAllIncoming() {
 		setGreeter(address -> true);
 	}
-	
+
 	default void rejectAllIncoming() {
 		setGreeter(address -> false);
 	}
-	
+
 	/**
 	 * Add a listener for new nodes connected to the network.
 	 */
@@ -51,12 +51,12 @@ public interface LocalNode {
 	 * Opposite of listenForJoin.
 	 */
 	void removeJoinListener(Consumer<Node> listener);
-	
+
 	/**
 	 * Opposite of listenForLeave.
 	 */
 	void removeLeaveListener(Consumer<Node> listener);
-	
+
 	/**
 	 * Get all the nodes in the network.
 	 */
@@ -71,5 +71,10 @@ public interface LocalNode {
 	 * Completely disconnect from the network.
 	 */
 	void disconnect();
+
+	/**
+	 * @return the NodeAddress of this node.
+	 */
+	NodeAddress getAddress();
 
 }

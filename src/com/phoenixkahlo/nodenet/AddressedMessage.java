@@ -88,7 +88,7 @@ public class AddressedMessage implements AutoSerializer {
 	
 	@Override
 	public String toString() {
-		return "payload=" + payload + " dest=" + destination + " id=" + transmissionID;
+		return "addressed(" + payload + ")";
 	}
 
 }

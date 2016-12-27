@@ -27,4 +27,9 @@ public class Handshake {
 		return senderAddress;
 	}
 
+	@Override
+	public String toString() {
+		return "handshake from " + senderAddress;
+	}
+	
 }

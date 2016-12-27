@@ -44,5 +44,10 @@ public class ViralMessage {
 	public ViralPayload getPayload() {
 		return payload;
 	}
+	
+	@Override
+	public String toString() {
+		return "viral(" + payload + ")";
+	}
 
 }

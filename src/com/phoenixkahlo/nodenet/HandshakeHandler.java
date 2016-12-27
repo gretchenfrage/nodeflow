@@ -1,6 +1,5 @@
 package com.phoenixkahlo.nodenet;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +28,13 @@ public class HandshakeHandler {
 	private ViralMessageHandler viralHandler;
 	private AddressedMessageHandler addressedHandler;
 
-	private List<Consumer<Node>> joinListeners = new ArrayList<>();
-	private List<Consumer<Node>> leaveListeners = new ArrayList<>();
+	private List<Consumer<Node>> joinListeners;// = new ArrayList<>();
+	private List<Consumer<Node>> leaveListeners;// = new ArrayList<>();
 
 	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes,
-			ViralMessageHandler viralHandler, AddressedMessageHandler addressedHandler) {
-		super();
+			ViralMessageHandler viralHandler, AddressedMessageHandler addressedHandler,
+			List<Consumer<Node>> joinListeners, List<Consumer<Node>> leaveListeners) {
 		this.serializer = serializer;
 		this.localAddress = localAddress;
 		this.model = model;
@@ -43,6 +42,8 @@ public class HandshakeHandler {
 		this.nodes = nodes;
 		this.viralHandler = viralHandler;
 		this.addressedHandler = addressedHandler;
+		this.joinListeners = joinListeners;
+		this.leaveListeners = leaveListeners;
 	}
 
 	public Optional<Node> setup(DatagramStream connection) {
@@ -72,13 +73,13 @@ public class HandshakeHandler {
 			nodes.put(remoteAddress, node);
 		}
 
-		viralHandler.transmit(new NeighborSetUpdateTrigger());
-
 		new StreamReceiverThread(stream, remoteAddress, addressedHandler, viralHandler).start();
 
 		if (!alreadyConnected) {
 			synchronized (joinListeners) {
-				joinListeners.forEach(listener -> listener.accept(node));
+				for (int i = joinListeners.size() - 1; i >= 0; i--) {
+					joinListeners.get(i).accept(node);
+				}
 			}
 		}
 
@@ -105,31 +106,9 @@ public class HandshakeHandler {
 			}
 		});
 
+		viralHandler.transmit(new NeighborSetUpdateTrigger());
+
 		return Optional.of(node);
-	}
-	
-	public void addJoinListener(Consumer<Node> listener) {
-		synchronized (joinListeners) {
-			joinListeners.add(listener);
-		}
-	}
-	
-	public void addLeaveListener(Consumer<Node> listener) {
-		synchronized (leaveListeners) {
-			leaveListeners.add(listener);
-		}
-	}
-	
-	public void removeJoinListener(Consumer<Node> listener) {
-		synchronized (joinListeners) {
-			joinListeners.remove(listener);
-		}
-	}
-	
-	public void removeLeaveListener(Consumer<Node> listener) {
-		synchronized (leaveListeners) {
-			leaveListeners.remove(listener);
-		}
 	}
 
 }
