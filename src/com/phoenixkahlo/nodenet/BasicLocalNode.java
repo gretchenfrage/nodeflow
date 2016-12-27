@@ -53,7 +53,7 @@ public class BasicLocalNode implements LocalNode {
 
 	@Override
 	public void addSerializer(Serializer serializer, int header) {
-		if (header < 0)
+		if (header <= 0)
 			throw new IllegalArgumentException("Serializer headers must be positive");
 
 		synchronized (this.serializer) {

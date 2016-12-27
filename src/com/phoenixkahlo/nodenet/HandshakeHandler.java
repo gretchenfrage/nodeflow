@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.phoenixkahlo.nodenet.serialization.NullableSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
@@ -47,7 +46,7 @@ public class HandshakeHandler {
 	}
 
 	public Optional<Node> setup(DatagramStream connection) {
-		ObjectStream stream = new SerializerObjectStream(connection, new NullableSerializer(serializer));
+		ObjectStream stream = new SerializerObjectStream(connection, serializer);
 
 		Handshake received;
 		try {

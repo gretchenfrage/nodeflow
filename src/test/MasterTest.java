@@ -4,6 +4,7 @@ import com.phoenixkahlo.ptest.Testing;
 
 import test.nodenet.AddressedAttemptSequenceTest;
 import test.nodenet.AddressedMessageHandlerTest;
+import test.nodenet.HandshakeHandlerTest;
 import test.nodenet.NetworkModelTest;
 import test.nodenet.ViralMessageHandlerTest;
 import test.serialization.ArraySerializationTest;
@@ -37,6 +38,7 @@ public class MasterTest {
 		Testing.test(AddressedAttemptSequenceTest.class);
 		Testing.test(AddressedMessageHandlerTest.class);
 		Testing.test(ViralMessageHandlerTest.class);
+		Testing.test(HandshakeHandlerTest.class);
 		
 		Testing.test(BlockingHashMapTest.class);
 	}
