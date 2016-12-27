@@ -28,6 +28,7 @@ public class SerializerInitializer {
 		serializer.add(-10, AddressedMessage.serializer(serializer));
 		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
 		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
+		serializer.add(-13, ClientTransmission.serializer(serializer));
 	}
 
 }

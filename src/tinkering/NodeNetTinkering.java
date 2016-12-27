@@ -2,10 +2,13 @@ package tinkering;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import com.phoenixkahlo.nodenet.BasicLocalNode;
 import com.phoenixkahlo.nodenet.LocalNode;
 import com.phoenixkahlo.nodenet.Node;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.StringSerializer;
 
 public class NodeNetTinkering {
 
@@ -13,13 +16,19 @@ public class NodeNetTinkering {
 		new Thread(NodeNetTinkering::thread1).start();
 		new Thread(NodeNetTinkering::thread2).start();
 	}
+	
+	public static void init(BiConsumer<Serializer, Integer> registrar) {
+		registrar.accept(new StringSerializer(), 1);
+	}
 
 	public static void thread1() {
 		try {
 			LocalNode network = new BasicLocalNode(23458);
+			init(network::addSerializer);
 			network.listenForJoin(node -> new Thread(() -> {
 				System.out.println("connection formed from thread1");
 				System.out.println(network.getNodes());
+				node.send("hello world");
 			}).start());
 			network.setGreeter(address -> {
 				boolean accept = true; // address.getAddress().isAnyLocalAddress();
@@ -35,6 +44,7 @@ public class NodeNetTinkering {
 		try {
 			Thread.sleep(1_000);
 			LocalNode network = new BasicLocalNode();
+			init(network::addSerializer);
 			Optional<Node> optionalNode = network.connect(new InetSocketAddress("localhost", 23458));
 			if (optionalNode.isPresent()) {
 				Node node = optionalNode.get();

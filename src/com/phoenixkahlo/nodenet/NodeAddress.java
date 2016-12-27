@@ -37,7 +37,7 @@ public class NodeAddress implements PerfectHashable {
 	
 	@Override
 	public String toString() {
-		return "#" + id;
+		return "#" + Integer.toHexString(id);
 	}
 
 }
