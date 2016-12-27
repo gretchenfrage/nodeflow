@@ -34,12 +34,12 @@ public class NodeNetTinkering3 {
 			System.out.println("net1 initialized");
 
 			// t=100ms: 1 connects to 2
-			Thread.sleep(1000);
+			Thread.sleep(100);
 			Optional<Node> node2 = net.connect(new InetSocketAddress("localhost", 3002));
 			System.out.println("net1 connected to node2: " + node2);
 
 			// t=300ms: print out stuff
-			Thread.sleep(2000);
+			Thread.sleep(200);
 			System.out.println("net1.address=" + net.getAddress());
 			System.out.println("net1.nodes=" + net.getNodes());
 
@@ -60,12 +60,12 @@ public class NodeNetTinkering3 {
 			System.out.println("net2 initialized");
 
 			// t=200ms: 2 connects to 3
-			Thread.sleep(2000);
+			Thread.sleep(200);
 			Optional<Node> node3 = net.connect(new InetSocketAddress("localhost", 3003));
 			System.out.println("net2 connected to node3: " + node3);
 
 			// t=300ms: print out stuff
-			Thread.sleep(1000);
+			Thread.sleep(100);
 			System.out.println("net2.address=" + net.getAddress());
 			System.out.println("net2.nodes=" + net.getNodes());
 
@@ -84,7 +84,7 @@ public class NodeNetTinkering3 {
 			System.out.println("net3 initialized");
 
 			// t=300ms: print out stuff
-			Thread.sleep(3000);
+			Thread.sleep(300);
 			System.out.println("net3.address=" + net.getAddress());
 			System.out.println("net3.nodes=" + net.getNodes());
 

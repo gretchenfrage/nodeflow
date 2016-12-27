@@ -91,6 +91,11 @@ public class BasicStreamFamily implements StreamFamily {
 			return Optional.empty();
 		
 		int connectionID = ThreadLocalRandom.current().nextInt() & DatagramStreamConfig.CONNECTION_ID_RANGE;
+		
+		synchronized (unconfirmedConnections) {
+			unconfirmedConnections.add(connectionID);
+		}
+		
 		try {
 			udpWrapper.send(intToBytes(connectionID | DatagramStreamConfig.CONNECT), address);
 		} catch (IOException e1) {
@@ -98,7 +103,6 @@ public class BasicStreamFamily implements StreamFamily {
 		}
 
 		synchronized (unconfirmedConnections) {
-			unconfirmedConnections.add(connectionID);
 			while (unconfirmedConnections.contains(connectionID)) {
 				try {
 					unconfirmedConnections.wait();
