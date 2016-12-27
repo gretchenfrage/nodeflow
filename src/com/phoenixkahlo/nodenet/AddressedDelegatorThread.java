@@ -111,18 +111,20 @@ public class AddressedDelegatorThread extends Thread {
 				}
 			}
 	
-			ObjectStream stream;
-			synchronized (connections) {
-				stream = connections.get(sender);
-			}
-			if (stream == null) {
-				System.err.println("Failed to send result to " + sender + " - stream not found");
-				return;
-			}
-			try {
-				stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), succeeded));
-			} catch (DisconnectionException e) {
-				System.err.println("Failed to send result to " + sender + " - stream disconnected");
+			if (!localAddress.equals(sender)) {
+				ObjectStream stream;
+				synchronized (connections) {
+					stream = connections.get(sender);
+				}
+				if (stream == null) {
+					System.err.println("Failed to send result to " + sender + " - stream not found");
+					return;
+				}
+				try {
+					stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), succeeded));
+				} catch (DisconnectionException e) {
+					System.err.println("Failed to send result to " + sender + " - stream disconnected");
+				}
 			}
 		}
 	}
