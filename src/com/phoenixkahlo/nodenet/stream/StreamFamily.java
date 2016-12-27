@@ -1,6 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -49,7 +49,7 @@ public interface StreamFamily {
 	 * Attempt to connect to the address. Failure may result from timeout,
 	 * IOException, rejectance, etc.
 	 */
-	Optional<DatagramStream> connect(SocketAddress address);
+	Optional<DatagramStream> connect(InetSocketAddress address);
 
 	/**
 	 * Useage of children list should be synchronized.
@@ -67,17 +67,17 @@ public interface StreamFamily {
 	 * If the receiveTest allows the connection, broadcast a response and add to
 	 * list of children.
 	 */
-	void receiveConnect(int connectionID, SocketAddress from);
+	void receiveConnect(int connectionID, InetSocketAddress from);
 
 	/**
 	 * Realize the potential connection, add to the list of children, and return
 	 * any threads waiting on connect.
 	 */
-	void receiveAccept(int connectionID, SocketAddress from);
+	void receiveAccept(int connectionID, InetSocketAddress from);
 
 	/**
 	 * Return empty any threads waiting on connect.
 	 */
-	void receiveReject(int connectionID, SocketAddress from);
+	void receiveReject(int connectionID, InetSocketAddress from);
 
 }

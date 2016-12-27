@@ -1,6 +1,7 @@
 package com.phoenixkahlo.nodenet.stream;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 /**
@@ -18,6 +19,6 @@ public interface UDPSocketWrapper {
 	 * Receive data into the buffer, blocking until done. Return the address
 	 * from whence it came.
 	 */
-	SocketAddress receive(byte[] buffer) throws IOException;
+	InetSocketAddress receive(byte[] buffer) throws IOException;
 
 }

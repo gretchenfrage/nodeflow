@@ -1,8 +1,9 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.intToBytes;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 
 	@Override
-	public Optional<DatagramStream> connect(SocketAddress address) {
+	public Optional<DatagramStream> connect(InetSocketAddress address) {
 		if (disconnected)
 			return Optional.empty();
 		
@@ -114,7 +115,7 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 
 	@Override
-	public void receiveAccept(int connectionID, SocketAddress from) {
+	public void receiveAccept(int connectionID, InetSocketAddress from) {
 		synchronized (unconfirmedConnections) {
 			if (!unconfirmedConnections.contains(connectionID)) {
 				System.err.println("ACCEPT received with connectionID " + connectionID + " from " + from
@@ -133,7 +134,7 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 
 	@Override
-	public void receiveReject(int connectionID, SocketAddress from) {
+	public void receiveReject(int connectionID, InetSocketAddress from) {
 		synchronized (unconfirmedConnections) {
 			if (unconfirmedConnections.contains(connectionID)) {
 				unconfirmedConnections.remove(connectionID);
@@ -168,7 +169,7 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 
 	@Override
-	public void receiveConnect(int connectionID, SocketAddress from) {
+	public void receiveConnect(int connectionID, InetSocketAddress from) {
 		Thread acceptTimer = new TimeWarningThread("Warning: " + this + " receive test taking long amount of time.",
 				50);
 		boolean accept = receiveTest.test(new PotentialConnection(from));

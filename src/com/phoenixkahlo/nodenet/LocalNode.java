@@ -1,6 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -21,13 +21,13 @@ public interface LocalNode {
 	/**
 	 * Attempt to form a connection with the given address.
 	 */
-	Optional<Node> connect(SocketAddress address);
+	Optional<Node> connect(InetSocketAddress address);
 
 	/**
 	 * Set the predicate that will determine whether incoming nodes will be
 	 * accepted.
 	 */
-	void setGreeter(Predicate<SocketAddress> test);
+	void setGreeter(Predicate<InetSocketAddress> test);
 
 	default void acceptAllIncoming() {
 		setGreeter(address -> true);

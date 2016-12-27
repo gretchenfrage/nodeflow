@@ -1,6 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +63,7 @@ public class BasicLocalNode implements LocalNode {
 	}
 
 	@Override
-	public Optional<Node> connect(SocketAddress address) {
+	public Optional<Node> connect(InetSocketAddress address) {
 		Optional<DatagramStream> connection = family.connect(address);
 		if (!connection.isPresent())
 			return Optional.empty();
@@ -71,7 +71,7 @@ public class BasicLocalNode implements LocalNode {
 	}
 
 	@Override
-	public void setGreeter(Predicate<SocketAddress> test) {
+	public void setGreeter(Predicate<InetSocketAddress> test) {
 		family.setReceiveTest(potential -> test.test(potential.getAddress()));
 	}
 

@@ -1,6 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 /**
  * A bean for potential DatagramStream connections. Currently only contains the
@@ -8,13 +8,13 @@ import java.net.SocketAddress;
  */
 public class PotentialConnection {
 
-	private SocketAddress address;
+	private InetSocketAddress address;
 	
-	public PotentialConnection(SocketAddress address) {
+	public PotentialConnection(InetSocketAddress address) {
 		this.address = address;
 	}
 	
-	public SocketAddress getAddress() {
+	public InetSocketAddress getAddress() {
 		return address;
 	}
 	

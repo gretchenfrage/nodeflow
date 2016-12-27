@@ -3,6 +3,7 @@ package com.phoenixkahlo.nodenet.stream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 
@@ -29,10 +30,10 @@ public class RealUDPSocketWrapper implements UDPSocketWrapper {
 	}
 
 	@Override
-	public SocketAddress receive(byte[] buffer) throws IOException {
+	public InetSocketAddress receive(byte[] buffer) throws IOException {
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 		socket.receive(packet);
-		return packet.getSocketAddress();
+		return new InetSocketAddress(packet.getAddress(), packet.getPort());
 	}
 	
 	@Override

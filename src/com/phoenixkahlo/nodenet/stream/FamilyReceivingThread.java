@@ -6,7 +6,7 @@ import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readShor
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.Optional;
 
 import com.phoenixkahlo.util.EndableThread;
@@ -29,7 +29,7 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 		while (shouldContinue) {
 			try {				
 				byte[] buffer = new byte[DatagramStreamConfig.MAX_PAYLOAD_SIZE * 2];
-				SocketAddress from = family.getUDPWrapper().receive(buffer);
+				InetSocketAddress from = family.getUDPWrapper().receive(buffer);
 
 				InputStream in = new ByteArrayInputStream(buffer);
 				int header = readInt(in);
