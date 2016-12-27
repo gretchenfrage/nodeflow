@@ -77,4 +77,9 @@ public interface LocalNode {
 	 */
 	NodeAddress getAddress();
 
+	/**
+	 * @return the Node corresponding to the address.
+	 */
+	Optional<Node> getNode(NodeAddress address);
+
 }

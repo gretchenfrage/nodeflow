@@ -137,4 +137,11 @@ public class BasicLocalNode implements LocalNode {
 		return localAddress;
 	}
 
+	@Override
+	public Optional<Node> getNode(NodeAddress address) {
+		synchronized (nodes) {
+			return Optional.ofNullable(nodes.get(address));
+		}
+	}
+
 }
