@@ -41,6 +41,8 @@ public class MasterTest {
 		Testing.test(HandshakeHandlerTest.class);
 		
 		Testing.test(BlockingHashMapTest.class);
+		
+		System.out.println("$$$ done! $$$);
 	}
 	
 }

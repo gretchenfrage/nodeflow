@@ -26,7 +26,7 @@ public interface StreamFamily {
 	/**
 	 * Set the test for receiving new connections. Should execute quickly, or
 	 * will cause receiving thread to block, interrupting messages and heartbeat
-	 * from all children..
+	 * from all children.
 	 */
 	void setReceiveTest(Predicate<PotentialConnection> receiveTest);
 
@@ -35,8 +35,12 @@ public interface StreamFamily {
 	 * will cause receiving thread to block, interrupting messages and heartbeat
 	 * from all children..
 	 */
-	void setReceiveHandler(Consumer<DatagramStream> receiveHandler);
+	void setReceiveHandler(Consumer<DatagramStream> receiveHandler, boolean launchNewThread);
 
+	default void setReceiveHandler(Consumer<DatagramStream> receiveHandler) {
+		setReceiveHandler(receiveHandler, true);
+	}
+	
 	/**
 	 * Reject all new connections.
 	 */

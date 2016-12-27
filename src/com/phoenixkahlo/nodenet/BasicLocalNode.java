@@ -26,7 +26,7 @@ public class BasicLocalNode implements LocalNode {
 	private UnionSerializer serializer = new UnionSerializer();
 	private NodeAddress localAddress = new NodeAddress(ThreadLocalRandom.current().nextInt());
 
-	private NetworkModel model;
+	private NetworkModel model = new NetworkModel();
 	private StreamFamily family;
 	private Map<NodeAddress, ObjectStream> connections = new HashMap<>();
 	private Map<NodeAddress, ChildNode> nodes = new HashMap<>();

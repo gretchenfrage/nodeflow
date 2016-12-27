@@ -18,7 +18,11 @@ public interface ObjectStream {
 
 	void disconnect();
 
-	void setDisconnectHandler(Runnable handler);
+	void setDisconnectHandler(Runnable handler, boolean launchNewThread);
+	
+	default void setDisconnectHandler(Runnable handler) {
+		setDisconnectHandler(handler, true);
+	}
 
 	boolean isDisconnected();
 

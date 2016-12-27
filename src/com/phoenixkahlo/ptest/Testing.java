@@ -68,7 +68,7 @@ public class Testing {
 	public static <E> E mock(Class<E> intrface) {
 		Map<Method, MethodMocker> mockers = new HashMap<>();
 		for (Method method : intrface.getMethods()) {
-			mockers.put(method, new MethodMocker());
+			mockers.put(method, new MethodMocker(method.toString()));
 		}
 		InvocationHandler handler = (proxy, method, args) -> {
 			if (method.equals(Mockery.class.getMethod("method", String.class, Class[].class))) {

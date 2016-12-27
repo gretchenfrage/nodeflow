@@ -78,8 +78,11 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 	
 	@Override
-	public void setReceiveHandler(Consumer<DatagramStream> receiveHandler) {
-		this.receiveHandler = receiveHandler;
+	public void setReceiveHandler(Consumer<DatagramStream> receiveHandler, boolean launchNewThread) {
+		if (launchNewThread)
+			this.receiveHandler = stream -> new Thread(() -> receiveHandler.accept(stream)).start();
+		else
+			this.receiveHandler = receiveHandler;
 	}
 
 	@Override
@@ -137,7 +140,7 @@ public class BasicStreamFamily implements StreamFamily {
 	public void receiveReject(int connectionID, InetSocketAddress from) {
 		synchronized (unconfirmedConnections) {
 			if (unconfirmedConnections.contains(connectionID)) {
-				unconfirmedConnections.remove(connectionID);
+				unconfirmedConnections.remove(new Integer(connectionID));
 				unconfirmedConnections.notifyAll();
 			} else {
 				System.err.println("REJECT received with connectionID " + connectionID + " from " + from

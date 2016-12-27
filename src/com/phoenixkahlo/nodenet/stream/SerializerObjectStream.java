@@ -85,8 +85,8 @@ public class SerializerObjectStream implements ObjectStream {
 	}
 
 	@Override
-	public void setDisconnectHandler(Runnable handler) {
-		socket.setDisconnectHandler(handler);
+	public void setDisconnectHandler(Runnable handler, boolean launchNewThread) {
+		socket.setDisconnectHandler(handler, launchNewThread);
 	}
 
 	@Override

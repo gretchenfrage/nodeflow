@@ -52,6 +52,11 @@ public class MethodMocker {
 	 * PREDICATE_RESPONSE_SET, responses is the set of predicates and responses.
 	 */
 	private List<PredicateFunctionPair> responses;
+	private String name;
+	
+	public MethodMocker(String name) {
+		this.name = name;
+	}
 
 	public void setMode(Mode mode) {
 		this.mode = mode;
@@ -129,7 +134,7 @@ public class MethodMocker {
 
 	Object handle(Object[] args) {
 		if (mode == null)
-			throw new IllegalStateException("Mode not determined");
+			throw new IllegalStateException("Mode not determined at " + name);
 		switch (mode) {
 		case RESPONSE_QUEUE:
 			if (responses.isEmpty())

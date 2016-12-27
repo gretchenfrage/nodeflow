@@ -131,7 +131,8 @@ public class HandshakeHandlerTest {
 			Thread.currentThread().stop();
 			return null;
 		});
-		((Mockery) connector).method("setDisconnectHandler", Runnable.class).setResponse(MethodMocker.VOID);
+		((Mockery) connector).method("setDisconnectHandler", Runnable.class, boolean.class).setResponse(MethodMocker.VOID);
+		
 
 		Optional<Node> node = handshakeHandler.setup(connector);
 		

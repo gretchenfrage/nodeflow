@@ -263,10 +263,16 @@ public class BasicChildStream implements ChildStream {
 	}
 
 	@Override
-	public void setDisconnectHandler(Runnable handler) {
+	public void setDisconnectHandler(Runnable handler, boolean launchNewThread) {
 		if (disconnected)
-			handler.run();
-		this.disconnectionHandler = handler;
+			if (launchNewThread)
+				new Thread(handler).start();
+			else
+				handler.run();
+		if (launchNewThread)
+			this.disconnectionHandler = () -> new Thread(handler).start();
+		else
+			this.disconnectionHandler = handler;
 	}
 
 	@Override
