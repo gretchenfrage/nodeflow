@@ -1,10 +1,11 @@
 package tinkering;
 
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.util.Optional;
 
-import com.phoenixkahlo.nodenet.*;
+import com.phoenixkahlo.nodenet.BasicLocalNode;
+import com.phoenixkahlo.nodenet.LocalNode;
+import com.phoenixkahlo.nodenet.Node;
 
 public class NodeNetTinkering {
 
@@ -16,6 +17,10 @@ public class NodeNetTinkering {
 	public static void thread1() {
 		try {
 			LocalNode network = new BasicLocalNode(23458);
+			network.listenForJoin(node -> new Thread(() -> {
+				System.out.println("connection formed from thread1");
+				System.out.println(network.getNodes());
+			}).start());
 			network.setGreeter(address -> {
 				boolean accept = true; // address.getAddress().isAnyLocalAddress();
 				System.out.println("connection proposed from " + address + (accept ? " - accepting" : " - rejecting"));
@@ -33,7 +38,7 @@ public class NodeNetTinkering {
 			Optional<Node> optionalNode = network.connect(new InetSocketAddress("localhost", 23458));
 			if (optionalNode.isPresent()) {
 				Node node = optionalNode.get();
-				System.out.println("connection formed");
+				System.out.println("connection formed from thread2");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

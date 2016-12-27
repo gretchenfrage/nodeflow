@@ -41,6 +41,7 @@ public class BasicLocalNode implements LocalNode {
 		SerializerInitializer.init(serializer);
 		this.family = family;
 		family.setReceiveHandler(handshakeHandler::setup);
+		nodes.put(localAddress, new ChildNode(addressedHandler, connections, localAddress, localAddress));
 	}
 
 	public BasicLocalNode() throws SocketException {

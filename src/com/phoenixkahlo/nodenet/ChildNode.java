@@ -77,5 +77,10 @@ public class ChildNode implements Node {
 	public NodeAddress getAddress() {
 		return remoteAddress;
 	}
+	
+	@Override
+	public String toString() {
+		return "node " + remoteAddress;
+	}
 
 }
