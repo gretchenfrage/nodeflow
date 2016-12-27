@@ -113,7 +113,6 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 
 	@Override
 	public void end() {
-		System.out.println("ENDING FAMILYRECEIVINGTHREAD");
 		shouldContinue = false;
 		interrupt();
 	}

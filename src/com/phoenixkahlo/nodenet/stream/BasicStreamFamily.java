@@ -162,8 +162,8 @@ public class BasicStreamFamily implements StreamFamily {
 	@Override
 	public void close() {
 		synchronized (children) {
-			for (ChildStream child : children) {
-				child.disconnect();
+			for (int i = children.size() - 1; i >= 0; i--) {
+				children.get(i).disconnect();
 			}
 		}
 		receivingThread.end();

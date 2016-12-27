@@ -29,6 +29,10 @@ public class NodeNetTinkering {
 				System.out.println("connection formed from thread1");
 				System.out.println(network.getNodes());
 				node.send("hello world");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {}
+				//node.send("goodbye world");
 			}).start());
 			network.setGreeter(address -> {
 				boolean accept = true; // address.getAddress().isAnyLocalAddress();
@@ -49,6 +53,10 @@ public class NodeNetTinkering {
 			if (optionalNode.isPresent()) {
 				Node node = optionalNode.get();
 				System.out.println("connection formed from thread2");
+				Object received = node.receive();
+				System.out.println("received " + received);
+				network.disconnect();
+				System.out.println("disconnected");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -18,29 +18,29 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class BasicChildStream implements ChildStream {
-	
+
 	private StreamFamily family;
 	private int connectionID;
 	private SocketAddress sendTo;
-	
+
 	// Synchronize usages of unconfirmed
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
 	private AtomicInteger nextSendOrdinal = new AtomicInteger(0);
-	
+
 	private Queue<ReceivedMessage> receivedOrdered = new PriorityQueue<>(10,
 			(received1, received2) -> received2.getOrdinal().getAsInt() - received1.getOrdinal().getAsInt());
 	private Queue<ReceivedMessage> receivedUnordered = new LinkedList<>();
 	private Object receivedLock = new Object();
-	
+
 	// Synchronize usages of partiallyReceived
 	private List<MessageBuilder> partiallyReceived = new ArrayList<>();
-	
+
 	private volatile long lastHeartbeat;
 	private long timeOfCreation = System.currentTimeMillis();
-	
+
 	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
 	private Runnable disconnectionHandler = () -> System.out.println(BasicChildStream.this + " disconnected");
-	
+
 	private volatile boolean disconnected = false;
 
 	public BasicChildStream(StreamFamily family, int connectionID, SocketAddress sendTo,
@@ -156,7 +156,9 @@ public class BasicChildStream implements ChildStream {
 		synchronized (family.getChildren()) {
 			family.getChildren().remove(this);
 		}
-		receivedLock.notifyAll();
+		synchronized (receivedLock) {
+			receivedLock.notifyAll();
+		}
 		disconnectionHandler.run();
 	}
 
@@ -172,9 +174,8 @@ public class BasicChildStream implements ChildStream {
 	@Override
 	public void receivePayload(ReceivedPayload payload) {
 		try {
-			family.getUDPWrapper().send(
-					concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM), intToBytes(payload.getPayloadID())),
-					sendTo);
+			family.getUDPWrapper().send(concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM),
+					intToBytes(payload.getPayloadID())), sendTo);
 		} catch (IOException e) {
 			System.err.println("IOException while confirming payload");
 			e.printStackTrace();
