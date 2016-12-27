@@ -105,6 +105,8 @@ public class HandshakeHandler {
 						.forEach(left -> leaveListeners.forEach(listener -> listener.accept(left)));
 			}
 		});
+		
+		viralHandler.sendFresh(stream);
 
 		viralHandler.transmit(new NeighborSetUpdateTrigger());
 

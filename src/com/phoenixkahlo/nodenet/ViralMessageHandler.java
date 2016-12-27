@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
+import com.phoenixkahlo.util.TTLBag;
 
 /**
  * An object owned by a LocalNode to handle the ViralMessage system. When a
@@ -27,6 +28,7 @@ public class ViralMessageHandler {
 	private AddressedMessageHandler addressedHandler;
 	private List<Consumer<Node>> joinListeners;
 	private List<Consumer<Node>> leaveListeners;
+	private TTLBag<ViralMessage> freshMessages = new TTLBag<>();
 
 	public ViralMessageHandler(NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
 			Map<NodeAddress, ChildNode> nodes, NetworkModel model, AddressedMessageHandler addressedHandler,
@@ -55,6 +57,9 @@ public class ViralMessageHandler {
 		}
 		if (!handled) {
 			message.addInfected(localAddress);
+			synchronized (freshMessages) {
+				freshMessages.add(message, 100);
+			}
 			synchronized (connections) {
 				for (NodeAddress address : connections.keySet()) {
 					if (!message.getInfected().contains(address)) {
@@ -66,6 +71,21 @@ public class ViralMessageHandler {
 				}
 			}
 			handlePayload(message.getPayload());
+		}
+	}
+
+	/**
+	 * Send all the fresh messages across the given connection.
+	 */
+	public void sendFresh(ObjectStream connection) {
+		synchronized (freshMessages) {
+			try {
+				for (ViralMessage message : freshMessages) {
+					connection.send(message);
+				}
+			} catch (DisconnectionException e) {
+				System.err.println("Fresh-sending failed - stream disconnected");
+			}
 		}
 	}
 
