@@ -1,5 +1,8 @@
 package com.phoenixkahlo.nodenet;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -18,6 +21,9 @@ public class ChildNode implements Node {
 	private NodeAddress remoteAddress;
 	private BlockingQueue<Object> receivedQueue = new LinkedBlockingQueue<>();
 	private Consumer<Object> receiver = receivedQueue::add;
+	private List<Thread> receiving = Collections.synchronizedList(new ArrayList<>());
+	
+	private volatile boolean disconnected = false;
 
 	public ChildNode(AddressedMessageHandler addressedHandler, Map<NodeAddress, ObjectStream> connections,
 			NodeAddress localAddress, NodeAddress remoteAddress) {
@@ -28,11 +34,19 @@ public class ChildNode implements Node {
 	}
 
 	@Override
-	public Object receive() {
+	public Object receive() throws DisconnectionException {
+		if (disconnected)
+			throw new DisconnectionException();
 		try {
+			receiving.add(Thread.currentThread());
 			return receivedQueue.take();
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			if (disconnected)
+				throw new DisconnectionException();
+			else
+				throw new RuntimeException(e);
+		} finally {
+			receiving.remove(Thread.currentThread());
 		}
 	}
 
@@ -47,13 +61,15 @@ public class ChildNode implements Node {
 	}
 
 	@Override
-	public void send(Object object) {
+	public void send(Object object) throws DisconnectionException {
+		if (disconnected)
+			throw new DisconnectionException();
 		addressedHandler.handle(new AddressedMessage(new ClientTransmission(object), localAddress, remoteAddress),
 				localAddress);
 	}
 
 	@Override
-	public boolean disconect() {
+	public boolean unlink() {
 		ObjectStream stream;
 		synchronized (connections) {
 			stream = connections.get(remoteAddress);
@@ -78,6 +94,16 @@ public class ChildNode implements Node {
 		return remoteAddress;
 	}
 	
+	@Override
+	public boolean isDisconnected() {
+		return disconnected;
+	}
+
+	public void disconnect() {
+		disconnected = true;
+		receiving.forEach(Thread::interrupt);
+	}
+
 	@Override
 	public String toString() {
 		return "node " + remoteAddress;

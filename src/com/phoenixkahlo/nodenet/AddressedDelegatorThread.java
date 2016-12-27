@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingMap;
 

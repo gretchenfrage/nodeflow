@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import com.phoenixkahlo.nodenet.DisconnectionException;
+
 public class BasicChildStream implements ChildStream {
 
 	private StreamFamily family;

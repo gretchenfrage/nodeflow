@@ -8,10 +8,10 @@ import java.util.Arrays;
 import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.bytesToInt;
 import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.bytesToShort;
 
+import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.BasicChildStream;
 import com.phoenixkahlo.nodenet.stream.BasicMessageBuilder;
 import com.phoenixkahlo.nodenet.stream.ChildStream;
-import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ReceivedPayload;
 import com.phoenixkahlo.nodenet.stream.StreamFamily;
 import com.phoenixkahlo.nodenet.stream.UDPSocketWrapper;

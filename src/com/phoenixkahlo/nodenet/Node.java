@@ -11,7 +11,7 @@ public interface Node {
 	 * Receive an object from this node. This will block until an object is
 	 * received. If a custom receiver is set, this method will block forever.
 	 */
-	Object receive();
+	Object receive() throws DisconnectionException;
 
 	/**
 	 * Set the handler for objects received from this node. This will change it
@@ -29,13 +29,19 @@ public interface Node {
 	/**
 	 * Send an object to this node.
 	 */
-	void send(Object object);
+	void send(Object object) throws DisconnectionException;
 
 	/**
 	 * Sever any DatagramStream with this node.
 	 */
-	boolean disconect();
+	boolean unlink();
+
+	/**
+	 * @return if the node is completely disconnected and all correspondences
+	 *         will fail.
+	 */
+	boolean isDisconnected();
 
 	NodeAddress getAddress();
-	
+
 }

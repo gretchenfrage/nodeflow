@@ -2,6 +2,7 @@ package com.phoenixkahlo.nodenet.stream;
 
 import java.util.List;
 
+import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.ProtocolViolationException;
 
 public interface ObjectStream {

@@ -2,13 +2,13 @@ package com.phoenixkahlo.nodenet;
 
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -32,21 +32,20 @@ public class BasicLocalNode implements LocalNode {
 	private Map<NodeAddress, ObjectStream> connections = new HashMap<>();
 	private Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 
-	private List<Consumer<Node>> joinListeners = new ArrayList<>();
-	private List<Consumer<Node>> leaveListeners = new ArrayList<>();
-
 	private AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections,
 			nodes);
-	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, nodes, model, addressedHandler,
-			joinListeners, leaveListeners);
+	private Function<NodeAddress, ChildNode> nodeFactory = address -> new ChildNode(addressedHandler, connections,
+			localAddress, address);
+	private LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(localAddress, model, nodes, nodeFactory);
+	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler);
 	private HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, model, connections,
-			nodes, viralHandler, addressedHandler, joinListeners, leaveListeners);
+			nodes, viralHandler, addressedHandler, leaveJoinHandler);
 
 	private BasicLocalNode(StreamFamily family) {
 		SerializerInitializer.init(serializer);
 		this.family = family;
 		family.setReceiveHandler(handshakeHandler::setup);
-		nodes.put(localAddress, new ChildNode(addressedHandler, connections, localAddress, localAddress));
+		nodes.put(localAddress, nodeFactory.apply(localAddress));
 	}
 
 	public BasicLocalNode() throws SocketException {
@@ -83,30 +82,22 @@ public class BasicLocalNode implements LocalNode {
 
 	@Override
 	public void listenForJoin(Consumer<Node> listener) {
-		synchronized (joinListeners) {
-			joinListeners.add(listener);
-		}
+		leaveJoinHandler.listenForJoin(listener);
 	}
 
 	@Override
 	public void listenForLeave(Consumer<Node> listener) {
-		synchronized (leaveListeners) {
-			leaveListeners.add(listener);
-		}
+		leaveJoinHandler.listenForLeave(listener);
 	}
 
 	@Override
 	public void removeJoinListener(Consumer<Node> listener) {
-		synchronized (joinListeners) {
-			joinListeners.remove(listener);
-		}
+		leaveJoinHandler.removeJoinListener(listener);
 	}
 
 	@Override
 	public void removeLeaveListener(Consumer<Node> listener) {
-		synchronized (leaveListeners) {
-			leaveListeners.remove(listener);
-		}
+		leaveJoinHandler.removeLeaveListener(listener);
 	}
 
 	@Override

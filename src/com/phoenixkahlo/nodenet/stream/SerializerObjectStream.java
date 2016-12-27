@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.ProtocolViolationException;
 import com.phoenixkahlo.nodenet.serialization.Deserializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;

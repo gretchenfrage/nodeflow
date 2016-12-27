@@ -2,6 +2,8 @@ package com.phoenixkahlo.nodenet.stream;
 
 import java.util.List;
 
+import com.phoenixkahlo.nodenet.DisconnectionException;
+
 /**
  * A connection to another DatagramStream.
  */

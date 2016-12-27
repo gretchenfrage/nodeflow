@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;

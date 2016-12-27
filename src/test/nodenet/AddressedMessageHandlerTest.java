@@ -9,6 +9,7 @@ import com.phoenixkahlo.nodenet.AddressedMessageResult;
 import com.phoenixkahlo.nodenet.AddressedPayload;
 import com.phoenixkahlo.nodenet.ChildNode;
 import com.phoenixkahlo.nodenet.ClientTransmission;
+import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.NetworkModel;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
@@ -258,7 +259,11 @@ public class AddressedMessageHandlerTest {
 		
 		handler.handle(message, new NodeAddress(2));
 		
-		assert nodes.get(new NodeAddress(3)).receive().equals("hello world");
+		try {
+			assert nodes.get(new NodeAddress(3)).receive().equals("hello world");
+		} catch (DisconnectionException e) {
+			assert false;
+		}
 	}
 
 }

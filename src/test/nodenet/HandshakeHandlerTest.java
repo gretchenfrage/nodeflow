@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +14,7 @@ import com.phoenixkahlo.nodenet.AddressedMessageHandler;
 import com.phoenixkahlo.nodenet.ChildNode;
 import com.phoenixkahlo.nodenet.Handshake;
 import com.phoenixkahlo.nodenet.HandshakeHandler;
+import com.phoenixkahlo.nodenet.LeaveJoinHandler;
 import com.phoenixkahlo.nodenet.NetworkModel;
 import com.phoenixkahlo.nodenet.Node;
 import com.phoenixkahlo.nodenet.NodeAddress;
@@ -92,14 +92,15 @@ public class HandshakeHandlerTest {
 		Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 
 		AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes);
-		ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, nodes, model, addressedHandler, new ArrayList<>(), new ArrayList<>());
+		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, nodes, address -> new ChildNode(null, connections, new NodeAddress(1), address));
+		ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler);
 
 		nodes.put(new NodeAddress(1), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(1)));
 		nodes.put(new NodeAddress(2), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(2)));
 		nodes.put(new NodeAddress(3), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(3)));
 
 		HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, model, connections, nodes,
-				viralHandler, addressedHandler, new ArrayList<>(), new ArrayList<>());
+				viralHandler, addressedHandler, leaveJoinHandler);
 
 		DatagramStream connector = Testing.mock(DatagramStream.class);
 		((Mockery) connector).method("send", byte[].class).setResponse(MethodMocker.VOID);

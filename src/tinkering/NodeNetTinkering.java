@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import com.phoenixkahlo.nodenet.BasicLocalNode;
+import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.LocalNode;
 import com.phoenixkahlo.nodenet.Node;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
@@ -26,13 +27,17 @@ public class NodeNetTinkering {
 			LocalNode network = new BasicLocalNode(23458);
 			init(network::addSerializer);
 			network.listenForJoin(node -> new Thread(() -> {
-				System.out.println("connection formed from thread1");
-				System.out.println(network.getNodes());
-				node.send("hello world");
 				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {}
-				node.send("goodbye world");
+					System.out.println("connection formed from thread1");
+					System.out.println(network.getNodes());
+					node.send("hello world");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {}
+					node.send("goodbye world");
+				} catch (DisconnectionException e) {
+					e.printStackTrace();
+				}
 			}).start());
 			network.setGreeter(address -> {
 				boolean accept = true; // address.getAddress().isAnyLocalAddress();

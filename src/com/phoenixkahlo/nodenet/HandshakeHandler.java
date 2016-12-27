@@ -1,15 +1,11 @@
 package com.phoenixkahlo.nodenet;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
-import com.phoenixkahlo.nodenet.stream.DisconnectionException;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.nodenet.stream.SerializerObjectStream;
 
@@ -28,13 +24,12 @@ public class HandshakeHandler {
 	private ViralMessageHandler viralHandler;
 	private AddressedMessageHandler addressedHandler;
 
-	private List<Consumer<Node>> joinListeners;// = new ArrayList<>();
-	private List<Consumer<Node>> leaveListeners;// = new ArrayList<>();
+	private LeaveJoinHandler leaveJoinHandler;
 
 	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes,
 			ViralMessageHandler viralHandler, AddressedMessageHandler addressedHandler,
-			List<Consumer<Node>> joinListeners, List<Consumer<Node>> leaveListeners) {
+			LeaveJoinHandler leaveJoinHandler) {
 		this.serializer = serializer;
 		this.localAddress = localAddress;
 		this.model = model;
@@ -42,8 +37,7 @@ public class HandshakeHandler {
 		this.nodes = nodes;
 		this.viralHandler = viralHandler;
 		this.addressedHandler = addressedHandler;
-		this.joinListeners = joinListeners;
-		this.leaveListeners = leaveListeners;
+		this.leaveJoinHandler = leaveJoinHandler;
 	}
 
 	public Optional<Node> setup(DatagramStream connection) {
@@ -76,33 +70,17 @@ public class HandshakeHandler {
 		new StreamReceiverThread(stream, remoteAddress, addressedHandler, viralHandler).start();
 
 		if (!alreadyConnected) {
-			synchronized (joinListeners) {
-				for (int i = joinListeners.size() - 1; i >= 0; i--) {
-					joinListeners.get(i).accept(node);
-				}
-			}
+			leaveJoinHandler.handleJoin(remoteAddress);
 		}
 
 		stream.setDisconnectHandler(() -> {
-			synchronized (model) {
-				model.disconnect(localAddress, remoteAddress);
-			}
+			// Update model
+			leaveJoinHandler.modifyModel(model -> model.disconnect(localAddress, remoteAddress));
+			// Remove from connections
+			// Transmit NeighborSetUpdate
 			synchronized (connections) {
 				connections.remove(remoteAddress);
-			}
-			synchronized (connections) {
 				viralHandler.transmit(new NeighborSetUpdate(localAddress, new HashSet<>(connections.keySet())));
-			}
-			List<NodeAddress> addresses;
-			synchronized (nodes) {
-				addresses = nodes.keySet().stream().collect(Collectors.toList());
-			}
-			synchronized (model) {
-				addresses.removeIf(address -> model.connected(localAddress, address));
-			}
-			synchronized (nodes) {
-				addresses.stream().map(nodes::get)
-						.forEach(left -> leaveListeners.forEach(listener -> listener.accept(left)));
 			}
 		});
 		
