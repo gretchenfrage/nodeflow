@@ -18,7 +18,6 @@ public class HandshakeHandler {
 
 	private Serializer serializer;
 	private NodeAddress localAddress;
-	private NetworkModel model;
 	private Map<NodeAddress, ObjectStream> connections;
 	private Map<NodeAddress, ChildNode> nodes;
 	private ViralMessageHandler viralHandler;
@@ -26,13 +25,11 @@ public class HandshakeHandler {
 
 	private LeaveJoinHandler leaveJoinHandler;
 
-	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, NetworkModel model,
-			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes,
-			ViralMessageHandler viralHandler, AddressedMessageHandler addressedHandler,
-			LeaveJoinHandler leaveJoinHandler) {
+	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
+			Map<NodeAddress, ChildNode> nodes, ViralMessageHandler viralHandler,
+			AddressedMessageHandler addressedHandler, LeaveJoinHandler leaveJoinHandler) {
 		this.serializer = serializer;
 		this.localAddress = localAddress;
-		this.model = model;
 		this.connections = connections;
 		this.nodes = nodes;
 		this.viralHandler = viralHandler;

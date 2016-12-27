@@ -39,8 +39,8 @@ public class BasicLocalNode implements LocalNode {
 			localAddress, address);
 	private LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(localAddress, model, nodes, nodeFactory);
 	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler);
-	private HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, model, connections,
-			nodes, viralHandler, addressedHandler, leaveJoinHandler);
+	private HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes,
+			viralHandler, addressedHandler, leaveJoinHandler);
 
 	private BasicLocalNode(StreamFamily family) {
 		SerializerInitializer.init(serializer);

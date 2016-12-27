@@ -99,7 +99,7 @@ public class HandshakeHandlerTest {
 		nodes.put(new NodeAddress(2), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(2)));
 		nodes.put(new NodeAddress(3), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(3)));
 
-		HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, model, connections, nodes,
+		HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes,
 				viralHandler, addressedHandler, leaveJoinHandler);
 
 		DatagramStream connector = Testing.mock(DatagramStream.class);
