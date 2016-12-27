@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
@@ -24,7 +23,7 @@ public class RealUDPSocketWrapper implements UDPSocketWrapper {
 	}
 
 	@Override
-	public void send(byte[] data, SocketAddress to) throws IOException {
+	public void send(byte[] data, InetSocketAddress to) throws IOException {
 		DatagramPacket packet = new DatagramPacket(data, data.length, to);
 		socket.send(packet);
 	}

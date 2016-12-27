@@ -41,8 +41,10 @@ public class HandshakeHandler {
 	}
 
 	public Optional<Node> setup(DatagramStream connection) {
+		// Establish object transmission layer
 		ObjectStream stream = new SerializerObjectStream(connection, serializer);
 
+		// Exchange handshakes, find remote address
 		Handshake received;
 		try {
 			stream.send(new Handshake(localAddress));
@@ -52,27 +54,22 @@ public class HandshakeHandler {
 		}
 		NodeAddress remoteAddress = received.getSenderAddress();
 
-		boolean alreadyConnected = model.connected(localAddress, remoteAddress);
-
-		synchronized (model) {
-			model.connect(localAddress, remoteAddress);
-		}
-
+		// Add to connections map
 		synchronized (connections) {
 			connections.put(remoteAddress, stream);
 		}
 
-		ChildNode node = new ChildNode(addressedHandler, connections, localAddress, remoteAddress);
+		// Let leaveJoinHandler set up the new node
+		Node node;
 		synchronized (nodes) {
-			nodes.put(remoteAddress, node);
+			leaveJoinHandler.modifyModel(model -> model.connect(localAddress, remoteAddress));
+			node = nodes.get(remoteAddress);
 		}
 
+		// Setup receiver thread
 		new StreamReceiverThread(stream, remoteAddress, addressedHandler, viralHandler).start();
 
-		if (!alreadyConnected) {
-			leaveJoinHandler.handleJoin(remoteAddress);
-		}
-
+		// Setup disconnect handler
 		stream.setDisconnectHandler(() -> {
 			// Update model
 			leaveJoinHandler.modifyModel(model -> model.disconnect(localAddress, remoteAddress));
@@ -83,11 +80,14 @@ public class HandshakeHandler {
 				viralHandler.transmit(new NeighborSetUpdate(localAddress, new HashSet<>(connections.keySet())));
 			}
 		});
-		
+
+		// Send fresh viral message to new connection
 		viralHandler.sendFresh(stream);
 
+		// Propagate neighbor set update trigger
 		viralHandler.transmit(new NeighborSetUpdateTrigger());
 
+		// Return node
 		return Optional.of(node);
 	}
 

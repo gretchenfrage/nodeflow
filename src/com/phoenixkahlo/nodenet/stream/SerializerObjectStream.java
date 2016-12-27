@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class SerializerObjectStream implements ObjectStream {
 
 	@Override
 	public void send(Object object) throws DisconnectionException {
-		//System.out.println("sending " + object + " to " + socket);
+		// System.out.println("sending " + object + " to " + socket);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			serializer.serialize(object, baos);
@@ -66,7 +67,7 @@ public class SerializerObjectStream implements ObjectStream {
 		InputStream in = new ByteArrayInputStream(bin);
 		try {
 			Object received = deserializer.deserialize(in);
-			//System.out.println("received " + received + " from " + socket);
+			// System.out.println("received " + received + " from " + socket);
 			return received;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -107,6 +108,11 @@ public class SerializerObjectStream implements ObjectStream {
 				return "[this object failed to deserialize because of " + e + "]";
 			}
 		}).collect(Collectors.toList());
+	}
+
+	@Override
+	public InetSocketAddress getRemoteAddress() {
+		return socket.getRemoteAddress();
 	}
 
 }

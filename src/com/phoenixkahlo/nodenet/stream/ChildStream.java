@@ -1,7 +1,5 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import java.net.SocketAddress;
-
 /**
  * A DatagramStream that belongs to a StreamFamily. Depends on the StreamFamily's
  * helper threads to receive its messages and delegate them to it through the
@@ -56,10 +54,5 @@ public interface ChildStream extends DatagramStream {
 	 * for an unacceptable amount of time.
 	 */
 	void retransmitUnconfirmed();
-
-	/**
-	 * @return the address this socket is transmitting to.
-	 */
-	SocketAddress getAlienAddress();
 
 }

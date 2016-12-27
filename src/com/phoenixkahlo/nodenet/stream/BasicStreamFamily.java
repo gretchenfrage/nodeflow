@@ -4,7 +4,6 @@ import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.intToByt
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +29,13 @@ public class BasicStreamFamily implements StreamFamily {
 	private List<Integer> unconfirmedConnections = new ArrayList<>();
 	private Predicate<PotentialConnection> receiveTest;
 	private Consumer<DatagramStream> receiveHandler;
-	private TriFunction<StreamFamily, Integer, SocketAddress, ChildStream> childSocketFactory;
+	private TriFunction<StreamFamily, Integer, InetSocketAddress, ChildStream> childSocketFactory;
 	
 	private volatile boolean disconnected = false;
 
 	public BasicStreamFamily(UDPSocketWrapper wrapper, EndableThread receivingThread, EndableThread heartbeatThread,
 			EndableThread retransmissionThread,
-			TriFunction<StreamFamily, Integer, SocketAddress, ChildStream> childSocketFactory) {
+			TriFunction<StreamFamily, Integer, InetSocketAddress, ChildStream> childSocketFactory) {
 		this.udpWrapper = wrapper;
 		this.receivingThread = receivingThread;
 		this.heartbeatThread = heartbeatThread;

@@ -4,7 +4,7 @@ import java.net.InetSocketAddress;
 
 /**
  * A bean for potential DatagramStream connections. Currently only contains the
- * SocketAddress.
+ * InetSocketAddress.
  */
 public class PotentialConnection {
 

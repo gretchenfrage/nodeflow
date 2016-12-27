@@ -1,10 +1,13 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.*;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.concatenate;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.intToBytes;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.shortToBytes;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.split;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +26,7 @@ public class BasicChildStream implements ChildStream {
 
 	private StreamFamily family;
 	private int connectionID;
-	private SocketAddress sendTo;
+	private InetSocketAddress sendTo;
 
 	// Synchronize usages of unconfirmed
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
@@ -45,7 +48,7 @@ public class BasicChildStream implements ChildStream {
 
 	private volatile boolean disconnected = false;
 
-	public BasicChildStream(StreamFamily family, int connectionID, SocketAddress sendTo,
+	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo,
 			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
 		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
@@ -55,7 +58,7 @@ public class BasicChildStream implements ChildStream {
 		this.messageBuilderFactory = messageBuilderFactory;
 	}
 
-	public BasicChildStream(StreamFamily family, int connectionID, SocketAddress sendTo) {
+	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo) {
 		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
@@ -261,7 +264,7 @@ public class BasicChildStream implements ChildStream {
 	}
 
 	@Override
-	public SocketAddress getAlienAddress() {
+	public InetSocketAddress getRemoteAddress() {
 		return sendTo;
 	}
 

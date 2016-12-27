@@ -2,7 +2,7 @@ package test.socket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.bytesToInt;
@@ -25,7 +25,7 @@ public class BasicChildSocketTest {
 	public static void test1() throws IOException, DisconnectionException {
 		StreamFamily family = Testing.mock(StreamFamily.class);
 		int connectionID = 9283765;
-		SocketAddress sendTo = new InetSocketAddress("localhost", 42684);
+		InetSocketAddress sendTo = new InetSocketAddress("localhost", 42684);
 
 		ChildStream socket = new BasicChildStream(family, connectionID, sendTo, BasicMessageBuilder::new);
 
@@ -40,7 +40,7 @@ public class BasicChildSocketTest {
 		byte[] sendTest1 = { 1, 6, 1, 3, 7, 1, 4, 67, 2, 3 };
 		UDPSocketWrapper wrapper = Testing.mock(UDPSocketWrapper.class);
 		((Mockery) family).method("getUDPWrapper").setResponse(wrapper);
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
 			assert arr[12] == 0;
 			assert arr[13] == 1;
@@ -51,7 +51,7 @@ public class BasicChildSocketTest {
 			return null;
 		});
 		socket.send(sendTest1);
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).assertQueueEmpty();
 
 		/*
 <<<<<<< HEAD
@@ -62,7 +62,7 @@ public class BasicChildSocketTest {
 		 */
 		System.out.println("* subtest2 *");
 		byte[] sendTest2 = { 3, 6, 1, 2, 6, 9, 2, 4, 7, 2 };
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
 			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 0;
 			assert arr[16] == 0;
@@ -73,7 +73,7 @@ public class BasicChildSocketTest {
 			}
 			return null;
 		});
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
 			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 1;
 			assert arr[16] == 0;
@@ -84,7 +84,7 @@ public class BasicChildSocketTest {
 			}
 			return null;
 		});
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).queueResponse(args -> {
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).queueResponse(args -> {
 			byte[] arr = (byte[]) args[0];
 			assert bytesToInt(new byte[] { arr[12], arr[13], arr[14], arr[15] }) == 2;
 			assert arr[16] == 0;
@@ -98,7 +98,7 @@ public class BasicChildSocketTest {
 		socket.sendOrdered(sendTest2);
 		socket.sendOrdered(sendTest2);
 		socket.sendOrdered(sendTest2);
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).assertQueueEmpty();
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).assertQueueEmpty();
 
 		/*
 <<<<<<< HEAD
@@ -111,8 +111,8 @@ public class BasicChildSocketTest {
 		System.out.println("* subtest3 *");
 		byte[] receiveTest1 = { 1, 3, 6, 1, 3, 6, 7, 2 };
 		byte[] receiveTest2 = { 1, 6, 2, 7, 2, 3, 6, 2, 76 };
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
-		((Mockery) wrapper).method("send", byte[].class, SocketAddress.class).expectResponse();
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).expectResponse();
+		((Mockery) wrapper).method("send", byte[].class, InetSocketAddress.class).expectResponse();
 		socket.receivePayload(new ReceivedPayload(65465487, 984654, (byte) 0, (byte) 1, receiveTest1));
 		new Thread(() -> {
 			try {

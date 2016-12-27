@@ -40,11 +40,11 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 				synchronized (family.getChildren()) {
 					child = family.getChildren().stream().filter(c -> c.getConnectionID() == connectionID).findAny();
 				}
-				if (child.isPresent() && !child.get().getAlienAddress().equals(from)) {
+				if (child.isPresent() && !child.get().getRemoteAddress().equals(from)) {
 					synchronized (System.err) {
 						System.err.println("Transmission from " + from + " claiming to have connectionID "
 								+ child.get().getConnectionID() + ", but that ID is associated with "
-								+ child.get().getAlienAddress() + ". Transmissiong type: " + transmissionType + ".");
+								+ child.get().getRemoteAddress() + ". Transmissiong type: " + transmissionType + ".");
 					}
 					continue;
 				}

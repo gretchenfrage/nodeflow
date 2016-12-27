@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import com.phoenixkahlo.nodenet.DisconnectionException;
@@ -28,5 +29,7 @@ public interface ObjectStream {
 	boolean isDisconnected();
 
 	List<Object> getUnconfirmed();
+
+	InetSocketAddress getRemoteAddress();
 
 }

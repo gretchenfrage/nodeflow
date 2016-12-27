@@ -20,6 +20,13 @@ public interface Node {
 	 */
 	void setReceiver(Consumer<Object> receiver);
 
+	default void setReceiver(Consumer<Object> receiver, boolean launchNewThread) {
+		if (launchNewThread)
+			setReceiver(object -> new Thread(() -> receiver.accept(object)).start());
+		else
+			setReceiver(receiver);
+	}
+	
 	/**
 	 * Set the handler for objects received from this node to the default, such
 	 * that they become available to the receive method.

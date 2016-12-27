@@ -5,6 +5,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -69,6 +70,18 @@ public class BasicLocalNode implements LocalNode {
 
 	@Override
 	public Optional<Node> connect(InetSocketAddress address) {
+		Optional<NodeAddress> alreadyConnected;
+		synchronized (connections) {
+			alreadyConnected = connections.entrySet().stream()
+					.filter(entry -> entry.getValue().getRemoteAddress().equals(address)).map(Entry::getKey).findAny();
+		}
+		if (alreadyConnected.isPresent()) {
+			synchronized (nodes) {
+				if (nodes.containsKey(alreadyConnected.get()))
+					return Optional.of(nodes.get(alreadyConnected.get()));
+			}
+		}
+
 		Optional<DatagramStream> connection = family.connect(address);
 		if (!connection.isPresent())
 			return Optional.empty();

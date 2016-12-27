@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import com.phoenixkahlo.nodenet.DisconnectionException;
@@ -53,5 +54,10 @@ public interface DatagramStream {
 	 *         been received on the other side.
 	 */
 	List<byte[]> getUnconfirmed();
+	
+	/**
+	 * @return the address this socket is transmitting to.
+	 */
+	InetSocketAddress getRemoteAddress();
 
 }
