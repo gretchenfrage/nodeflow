@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,12 +25,15 @@ public class AddressedMessageHandler {
 	private BlockingMap<Integer, Boolean> addressedResults = new BlockingHashMap<>();
 	private Set<Integer> handledPayloadMessageIDs = new HashSet<>();
 
+	private PrintStream errorLog;
+	
 	public AddressedMessageHandler(NodeAddress localAddress, NetworkModel model,
-			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes) {
+			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes, PrintStream errorLog) {
 		this.localAddress = localAddress;
 		this.model = model;
 		this.connections = connections;
 		this.nodes = nodes;
+		this.errorLog = errorLog;
 	}
 
 	public void handle(AddressedMessage message, NodeAddress from) {
@@ -39,17 +43,17 @@ public class AddressedMessageHandler {
 				stream = connections.get(from);
 			}
 			if (stream == null) {
-				System.err.println("Stream not found sending AddressedMessageResult to " + from);
+				errorLog.println("Stream not found sending AddressedMessageResult to " + from);
 				return;
 			}
 			try {
 				stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), true));
 			} catch (DisconnectionException e) {
-				System.err.println("DisconnectionException sending AddressedMessageResult to " + from);
+				errorLog.println("DisconnectionException sending AddressedMessageResult to " + from);
 			}
 			handlePayload(message.getSender(), message.getPayload(), message.getMessageID());
 		} else {
-			new AddressedDelegatorThread(message, localAddress, model, connections, addressedResults, from).start();
+			new AddressedDelegatorThread(message, localAddress, model, connections, addressedResults, from, errorLog).start();
 		}
 	}
 
@@ -74,12 +78,12 @@ public class AddressedMessageHandler {
 					node = nodes.get(sender);
 				}
 				if (node == null) {
-					System.err.println("Failed to get client payload to node - node not found");
+					errorLog.println("Failed to get client payload to node - node not found");
 					return;
 				}
 				node.receiveFromParent(((ClientTransmission) payload).getObject());
 			} else {
-				System.err.println("Failed to handle AddressedMessagePayload: " + payload);
+				errorLog.println("Failed to handle AddressedMessagePayload: " + payload);
 			}
 		}
 	}

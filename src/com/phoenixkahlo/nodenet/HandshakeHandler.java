@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -24,10 +25,12 @@ public class HandshakeHandler {
 	private AddressedMessageHandler addressedHandler;
 
 	private LeaveJoinHandler leaveJoinHandler;
+	
+	private PrintStream errorLog;
 
 	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
 			Map<NodeAddress, ChildNode> nodes, ViralMessageHandler viralHandler,
-			AddressedMessageHandler addressedHandler, LeaveJoinHandler leaveJoinHandler) {
+			AddressedMessageHandler addressedHandler, LeaveJoinHandler leaveJoinHandler, PrintStream errorLog) {
 		this.serializer = serializer;
 		this.localAddress = localAddress;
 		this.connections = connections;
@@ -35,6 +38,7 @@ public class HandshakeHandler {
 		this.viralHandler = viralHandler;
 		this.addressedHandler = addressedHandler;
 		this.leaveJoinHandler = leaveJoinHandler;
+		this.errorLog = errorLog;
 	}
 
 	public Optional<Node> setup(DatagramStream connection) {
@@ -54,7 +58,7 @@ public class HandshakeHandler {
 
 		// Ignore self connections
 		if (remoteAddress.equals(localAddress)) {
-			System.err.println("Tried to form connection with self (prevented)");
+			errorLog.println("Tried to form connection with self (prevented)");
 			stream.disconnect();
 			return Optional.empty();
 		}
@@ -72,7 +76,7 @@ public class HandshakeHandler {
 		}
 
 		// Setup receiver thread
-		new StreamReceiverThread(stream, remoteAddress, addressedHandler, viralHandler).start();
+		new StreamReceiverThread(stream, remoteAddress, addressedHandler, viralHandler, errorLog).start();
 
 		// Setup disconnect handler
 		stream.setDisconnectHandler(() -> {
@@ -85,7 +89,6 @@ public class HandshakeHandler {
 				viralHandler.transmit(new NeighborSetUpdate(localAddress, new HashSet<>(connections.keySet())));
 			}
 		});
-
 		// Send fresh viral message to new connection
 		viralHandler.sendFresh(stream);
 

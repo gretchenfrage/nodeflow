@@ -53,7 +53,7 @@ public class AddressedMessageHandlerTest {
 
 		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
-		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
+		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes, System.err);
 
 		// Scenario 1: node 2 succeeds
 		((Mockery) stream1).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
@@ -112,7 +112,7 @@ public class AddressedMessageHandlerTest {
 
 		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
-		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
+		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes, System.err);
 
 		// Scenario 2: node 2 fails, node 3 fails, node 4 succeeds
 		((Mockery) stream1).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
@@ -191,7 +191,7 @@ public class AddressedMessageHandlerTest {
 
 		AddressedMessage message = new AddressedMessage(null, new NodeAddress(-1),  new NodeAddress(8));
 		
-		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
+		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes, System.err);
 
 		// Scenario 3: node 2 responds with success 100ms after node 3 receives its message
 		Object notary = new Object();
@@ -247,7 +247,7 @@ public class AddressedMessageHandlerTest {
 		
 		Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 		
-		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes);
+		AddressedMessageHandler handler = new AddressedMessageHandler(new NodeAddress(1), model, connections, nodes, System.err);
 		
 		nodes.put(new NodeAddress(1), new ChildNode(handler, connections, new NodeAddress(1), new NodeAddress(1)));
 		nodes.put(new NodeAddress(2), new ChildNode(handler, connections, new NodeAddress(1), new NodeAddress(2)));

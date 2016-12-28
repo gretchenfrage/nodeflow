@@ -42,7 +42,7 @@ public class ViralMessageHandlerTest {
 
 		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, new HashMap<>(),
 				address -> new ChildNode(null, connections, new NodeAddress(1), address));
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler, System.err);
 		ViralMessage message = new ViralMessage(new NeighborSetUpdate(new NodeAddress(987234), new HashSet<>()));
 		message.addInfected(new NodeAddress(2));
 
@@ -75,7 +75,7 @@ public class ViralMessageHandlerTest {
 
 		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, new HashMap<>(),
 				address -> new ChildNode(null, connections, new NodeAddress(1), address));
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler, System.err);
 		ViralMessage message = new ViralMessage(new NeighborSetUpdate(new NodeAddress(987234), new HashSet<>()));
 		message.addInfected(new NodeAddress(2));
 		message.addInfected(new NodeAddress(3));
@@ -111,7 +111,7 @@ public class ViralMessageHandlerTest {
 
 		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, new HashMap<>(),
 				address -> new ChildNode(null, connections, new NodeAddress(1), address));
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler, System.err);
 
 		handler.handle(message);
 
@@ -143,7 +143,7 @@ public class ViralMessageHandlerTest {
 		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, new HashMap<>(),
 				address -> new ChildNode(null, connections, new NodeAddress(1), address));
 
-		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler);
+		ViralMessageHandler handler = new ViralMessageHandler(new NodeAddress(1), connections, leaveJoinHandler, System.err);
 
 		for (ObjectStream stream : connections.values()) {
 			((Mockery) stream).method("send", Object.class)

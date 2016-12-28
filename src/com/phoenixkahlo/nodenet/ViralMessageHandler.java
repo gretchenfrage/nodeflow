@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -20,12 +21,14 @@ public class ViralMessageHandler {
 	private Map<NodeAddress, ObjectStream> connections;
 	private LeaveJoinHandler leaveJoinHandler;
 	private TTLBag<ViralMessage> freshMessages = new TTLBag<>();
+	private PrintStream errorLog;
 
 	public ViralMessageHandler(NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
-			LeaveJoinHandler leaveJoinHandler) {
+			LeaveJoinHandler leaveJoinHandler, PrintStream errorLog) {
 		this.localAddress = localAddress;
 		this.connections = connections;
 		this.leaveJoinHandler = leaveJoinHandler;
+		this.errorLog = errorLog;
 	}
 
 	/**
@@ -70,7 +73,7 @@ public class ViralMessageHandler {
 					connection.send(message);
 				}
 			} catch (DisconnectionException e) {
-				System.err.println("Fresh-sending failed - stream disconnected");
+				errorLog.println("Fresh-sending failed - stream disconnected");
 			}
 		}
 	}
@@ -91,7 +94,7 @@ public class ViralMessageHandler {
 			}
 			transmit(new NeighborSetUpdate(localAddress, neighborSet));
 		} else {
-			System.err.println("Invalid viral payload: " + payload);
+			errorLog.println("Invalid viral payload: " + payload);
 		}
 	}
 

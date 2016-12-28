@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,15 +33,18 @@ public class AddressedDelegatorThread extends Thread {
 	private volatile boolean sequenceComplete = false;
 	private Set<NodeAddress> sequenceAccumulation = Collections.synchronizedSet(new HashSet<>());
 
+	private PrintStream errorLog;
+
 	public AddressedDelegatorThread(AddressedMessage message, NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, BlockingMap<Integer, Boolean> addressedResults,
-			NodeAddress sender) {
+			NodeAddress sender, PrintStream errorLog) {
 		this.message = message;
 		this.localAddress = localAddress;
 		this.model = model;
 		this.connections = connections;
 		this.addressedResults = addressedResults;
 		this.sender = sender;
+		this.errorLog = errorLog;
 	}
 
 	private void receiveResult(NodeAddress from, boolean wasSuccessful) {
@@ -79,12 +83,12 @@ public class AddressedDelegatorThread extends Thread {
 					stream = connections.get(next);
 				}
 				if (stream == null) {
-					System.err.println("Failed to send AddressedMessage to " + sender + " - stream not found");
+					errorLog.println("Failed to send AddressedMessage to " + sender + " - stream not found");
 				}
 				try {
 					stream.send(message);
 				} catch (DisconnectionException e) {
-					System.err.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
+					errorLog.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
 					addressedResults.put(transmissionID, false);
 				}
 	
@@ -116,13 +120,13 @@ public class AddressedDelegatorThread extends Thread {
 					stream = connections.get(sender);
 				}
 				if (stream == null) {
-					System.err.println("Failed to send result to " + sender + " - stream not found");
+					errorLog.println("Failed to send result to " + sender + " - stream not found");
 					return;
 				}
 				try {
 					stream.send(new AddressedMessageResult(message.getOriginalTransmissionID(), succeeded));
 				} catch (DisconnectionException e) {
-					System.err.println("Failed to send result to " + sender + " - stream disconnected");
+					errorLog.println("Failed to send result to " + sender + " - stream disconnected");
 				}
 			}
 		}

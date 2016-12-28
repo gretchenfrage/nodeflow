@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,11 +19,15 @@ public class StreamReceiverThread extends Thread {
 	private NodeAddress address;
 	private AddressedMessageHandler addressedHandler;
 	private ViralMessageHandler viralHandler;
+	
+	private PrintStream errorLog;
 
 	public StreamReceiverThread(ObjectStream stream, NodeAddress address, AddressedMessageHandler addressedHandler,
-			ViralMessageHandler viralHandler) {
+			ViralMessageHandler viralHandler, PrintStream errorLog) {
+		this.errorLog = errorLog;
+		
 		if (receiving.contains(stream))
-			System.err.println("Warning: multiple threads receiving from " + stream);
+			errorLog.println("Warning: multiple threads receiving from " + stream);
 		receiving.add(stream);
 		
 		this.stream = stream;
@@ -46,7 +51,7 @@ public class StreamReceiverThread extends Thread {
 					else
 						throw new ProtocolViolationException("Invalid message type: " + message);
 				} catch (ProtocolViolationException e) {
-					System.err.println("ProtocolViolationException receiving from " + address);
+					errorLog.println("ProtocolViolationException receiving from " + address);
 					e.printStackTrace();
 				}
 			}

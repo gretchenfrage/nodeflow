@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet;
 
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.HashMap;
@@ -33,28 +34,39 @@ public class BasicLocalNode implements LocalNode {
 	private Map<NodeAddress, ObjectStream> connections = new HashMap<>();
 	private Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 
-	private AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections,
-			nodes);
-	private Function<NodeAddress, ChildNode> nodeFactory = address -> new ChildNode(addressedHandler, connections,
-			localAddress, address);
-	private LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(localAddress, model, nodes, nodeFactory);
-	private ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler);
-	private HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes,
-			viralHandler, addressedHandler, leaveJoinHandler);
+	private AddressedMessageHandler addressedHandler;
+	private Function<NodeAddress, ChildNode> nodeFactory;
+	private LeaveJoinHandler leaveJoinHandler;
+	private ViralMessageHandler viralHandler;
+	private HandshakeHandler handshakeHandler;
 
-	private BasicLocalNode(StreamFamily family) {
+	private BasicLocalNode(StreamFamily family, PrintStream errorLog) {
 		SerializerInitializer.init(serializer);
 		this.family = family;
+		addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes, errorLog);
+		nodeFactory = address -> new ChildNode(addressedHandler, connections, localAddress, address);
+		leaveJoinHandler = new LeaveJoinHandler(localAddress, model, nodes, nodeFactory);
+		viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler, errorLog);
+		handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes, viralHandler,
+				addressedHandler, leaveJoinHandler, errorLog);
 		family.setReceiveHandler(handshakeHandler::setup);
 		nodes.put(localAddress, nodeFactory.apply(localAddress));
 	}
 
+	public BasicLocalNode(PrintStream errorLog) throws SocketException {
+		this(new BasicStreamFamily(errorLog), errorLog);
+	}
+
+	public BasicLocalNode(int port, PrintStream errorLog) throws SocketException {
+		this(new BasicStreamFamily(port, errorLog), errorLog);
+	}
+
 	public BasicLocalNode() throws SocketException {
-		this(new BasicStreamFamily());
+		this(System.err);
 	}
 
 	public BasicLocalNode(int port) throws SocketException {
-		this(new BasicStreamFamily(port));
+		this(port, System.err);
 	}
 
 	@Override

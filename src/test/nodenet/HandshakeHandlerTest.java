@@ -91,16 +91,16 @@ public class HandshakeHandlerTest {
 
 		Map<NodeAddress, ChildNode> nodes = new HashMap<>();
 
-		AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes);
+		AddressedMessageHandler addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes, System.err);
 		LeaveJoinHandler leaveJoinHandler = new LeaveJoinHandler(new NodeAddress(1), model, nodes, address -> new ChildNode(null, connections, new NodeAddress(1), address));
-		ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler);
+		ViralMessageHandler viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler, System.err);
 
 		nodes.put(new NodeAddress(1), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(1)));
 		nodes.put(new NodeAddress(2), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(2)));
 		nodes.put(new NodeAddress(3), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(3)));
 
 		HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes,
-				viralHandler, addressedHandler, leaveJoinHandler);
+				viralHandler, addressedHandler, leaveJoinHandler, System.err);
 
 		DatagramStream connector = Testing.mock(DatagramStream.class);
 		((Mockery) connector).method("send", byte[].class).setResponse(MethodMocker.VOID);
