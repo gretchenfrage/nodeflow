@@ -7,6 +7,7 @@ import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.split;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -48,23 +49,27 @@ public class BasicChildStream implements ChildStream {
 
 	private volatile boolean disconnected = false;
 
+	private PrintStream err;
+
 	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo,
-			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory) {
+			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory, PrintStream err) {
 		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
 		this.messageBuilderFactory = messageBuilderFactory;
+		this.err = err;
 	}
 
-	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo) {
+	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo, PrintStream err) {
 		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
 			throw new IllegalArgumentException("connectionID has bits in transmission type range");
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
 		this.messageBuilderFactory = BasicMessageBuilder::new;
+		this.err = err;
 	}
 
 	@Override
@@ -115,7 +120,7 @@ public class BasicChildStream implements ChildStream {
 		try {
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
 		} catch (IOException e) {
-			System.err.println("IOException on initial attempt of transmission");
+			err.println("IOException on initial attempt of transmission");
 			e.printStackTrace();
 		}
 	}
@@ -153,8 +158,8 @@ public class BasicChildStream implements ChildStream {
 		try {
 			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.DISCONNECT), sendTo);
 		} catch (IOException e) {
-			synchronized (System.err) {
-				System.err.println("IOException while sending disconnect message");
+			synchronized (err) {
+				err.println("IOException while sending disconnect message");
 				e.printStackTrace();
 			}
 		}
@@ -182,7 +187,7 @@ public class BasicChildStream implements ChildStream {
 			family.getUDPWrapper().send(concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM),
 					intToBytes(payload.getPayloadID())), sendTo);
 		} catch (IOException e) {
-			System.err.println("IOException while confirming payload");
+			err.println("IOException while confirming payload");
 			e.printStackTrace();
 		}
 
@@ -235,7 +240,7 @@ public class BasicChildStream implements ChildStream {
 		try {
 			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.HEARTBEAT), sendTo);
 		} catch (IOException e) {
-			System.err.println("IOException while sending heartbeat");
+			err.println("IOException while sending heartbeat");
 			e.printStackTrace();
 		}
 	}
@@ -255,7 +260,7 @@ public class BasicChildStream implements ChildStream {
 						family.getUDPWrapper().send(payload.getTransmission(), sendTo);
 						payload.setLastSendTime(time);
 					} catch (IOException e) {
-						System.err.println("IOException while retransmitting");
+						err.println("IOException while retransmitting");
 						e.printStackTrace();
 					}
 				}

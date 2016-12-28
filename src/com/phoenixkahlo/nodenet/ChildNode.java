@@ -22,7 +22,7 @@ public class ChildNode implements Node {
 	private BlockingQueue<Object> receivedQueue = new LinkedBlockingQueue<>();
 	private Consumer<Object> receiver = receivedQueue::add;
 	private List<Thread> receiving = Collections.synchronizedList(new ArrayList<>());
-	
+
 	private volatile boolean disconnected = false;
 
 	public ChildNode(AddressedMessageHandler addressedHandler, Map<NodeAddress, ObjectStream> connections,
@@ -35,10 +35,10 @@ public class ChildNode implements Node {
 
 	@Override
 	public Object receive() throws DisconnectionException {
-		if (disconnected)
-			throw new DisconnectionException();
 		try {
 			receiving.add(Thread.currentThread());
+			if (disconnected)
+				throw new DisconnectionException();
 			return receivedQueue.take();
 		} catch (InterruptedException e) {
 			if (disconnected)
@@ -93,7 +93,7 @@ public class ChildNode implements Node {
 	public NodeAddress getAddress() {
 		return remoteAddress;
 	}
-	
+
 	@Override
 	public boolean isDisconnected() {
 		return disconnected;

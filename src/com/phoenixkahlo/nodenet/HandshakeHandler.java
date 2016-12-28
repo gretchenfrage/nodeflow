@@ -47,10 +47,18 @@ public class HandshakeHandler {
 			stream.send(new Handshake(localAddress));
 			received = stream.receive(Handshake.class);
 		} catch (ProtocolViolationException | DisconnectionException e) {
+			stream.disconnect();
 			return Optional.empty();
 		}
 		NodeAddress remoteAddress = received.getSenderAddress();
 
+		// Ignore self connections
+		if (remoteAddress.equals(localAddress)) {
+			System.err.println("Tried to form connection with self (prevented)");
+			stream.disconnect();
+			return Optional.empty();
+		}
+		
 		// Add to connections map
 		synchronized (connections) {
 			connections.put(remoteAddress, stream);

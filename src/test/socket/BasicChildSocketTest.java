@@ -27,7 +27,7 @@ public class BasicChildSocketTest {
 		int connectionID = 9283765;
 		InetSocketAddress sendTo = new InetSocketAddress("localhost", 42684);
 
-		ChildStream socket = new BasicChildStream(family, connectionID, sendTo, BasicMessageBuilder::new);
+		ChildStream socket = new BasicChildStream(family, connectionID, sendTo, BasicMessageBuilder::new, System.err);
 
 		/*
 <<<<<<< HEAD

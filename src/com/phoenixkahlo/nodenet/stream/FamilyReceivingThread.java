@@ -6,6 +6,7 @@ import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readShor
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
@@ -19,9 +20,11 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 
 	private StreamFamily family;
 	private volatile boolean shouldContinue = true;
-
-	public FamilyReceivingThread(StreamFamily family) {
+	private PrintStream err;
+	
+	public FamilyReceivingThread(StreamFamily family, PrintStream err) {
 		this.family = family;
+		this.err = err;
 	}
 
 	@Override
@@ -41,8 +44,8 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 					child = family.getChildren().stream().filter(c -> c.getConnectionID() == connectionID).findAny();
 				}
 				if (child.isPresent() && !child.get().getRemoteAddress().equals(from)) {
-					synchronized (System.err) {
-						System.err.println("Transmission from " + from + " claiming to have connectionID "
+					synchronized (err) {
+						err.println("Transmission from " + from + " claiming to have connectionID "
 								+ child.get().getConnectionID() + ", but that ID is associated with "
 								+ child.get().getRemoteAddress() + ". Transmissiong type: " + transmissionType + ".");
 					}
@@ -89,22 +92,22 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 						} else if (transmissionType == DatagramStreamConfig.HEARTBEAT) {
 							child.get().receiveHeartbeat();
 						} else {
-							synchronized (System.err) {
-								System.err.println("Invalid transmission type "
+							synchronized (err) {
+								err.println("Invalid transmission type "
 										+ DatagramStreamConfig.nameOf(transmissionType) + " received from " + from + ".");
 							}
 						}
 					} else {
-						synchronized (System.err) {
-							System.err.println("Transmission received from " + from + " of type "
+						synchronized (err) {
+							err.println("Transmission received from " + from + " of type "
 									+ DatagramStreamConfig.nameOf(transmissionType) + " and connectionID " + connectionID
 									+ ", but no associated ChildStream exists.");
 						}
 					}
 				}
 			} catch (IOException e) {
-				synchronized (System.err) {
-					System.err.println("IOException in FamilyReceivingThread:");
+				synchronized (err) {
+					err.println("IOException in FamilyReceivingThread:");
 					e.printStackTrace();
 				}
 			}
