@@ -3,7 +3,9 @@ package com.phoenixkahlo.nodenet;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
+import com.phoenixkahlo.nodenet.serialization.NullSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
 import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
@@ -41,7 +45,7 @@ public class BasicLocalNode implements LocalNode {
 	private HandshakeHandler handshakeHandler;
 
 	private BasicLocalNode(StreamFamily family, PrintStream errorLog) {
-		SerializerInitializer.init(serializer);
+		initSerializer();
 		this.family = family;
 		addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes, errorLog);
 		nodeFactory = address -> new ChildNode(addressedHandler, connections, localAddress, address);
@@ -67,6 +71,20 @@ public class BasicLocalNode implements LocalNode {
 
 	public BasicLocalNode(int port) throws SocketException {
 		this(port, System.err);
+	}
+	
+	private void initSerializer() {
+		serializer.add(0, new NullSerializer());
+		serializer.add(-2, NodeAddress.serializer(serializer));
+		serializer.add(-3, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
+		serializer.add(-4, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
+		serializer.add(-5, Handshake.serializer(serializer));
+		serializer.add(-6, ViralMessage.serializer(serializer));
+		serializer.add(-9, AddressedMessageResult.serializer(serializer));
+		serializer.add(-10, AddressedMessage.serializer(serializer));
+		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
+		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
+		serializer.add(-13, ClientTransmission.serializer(serializer));
 	}
 
 	@Override
