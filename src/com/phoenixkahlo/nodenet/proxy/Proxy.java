@@ -29,7 +29,7 @@ public interface Proxy<E> {
 	 * any time (or never), any data returned from non-void methods is
 	 * meaningless, and invocations will never throw any exception.
 	 */
-	E buffered(InvocationBuffer buffer);
+	// E buffered(InvocationBuffer buffer);
 
 	/**
 	 * @return the address of the object that this proxy leads to.
@@ -39,6 +39,12 @@ public interface Proxy<E> {
 	/**
 	 * @return the proxy ID of this proxy.
 	 */
-	int getID();
+	int getProxyID();
+
+	/**
+	 * Cast this proxy to a certain type parameter, throwing a
+	 * ClassCastException if the parameter is invalid.
+	 */
+	<T> Proxy<T> cast(Class<T> to);
 
 }

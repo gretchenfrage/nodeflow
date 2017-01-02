@@ -1,5 +1,6 @@
 package com.phoenixkahlo.nodenet.proxy;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,14 +18,14 @@ public class ProxyInvocation implements AddressedPayload {
 	
 	private int proxyID;
 	private int invocationID;
-	private SerializableMethod method;
-	private List<Object> args;
+	private Method method;
+	private Object[] args;
 	private Optional<NodeAddress> returnAddress;
 	
 	private ProxyInvocation() {
 	}
 	
-	public ProxyInvocation(int proxyID, SerializableMethod method, List<Object> args, Optional<NodeAddress> returnAddress) {
+	public ProxyInvocation(int proxyID, Method method, Object[] args, Optional<NodeAddress> returnAddress) {
 		this.proxyID = proxyID;
 		this.invocationID = ThreadLocalRandom.current().nextInt();
 		this.method = method;
@@ -40,11 +41,11 @@ public class ProxyInvocation implements AddressedPayload {
 		return invocationID;
 	}
 	
-	public SerializableMethod getMethod() {
+	public Method getMethod() {
 		return method;
 	}
 	
-	public List<Object> getArgs() {
+	public Object[] getArgs() {
 		return args;
 	}
 	
