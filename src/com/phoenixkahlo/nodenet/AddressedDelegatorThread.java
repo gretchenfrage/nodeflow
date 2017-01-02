@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingMap;
@@ -34,18 +35,28 @@ public class AddressedDelegatorThread extends Thread {
 	private volatile boolean sequenceComplete = false;
 	private Set<NodeAddress> sequenceAccumulation = Collections.synchronizedSet(new HashSet<>());
 
+	private Consumer<Boolean> resultHandler;
+
 	private PrintStream errorLog;
 
 	public AddressedDelegatorThread(AddressedMessage message, NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, BlockingMap<Integer, Boolean> addressedResults,
-			NodeAddress sender, PrintStream errorLog) {
+			NodeAddress sender, PrintStream errorLog, Consumer<Boolean> resultHandler) {
 		this.message = message;
 		this.localAddress = localAddress;
 		this.model = model;
 		this.connections = connections;
 		this.addressedResults = addressedResults;
 		this.sender = sender;
+		this.resultHandler = resultHandler;
 		this.errorLog = errorLog;
+	}
+
+	public AddressedDelegatorThread(AddressedMessage message, NodeAddress localAddress, NetworkModel model,
+			Map<NodeAddress, ObjectStream> connections, BlockingMap<Integer, Boolean> addressedResults,
+			NodeAddress sender, PrintStream errorLog) {
+		this(message, localAddress, model, connections, addressedResults, sender, errorLog, result -> {
+		});
 	}
 
 	private void receiveResult(NodeAddress from, boolean wasSuccessful) {
@@ -125,6 +136,8 @@ public class AddressedDelegatorThread extends Thread {
 					errorLog.println("Failed to send result to " + sender + " - stream disconnected");
 				}
 			}
+			
+			resultHandler.accept(succeeded);
 		}
 	}
 

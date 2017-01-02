@@ -26,7 +26,7 @@ public interface Node {
 		else
 			setReceiver(receiver);
 	}
-	
+
 	/**
 	 * Set the handler for objects received from this node to the default, such
 	 * that they become available to the receive method.
@@ -37,6 +37,13 @@ public interface Node {
 	 * Send an object to this node.
 	 */
 	void send(Object object) throws DisconnectionException;
+
+	/**
+	 * Send an object to this node, and wait for confirmation of it being
+	 * successfully received. In the rare event that transmission fails, send a
+	 * TransmissionException.
+	 */
+	void sendAndConfirm(Object object) throws DisconnectionException, TransmissionException;
 
 	/**
 	 * Sever any DatagramStream with this node.

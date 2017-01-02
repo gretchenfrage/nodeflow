@@ -17,7 +17,6 @@ public class ChildNode implements Node {
 
 	private AddressedMessageHandler addressedHandler;
 	private Map<NodeAddress, ObjectStream> connections;
-	private NodeAddress localAddress;
 	private NodeAddress remoteAddress;
 	private BlockingQueue<Object> receivedQueue = new LinkedBlockingQueue<>();
 	private Consumer<Object> receiver = receivedQueue::add;
@@ -29,7 +28,6 @@ public class ChildNode implements Node {
 			NodeAddress localAddress, NodeAddress remoteAddress) {
 		this.addressedHandler = addressedHandler;
 		this.connections = connections;
-		this.localAddress = localAddress;
 		this.remoteAddress = remoteAddress;
 	}
 
@@ -64,8 +62,16 @@ public class ChildNode implements Node {
 	public void send(Object object) throws DisconnectionException {
 		if (disconnected)
 			throw new DisconnectionException();
-		addressedHandler.handle(new AddressedMessage(new ClientTransmission(object), localAddress, remoteAddress),
-				localAddress);
+		addressedHandler.send(new ClientTransmission(object), remoteAddress);
+	}
+
+	@Override
+	public void sendAndConfirm(Object object) throws DisconnectionException, TransmissionException {
+		if (disconnected)
+			throw new DisconnectionException();
+		boolean success = addressedHandler.sendAndWait(new ClientTransmission(object), remoteAddress);
+		if (!success)
+			throw new TransmissionException();
 	}
 
 	@Override

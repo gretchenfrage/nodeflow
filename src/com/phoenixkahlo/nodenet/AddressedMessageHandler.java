@@ -4,6 +4,9 @@ import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
@@ -26,7 +29,7 @@ public class AddressedMessageHandler {
 	private Set<Integer> handledPayloadMessageIDs = new HashSet<>();
 
 	private PrintStream errorLog;
-	
+
 	public AddressedMessageHandler(NodeAddress localAddress, NetworkModel model,
 			Map<NodeAddress, ObjectStream> connections, Map<NodeAddress, ChildNode> nodes, PrintStream errorLog) {
 		this.localAddress = localAddress;
@@ -36,7 +39,30 @@ public class AddressedMessageHandler {
 		this.errorLog = errorLog;
 	}
 
+	public void send(AddressedPayload payload, NodeAddress to) {
+		handle(new AddressedMessage(payload, localAddress, to), localAddress);
+	}
+
+	public void send(AddressedPayload payload, NodeAddress to,  Consumer<Boolean> resultHandler) {
+		handle(new AddressedMessage(payload, localAddress, to), localAddress, resultHandler);
+	}
+	
+	public boolean sendAndWait(AddressedPayload payload, NodeAddress to) {
+		BlockingQueue<Boolean> result = new LinkedBlockingQueue<>();
+		send(payload, to, result::add);
+		try {
+			return result.take();
+		} catch (InterruptedException e) {
+			errorLog.println("Interrupted while waiting for result of send attempt.");
+			return false;
+		}
+	}
+	
 	public void handle(AddressedMessage message, NodeAddress from) {
+		handle(message, from, result -> {});
+	}
+	
+	public void handle(AddressedMessage message, NodeAddress from, Consumer<Boolean> resultHandler) {
 		if (message.getDestination().equals(localAddress)) {
 			ObjectStream stream;
 			synchronized (connections) {
@@ -53,7 +79,8 @@ public class AddressedMessageHandler {
 			}
 			handlePayload(message.getSender(), message.getPayload(), message.getMessageID());
 		} else {
-			new AddressedDelegatorThread(message, localAddress, model, connections, addressedResults, from, errorLog).start();
+			new AddressedDelegatorThread(message, localAddress, model, connections, addressedResults, from, errorLog,
+					resultHandler).start();
 		}
 	}
 
