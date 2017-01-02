@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingMap;
+import com.phoenixkahlo.util.ConcatIterator;
 
 /**
  * A thread owned by an AddressedMessageHandler that will try to get an
@@ -26,7 +27,7 @@ public class AddressedDelegatorThread extends Thread {
 	private NodeAddress sender;
 
 	private Object sleepLock = new Object();
-	
+
 	private volatile boolean done = false;
 	private volatile boolean succeeded = false;
 
@@ -56,8 +57,8 @@ public class AddressedDelegatorThread extends Thread {
 			} else if (sequenceComplete) {
 				boolean allFailed;
 				synchronized (addressedResults) {
-					allFailed = sequenceAccumulation.stream()
-							.allMatch(node -> addressedResults.containsKey(node) && addressedResults.get(node) == false);
+					allFailed = sequenceAccumulation.stream().allMatch(
+							node -> addressedResults.containsKey(node) && addressedResults.get(node) == false);
 				}
 				if (allFailed) {
 					this.done = true;
@@ -70,14 +71,16 @@ public class AddressedDelegatorThread extends Thread {
 	@Override
 	public void run() {
 		synchronized (sleepLock) {
-			Iterator<NodeAddress> sequence = new AddressedAttemptSequence(model, message, localAddress, connections);
+			Iterator<NodeAddress> sequence = new ConcatIterator<>(
+					new AddressedAttemptSequence(model, message, localAddress, connections),
+					new AddressedAttemptSequence(model, message, localAddress, connections));
 			while (sequence.hasNext() && !done) {
 				NodeAddress next = sequence.next();
 				sequenceAccumulation.add(next);
-	
+
 				message.randomizeTransmissionID();
 				int transmissionID = message.getTransmissionID();
-	
+
 				ObjectStream stream;
 				synchronized (connections) {
 					stream = connections.get(next);
@@ -91,7 +94,7 @@ public class AddressedDelegatorThread extends Thread {
 					errorLog.println("Failed to send AddressedMessage to " + sender + " - stream disconnected");
 					addressedResults.put(transmissionID, false);
 				}
-	
+
 				Thread waiter = new Thread(() -> {
 					Optional<Boolean> result = addressedResults.tryGet(transmissionID, 10_000);
 					if (result.isPresent()) {
@@ -99,21 +102,14 @@ public class AddressedDelegatorThread extends Thread {
 					}
 				});
 				waiter.start();
-	
+
 				try {
 					sleepLock.wait(500);
 				} catch (InterruptedException e) {
 				}
 			}
 			sequenceComplete = true;
-	
-			if (!done) {
-				try {
-					sleepLock.wait(10_000);
-				} catch (InterruptedException e) {
-				}
-			}
-	
+
 			if (!localAddress.equals(sender)) {
 				ObjectStream stream;
 				synchronized (connections) {
