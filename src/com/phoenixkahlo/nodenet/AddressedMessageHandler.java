@@ -8,6 +8,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
+import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
+import com.phoenixkahlo.nodenet.proxy.ProxyInvocation;
+import com.phoenixkahlo.nodenet.proxy.ProxyResult;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;
@@ -27,6 +30,7 @@ public class AddressedMessageHandler {
 	private Map<NodeAddress, ChildNode> nodes;
 	private BlockingMap<Integer, Boolean> addressedResults = new BlockingHashMap<>();
 	private Set<Integer> handledPayloadMessageIDs = new HashSet<>();
+	private ProxyHandler proxyHandler;
 
 	private PrintStream errorLog;
 
@@ -39,14 +43,19 @@ public class AddressedMessageHandler {
 		this.errorLog = errorLog;
 	}
 
+	// TODO: make a more elegant solution to this
+	public void setProxyHandler(ProxyHandler proxyHandler) {
+		this.proxyHandler = proxyHandler;
+	}
+
 	public void send(AddressedPayload payload, NodeAddress to) {
 		handle(new AddressedMessage(payload, localAddress, to), localAddress);
 	}
 
-	public void send(AddressedPayload payload, NodeAddress to,  Consumer<Boolean> resultHandler) {
+	public void send(AddressedPayload payload, NodeAddress to, Consumer<Boolean> resultHandler) {
 		handle(new AddressedMessage(payload, localAddress, to), localAddress, resultHandler);
 	}
-	
+
 	public boolean sendAndWait(AddressedPayload payload, NodeAddress to) {
 		BlockingQueue<Boolean> result = new LinkedBlockingQueue<>();
 		send(payload, to, result::add);
@@ -57,11 +66,12 @@ public class AddressedMessageHandler {
 			return false;
 		}
 	}
-	
+
 	public void handle(AddressedMessage message, NodeAddress from) {
-		handle(message, from, result -> {});
+		handle(message, from, result -> {
+		});
 	}
-	
+
 	public void handle(AddressedMessage message, NodeAddress from, Consumer<Boolean> resultHandler) {
 		if (message.getDestination().equals(localAddress)) {
 			ObjectStream stream;
@@ -109,6 +119,10 @@ public class AddressedMessageHandler {
 					return;
 				}
 				node.receiveFromParent(((ClientTransmission) payload).getObject());
+			} else if (payload instanceof ProxyInvocation) {
+				proxyHandler.handle((ProxyInvocation) payload);
+			} else if (payload instanceof ProxyResult) {
+				proxyHandler.handle((ProxyResult) payload);
 			} else {
 				errorLog.println("Failed to handle AddressedMessagePayload: " + payload);
 			}

@@ -39,12 +39,8 @@ public class BasicProxy<E> implements Proxy<E> {
 	public E blocking() {
 		InvocationHandler invocationHandler = (proxy, method, args) -> {
 			ProxyResult result;
-			try {
-				result = proxyHandler
-						.sendAndWait(new ProxyInvocation(proxyID, method, args, Optional.of(localAddress)), source);
-			} catch (DisconnectionException e) {
-				throw new RuntimeDisconnectionException(e);
-			}
+			result = proxyHandler
+					.sendAndWait(new ProxyInvocation(proxyID, method, args, Optional.of(localAddress)), source);
 			switch (result.getType()) {
 			case NORMAL:
 				return result.getResult();
@@ -52,6 +48,8 @@ public class BasicProxy<E> implements Proxy<E> {
 				throw (Throwable) result.getResult();
 			case PROXYEXCEPTION:
 				throw new RuntimeProxyException();
+			case DISCONNECTIONEXCEPTION:
+				throw new RuntimeDisconnectionException();
 			default:
 				throw new RuntimeException();	
 			}
@@ -86,7 +84,7 @@ public class BasicProxy<E> implements Proxy<E> {
 	public E unblocking(boolean disconnectionException) {
 		InvocationHandler invocationHandler = (proxy, method, args) -> {
 			try {
-				proxyHandler.sendAndWait(new ProxyInvocation(proxyID, method, args, Optional.empty()), source);
+				proxyHandler.sendDontWait(new ProxyInvocation(proxyID, method, args, Optional.empty()), source);
 			} catch (DisconnectionException e) {
 				if (disconnectionException)
 					throw new RuntimeDisconnectionException(e);

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import com.phoenixkahlo.nodenet.proxy.Proxy;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
@@ -17,6 +18,12 @@ public interface LocalNode {
 	 * Add a serializer for object transmission.
 	 */
 	void addSerializer(Serializer serializer, int header);
+
+	/**
+	 * @return the serializer to use in subSerializers for establishing a
+	 *         serialization protocol.
+	 */
+	Serializer getSerializer();
 
 	/**
 	 * Attempt to form a connection with the given address.
@@ -81,5 +88,20 @@ public interface LocalNode {
 	 * @return the Node corresponding to the address.
 	 */
 	Optional<Node> getNode(NodeAddress address);
+
+	/**
+	 * Make a proxy of a source.
+	 */
+	public <E> Proxy<E> makeProxy(E source, Class<E> intrface);
+
+	/**
+	 * Remove a proxy by its source.
+	 */
+	public void removeProxy(Object source);
+
+	/**
+	 * Remove a proxy by its proxy.
+	 */
+	public void removeProxy(Proxy<?> proxy);
 
 }

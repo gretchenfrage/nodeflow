@@ -19,7 +19,7 @@ public class ArraySerializer implements Serializer {
 
 	@Override
 	public boolean canSerialize(Object obj) {
-		return obj.getClass().isArray() && obj.getClass().getComponentType() == itemClass;
+		return obj != null && obj.getClass().isArray() && obj.getClass().getComponentType() == itemClass;
 	}
 
 	@Override

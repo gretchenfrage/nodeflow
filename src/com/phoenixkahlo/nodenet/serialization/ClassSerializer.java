@@ -9,7 +9,7 @@ public class ClassSerializer implements Serializer {
 	
 	@Override
 	public boolean canSerialize(Object object) {
-		return object instanceof Class;
+		return object != null && object instanceof Class;
 	}
 
 	@Override

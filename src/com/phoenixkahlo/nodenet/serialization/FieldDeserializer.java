@@ -37,8 +37,9 @@ public class FieldDeserializer implements Deserializer {
 	 * Abandon all hope, ye who enter here.
 	 */
 	@Deprecated
-	public FieldDeserializer(Class<?> dataType) {
+	public FieldDeserializer(Class<?> dataType, Deserializer subDeserializer) {
 		this.dataType = dataType;
+		this.subDeserializer = subDeserializer;
 		this.factory = () -> {
 			try {
 				Class<?> unsafeClass = FieldSerializer.class.getClassLoader().loadClass("sun.misc.Unsafe");
@@ -60,7 +61,7 @@ public class FieldDeserializer implements Deserializer {
 		
 		for (Field field : ReflectionUtil.getAllFields(dataType)) {
 			field.setAccessible(true);
-			if (!Modifier.isTransient(field.getModifiers())) {
+			if (!Modifier.isTransient(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
 				try {
 					Object value = SerializationUtils.deserialize(field.getType(), subDeserializer, in);
 					field.set(object, value);

@@ -20,7 +20,7 @@ public class HashMapSerializer implements Serializer {
 
 	@Override
 	public boolean canSerialize(Object object) {
-		return object.getClass() == HashMap.class;
+		return object != null && object.getClass() == HashMap.class;
 	}
 
 	@Override

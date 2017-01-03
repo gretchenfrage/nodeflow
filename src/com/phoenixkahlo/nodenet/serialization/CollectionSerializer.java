@@ -18,7 +18,7 @@ public class CollectionSerializer<E extends Collection<?>> implements Serializer
 
 	@Override
 	public boolean canSerialize(Object object) {
-		return object.getClass() == clazz;
+		return object != null && object.getClass() == clazz;
 	}
 
 	@Override

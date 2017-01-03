@@ -12,7 +12,7 @@ public class MethodSerializer implements Serializer {
 	
 	@Override
 	public boolean canSerialize(Object object) {
-		return object instanceof Method;
+		return object != null && object instanceof Method;
 	}
 
 	@Override

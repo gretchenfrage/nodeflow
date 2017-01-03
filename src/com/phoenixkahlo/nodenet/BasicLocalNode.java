@@ -16,9 +16,20 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.phoenixkahlo.nodenet.proxy.BasicProxy;
+import com.phoenixkahlo.nodenet.proxy.Proxy;
+import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
+import com.phoenixkahlo.nodenet.proxy.ProxyInvocation;
+import com.phoenixkahlo.nodenet.proxy.ProxyResult;
+import com.phoenixkahlo.nodenet.serialization.ArraySerializer;
+import com.phoenixkahlo.nodenet.serialization.ClassSerializer;
 import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
+import com.phoenixkahlo.nodenet.serialization.EmptyOptionalSerializer;
+import com.phoenixkahlo.nodenet.serialization.FullOptionalSerializer;
+import com.phoenixkahlo.nodenet.serialization.MethodSerializer;
 import com.phoenixkahlo.nodenet.serialization.NullSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.nodenet.serialization.StringSerializer;
 import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
 import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
@@ -43,9 +54,9 @@ public class BasicLocalNode implements LocalNode {
 	private LeaveJoinHandler leaveJoinHandler;
 	private ViralMessageHandler viralHandler;
 	private HandshakeHandler handshakeHandler;
+	private ProxyHandler proxyHandler;
 
 	private BasicLocalNode(StreamFamily family, PrintStream errorLog) {
-		initSerializer();
 		this.family = family;
 		addressedHandler = new AddressedMessageHandler(localAddress, model, connections, nodes, errorLog);
 		nodeFactory = address -> new ChildNode(addressedHandler, connections, localAddress, address);
@@ -53,6 +64,9 @@ public class BasicLocalNode implements LocalNode {
 		viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler, errorLog);
 		handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes, viralHandler,
 				addressedHandler, leaveJoinHandler, errorLog);
+		proxyHandler = new ProxyHandler(addressedHandler, localAddress, this::getNode);
+		addressedHandler.setProxyHandler(proxyHandler);
+		initSerializer();
 		family.setReceiveHandler(handshakeHandler::setup);
 		nodes.put(localAddress, nodeFactory.apply(localAddress));
 	}
@@ -85,6 +99,15 @@ public class BasicLocalNode implements LocalNode {
 		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
 		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
 		serializer.add(-13, ClientTransmission.serializer(serializer));
+		serializer.add(-14, BasicProxy.serializer(serializer, proxyHandler, localAddress));
+		serializer.add(-15, ProxyInvocation.serializer(serializer));
+		serializer.add(-16, ProxyResult.serializer(serializer));
+		serializer.add(-17, new MethodSerializer());
+		serializer.add(-18, new ClassSerializer());
+		serializer.add(-19, new ArraySerializer(Object.class, serializer));
+		serializer.add(-20, new StringSerializer());
+		serializer.add(-21, new EmptyOptionalSerializer());
+		serializer.add(-22, new FullOptionalSerializer(serializer));
 	}
 
 	@Override
@@ -96,6 +119,11 @@ public class BasicLocalNode implements LocalNode {
 			this.serializer.add(header, serializer);
 			connections.values().stream().forEach(ObjectStream::rebuildDeserializer);
 		}
+	}
+	
+	@Override
+	public Serializer getSerializer() {
+		return serializer;
 	}
 
 	@Override
@@ -176,6 +204,21 @@ public class BasicLocalNode implements LocalNode {
 		synchronized (nodes) {
 			return Optional.ofNullable(nodes.get(address));
 		}
+	}
+
+	@Override
+	public <E> Proxy<E> makeProxy(E source, Class<E> intrface) {
+		return proxyHandler.makeProxy(source, intrface);
+	}
+
+	@Override
+	public void removeProxy(Object source) {
+		proxyHandler.removeProxy(source);
+	}
+
+	@Override
+	public void removeProxy(Proxy<?> proxy) {
+		proxyHandler.removeProxy(proxy);
 	}
 
 }

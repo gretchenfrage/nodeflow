@@ -35,8 +35,9 @@ public class FieldSerializer implements Serializer {
 	 * Abandon all hope, ye who enter here.
 	 */
 	@Deprecated
-	public FieldSerializer(Class<?> dataType) {
+	public FieldSerializer(Class<?> dataType, Serializer subSerializer) {
 		this.dataType = dataType;
+		this.subSerializer = subSerializer;
 		this.factory = () -> {
 			try {
 				Class<?> unsafeClass = FieldSerializer.class.getClassLoader().loadClass("sun.misc.Unsafe");
@@ -54,7 +55,7 @@ public class FieldSerializer implements Serializer {
 
 	@Override
 	public boolean canSerialize(Object object) {
-		return object.getClass() == dataType;
+		return object != null && object.getClass().equals(dataType);
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class FieldSerializer implements Serializer {
 
 		for (Field field : ReflectionUtil.getAllFields(dataType)) {
 			field.setAccessible(true);
-			if (!Modifier.isTransient(field.getModifiers())) {
+			if (!Modifier.isTransient(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
 				try {
 					SerializationUtils.serialize(field.get(object), field.getType(), subSerializer, out);
 				} catch (IllegalAccessException e) {
