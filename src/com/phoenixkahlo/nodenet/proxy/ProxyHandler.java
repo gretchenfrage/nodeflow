@@ -85,6 +85,34 @@ public class ProxyHandler {
 		}
 	}
 
+	public void handle(ProxyMultiInvocation multiInvocation) {
+		new Thread(() -> {
+			boolean proxyException = false;
+			for (ProxyInvocation invocation : multiInvocation.getInvocations()) {
+				Object source = sources.get(invocation.getProxyID());
+				if (source == null) {
+					proxyException = true;
+				} else {
+					try {
+						invocation.getMethod().invoke(source, invocation.getArgs());
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						proxyException = true;
+					}
+				}
+			}
+			if (multiInvocation.getReturnAddress().isPresent()) {
+				if (proxyException)
+					addressedHandler.send(
+							new ProxyResult(multiInvocation.getInvocationID(), null, ProxyResult.Type.PROXYEXCEPTION),
+							multiInvocation.getReturnAddress().get());
+				else
+					addressedHandler.send(
+							new ProxyResult(multiInvocation.getInvocationID(), null, ProxyResult.Type.NORMAL),
+							multiInvocation.getReturnAddress().get());
+			}
+		}).start();
+	}
+
 	public void handle(ProxyResult result) {
 		results.put(result.getInvocationID(), result);
 	}
@@ -110,6 +138,33 @@ public class ProxyHandler {
 		if (!node.isPresent() || node.get().isDisconnected())
 			throw new DisconnectionException();
 		addressedHandler.send(invocation, to);
+	}
+
+	public void sendAndWait(ProxyMultiInvocation multiInvocation, NodeAddress to)
+			throws DisconnectionException, ProxyException {
+		Optional<Node> node = nodeLookup.apply(to);
+		if (node.isPresent() && !node.get().isDisconnected())
+			node.get().listenForDisconnect(() -> results.put(multiInvocation.getInvocationID(),
+					new ProxyResult(multiInvocation.getInvocationID(), null, ProxyResult.Type.DISCONNECTIONEXCEPTION)));
+		else
+			throw new DisconnectionException();
+
+		if (addressedHandler.sendAndWait(multiInvocation, to)) {
+			ProxyResult result = results.get(multiInvocation.getInvocationID());
+			if (result.getType() == ProxyResult.Type.PROXYEXCEPTION)
+				throw new ProxyException();
+		} else if (node.isPresent() && node.get().isDisconnected()) {
+			throw new DisconnectionException();
+		} else {
+			throw new ProxyException();
+		}
+	}
+
+	public void sendDontWait(ProxyMultiInvocation multiInvocation, NodeAddress to) throws DisconnectionException {
+		Optional<Node> node = nodeLookup.apply(to);
+		if (!node.isPresent() || node.get().isDisconnected())
+			throw new DisconnectionException();
+		addressedHandler.send(multiInvocation, to);
 	}
 
 }

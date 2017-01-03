@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
 import com.phoenixkahlo.nodenet.proxy.ProxyInvocation;
+import com.phoenixkahlo.nodenet.proxy.ProxyMultiInvocation;
 import com.phoenixkahlo.nodenet.proxy.ProxyResult;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
@@ -123,6 +124,8 @@ public class AddressedMessageHandler {
 				proxyHandler.handle((ProxyInvocation) payload);
 			} else if (payload instanceof ProxyResult) {
 				proxyHandler.handle((ProxyResult) payload);
+			} else if (payload instanceof ProxyMultiInvocation) {
+				proxyHandler.handle((ProxyMultiInvocation) payload);
 			} else {
 				errorLog.println("Failed to handle AddressedMessagePayload: " + payload);
 			}

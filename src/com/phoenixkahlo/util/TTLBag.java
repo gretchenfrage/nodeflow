@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A collection of items that are added with a time-to-live, and will
- * automatically be considered not a part of the collection when that time
- * expires.
+ * An unordered, duplicate-allowing collection of items that are added with a
+ * time-to-live, and will automatically be considered not a part of the
+ * collection when that time expires.
  */
 public class TTLBag<E> implements Iterable<E> {
 

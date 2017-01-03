@@ -20,6 +20,7 @@ import com.phoenixkahlo.nodenet.proxy.BasicProxy;
 import com.phoenixkahlo.nodenet.proxy.Proxy;
 import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
 import com.phoenixkahlo.nodenet.proxy.ProxyInvocation;
+import com.phoenixkahlo.nodenet.proxy.ProxyMultiInvocation;
 import com.phoenixkahlo.nodenet.proxy.ProxyResult;
 import com.phoenixkahlo.nodenet.serialization.ArraySerializer;
 import com.phoenixkahlo.nodenet.serialization.ClassSerializer;
@@ -108,6 +109,7 @@ public class BasicLocalNode implements LocalNode {
 		serializer.add(-20, new StringSerializer());
 		serializer.add(-21, new EmptyOptionalSerializer());
 		serializer.add(-22, new FullOptionalSerializer(serializer));
+		serializer.add(-23, ProxyMultiInvocation.serializer(serializer));
 	}
 
 	@Override

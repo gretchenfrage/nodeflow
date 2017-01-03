@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.phoenixkahlo.nodenet.BasicLocalNode;
 import com.phoenixkahlo.nodenet.LocalNode;
 import com.phoenixkahlo.nodenet.Node;
+import com.phoenixkahlo.nodenet.proxy.InvocationBuffer;
 import com.phoenixkahlo.nodenet.proxy.Proxy;
 import com.phoenixkahlo.nodenet.serialization.ThrowableSerializer;
 
@@ -97,6 +98,15 @@ public class ProxyTinkering {
 			} catch (UnsupportedOperationException e) {
 				System.out.println("caught " + e);
 			}
+			
+			InvocationBuffer buffer = new InvocationBuffer();
+			proxy.buffered(buffer).say("it's fun to stay at the");
+			proxy.buffered(buffer).say("Y");
+			proxy.buffered(buffer).say("M");
+			proxy.buffered(buffer).say("C");
+			proxy.buffered(buffer).say("A");
+			buffer.flushAndWait();
+			System.out.println("flushed!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
