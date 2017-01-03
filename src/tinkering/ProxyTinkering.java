@@ -43,7 +43,7 @@ public class ProxyTinkering {
 
 		@Override
 		public void hell() throws UnsupportedOperationException {
-			throw new UnsupportedOperationException("D=");
+			throw new UnsupportedOperationException("I meant to do that");
 		}
 
 	}
@@ -94,13 +94,13 @@ public class ProxyTinkering {
 			proxy.unblocking(true).say("hello from the other side");
 
 			System.out.println("remote name is: " + proxy.blocking().getName());
-			/*
+			
 			try {
 				proxy.blocking().hell();
 			} catch (UnsupportedOperationException e) {
 				System.out.println("caught " + e);
 			}
-			*/
+			
 			InvocationBuffer buffer = new InvocationBuffer();
 			proxy.buffered(buffer).say("it's fun to stay at the");
 			proxy.buffered(buffer).say("Y");

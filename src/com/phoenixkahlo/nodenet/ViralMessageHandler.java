@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.TTLBag;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * An object owned by a LocalNode to handle the ViralMessage system. When a
@@ -17,7 +18,7 @@ import com.phoenixkahlo.util.TTLBag;
 public class ViralMessageHandler {
 
 	private NodeAddress localAddress;
-	private Set<Integer> handled = new HashSet<>();
+	private Set<UUID> handled = new HashSet<>();
 	private Map<NodeAddress, ObjectStream> connections;
 	private LeaveJoinHandler leaveJoinHandler;
 	private TTLBag<ViralMessage> freshMessages = new TTLBag<>();

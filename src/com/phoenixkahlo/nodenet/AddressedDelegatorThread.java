@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingMap;
 import com.phoenixkahlo.util.ConcatIterator;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * A thread owned by an AddressedMessageHandler that will try to get an
@@ -24,7 +25,7 @@ public class AddressedDelegatorThread extends Thread {
 	private NodeAddress localAddress;
 	private NetworkModel model;
 	private Map<NodeAddress, ObjectStream> connections;
-	private BlockingMap<Integer, Boolean> addressedResults;
+	private BlockingMap<UUID, Boolean> addressedResults;
 	private NodeAddress sender;
 
 	private Object sleepLock = new Object();
@@ -40,7 +41,7 @@ public class AddressedDelegatorThread extends Thread {
 	private PrintStream errorLog;
 
 	public AddressedDelegatorThread(AddressedMessage message, NodeAddress localAddress, NetworkModel model,
-			Map<NodeAddress, ObjectStream> connections, BlockingMap<Integer, Boolean> addressedResults,
+			Map<NodeAddress, ObjectStream> connections, BlockingMap<UUID, Boolean> addressedResults,
 			NodeAddress sender, PrintStream errorLog, Consumer<Boolean> resultHandler) {
 		this.message = message;
 		this.localAddress = localAddress;
@@ -53,7 +54,7 @@ public class AddressedDelegatorThread extends Thread {
 	}
 
 	public AddressedDelegatorThread(AddressedMessage message, NodeAddress localAddress, NetworkModel model,
-			Map<NodeAddress, ObjectStream> connections, BlockingMap<Integer, Boolean> addressedResults,
+			Map<NodeAddress, ObjectStream> connections, BlockingMap<UUID, Boolean> addressedResults,
 			NodeAddress sender, PrintStream errorLog) {
 		this(message, localAddress, model, connections, addressedResults, sender, errorLog, result -> {
 		});
@@ -90,7 +91,7 @@ public class AddressedDelegatorThread extends Thread {
 				sequenceAccumulation.add(next);
 
 				message.randomizeTransmissionID();
-				int transmissionID = message.getTransmissionID();
+				UUID transmissionID = message.getTransmissionID();
 
 				ObjectStream stream;
 				synchronized (connections) {

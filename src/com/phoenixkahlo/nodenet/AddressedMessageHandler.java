@@ -15,6 +15,7 @@ import com.phoenixkahlo.nodenet.proxy.ProxyResult;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * An object owned by a LocalNode to handle the AddressedMessage system. When a
@@ -29,8 +30,8 @@ public class AddressedMessageHandler {
 	private NetworkModel model;
 	private Map<NodeAddress, ObjectStream> connections;
 	private Map<NodeAddress, ChildNode> nodes;
-	private BlockingMap<Integer, Boolean> addressedResults = new BlockingHashMap<>();
-	private Set<Integer> handledPayloadMessageIDs = new HashSet<>();
+	private BlockingMap<UUID, Boolean> addressedResults = new BlockingHashMap<>();
+	private Set<UUID> handledPayloadMessageIDs = new HashSet<>();
 	private ProxyHandler proxyHandler;
 
 	private PrintStream errorLog;
@@ -99,7 +100,7 @@ public class AddressedMessageHandler {
 		addressedResults.put(message.getTransmissionID(), message.wasSuccessful());
 	}
 
-	private void handlePayload(NodeAddress sender, AddressedPayload payload, int messageID) {
+	private void handlePayload(NodeAddress sender, AddressedPayload payload, UUID messageID) {
 		boolean shouldHandle;
 		synchronized (handledPayloadMessageIDs) {
 			if (handledPayloadMessageIDs.contains(messageID)) {

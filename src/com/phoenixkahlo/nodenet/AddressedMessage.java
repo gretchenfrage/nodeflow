@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.phoenixkahlo.nodenet.serialization.AutoSerializer;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Described in package description.
@@ -24,9 +24,9 @@ public class AddressedMessage implements AutoSerializer {
 	private NodeAddress sender;
 	private NodeAddress destination;
 	private Set<NodeAddress> visited;
-	private int messageID;
-	private int transmissionID;
-	private transient int originalTransmissionID;
+	private UUID messageID;
+	private UUID transmissionID;
+	private transient UUID originalTransmissionID;
 
 	private AddressedMessage() {
 	}
@@ -36,13 +36,13 @@ public class AddressedMessage implements AutoSerializer {
 		this.sender = sender;
 		this.destination = destination;
 		this.visited = new HashSet<>();
-		this.messageID = ThreadLocalRandom.current().nextInt();
+		this.messageID = new UUID();
 		randomizeTransmissionID();
 		this.originalTransmissionID = transmissionID;
 	}
 
 	public void randomizeTransmissionID() {
-		transmissionID = ThreadLocalRandom.current().nextInt();
+		transmissionID = new UUID();
 	}
 
 	public AddressedPayload getPayload() {
@@ -65,15 +65,15 @@ public class AddressedMessage implements AutoSerializer {
 		visited.add(node);
 	}
 
-	public int getMessageID() {
+	public UUID getMessageID() {
 		return messageID;
 	}
 	
-	public int getTransmissionID() {
+	public UUID getTransmissionID() {
 		return transmissionID;
 	}
 	
-	public int getOriginalTransmissionID() {
+	public UUID getOriginalTransmissionID() {
 		return originalTransmissionID;
 	}
 

@@ -3,6 +3,7 @@ package com.phoenixkahlo.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
@@ -23,6 +24,10 @@ public class UUID {
 		data2 = ThreadLocalRandom.current().nextLong();
 	}
 	
+	public UUID(int n) {
+		data1 = n;
+	}
+	
 	public UUID(InputStream in) throws IOException {
 		data1 = SerializationUtils.readLong(in);
 		data2 = SerializationUtils.readLong(in);
@@ -39,6 +44,16 @@ public class UUID {
 			return data1 == ((UUID) other).data1 && data2 == ((UUID) other).data2;
 		else
 			return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(data1, data2);
+	}
+	
+	@Override
+	public String toString() {
+		return Long.toHexString(data1) + Long.toHexString(data2);
 	}
 	
 }

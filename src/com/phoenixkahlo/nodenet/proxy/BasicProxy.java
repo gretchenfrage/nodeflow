@@ -131,5 +131,10 @@ public class BasicProxy<E> implements Proxy<E> {
 		else
 			throw new ClassCastException();
 	}
+	
+	@Override
+	public String toString() {
+		return "proxy<" + implementing.getSimpleName() + ">";
+	}
 
 }

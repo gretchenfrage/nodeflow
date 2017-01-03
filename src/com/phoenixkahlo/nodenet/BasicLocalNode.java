@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -36,6 +35,7 @@ import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.nodenet.stream.StreamFamily;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Implementation of LocalNode.
@@ -43,7 +43,7 @@ import com.phoenixkahlo.nodenet.stream.StreamFamily;
 public class BasicLocalNode implements LocalNode {
 
 	private UnionSerializer serializer = new UnionSerializer();
-	private NodeAddress localAddress = new NodeAddress(ThreadLocalRandom.current().nextInt());
+	private NodeAddress localAddress = new NodeAddress(new UUID());
 
 	private NetworkModel model = new NetworkModel();
 	private StreamFamily family;
@@ -110,6 +110,7 @@ public class BasicLocalNode implements LocalNode {
 		serializer.add(-21, new EmptyOptionalSerializer());
 		serializer.add(-22, new FullOptionalSerializer(serializer));
 		serializer.add(-23, ProxyMultiInvocation.serializer(serializer));
+		serializer.add(-24, UUID.serializer());
 	}
 
 	@Override

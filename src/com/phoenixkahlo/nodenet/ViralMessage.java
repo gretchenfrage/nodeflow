@@ -2,10 +2,10 @@ package com.phoenixkahlo.nodenet;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Described in package description.
@@ -16,7 +16,7 @@ public class ViralMessage {
 		return new FieldSerializer(ViralMessage.class, subSerializer, ViralMessage::new);
 	}
 
-	private int virusID = ThreadLocalRandom.current().nextInt();
+	private UUID virusID = new UUID();
 	private Set<NodeAddress> infectedNodes = new HashSet<>();
 	private ViralPayload payload;
 
@@ -24,12 +24,12 @@ public class ViralMessage {
 	}
 
 	public ViralMessage(ViralPayload payload) {
-		this.virusID = ThreadLocalRandom.current().nextInt();
+		this.virusID = new UUID();
 		this.infectedNodes = new HashSet<>();
 		this.payload = payload;
 	}
 
-	public int getID() {
+	public UUID getID() {
 		return virusID;
 	}
 

@@ -2,6 +2,7 @@ package com.phoenixkahlo.nodenet;
 
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Unique, random identifier for nodes.
@@ -12,31 +13,35 @@ public class NodeAddress {
 		return new FieldSerializer(NodeAddress.class, subSerializer, NodeAddress::new);
 	}
 
-	private int id;
+	private UUID id;
 
-	private NodeAddress() {
+	public NodeAddress() {
 	}
 
-	public NodeAddress(int id) {
+	public NodeAddress(UUID id) {
 		this.id = id;
+	}
+	
+	public NodeAddress(int n) {
+		this.id = new UUID(n);
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof NodeAddress)
-			return id == ((NodeAddress) other).id;
+			return id.equals(((NodeAddress) other).id);
 		else
 			return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return id;
+		return id.hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		return "#" + Integer.toHexString(id);
+		return id.toString();
 	}
 
 }

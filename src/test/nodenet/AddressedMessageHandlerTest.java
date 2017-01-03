@@ -17,6 +17,7 @@ import com.phoenixkahlo.ptest.MethodMocker;
 import com.phoenixkahlo.ptest.Mockery;
 import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
+import com.phoenixkahlo.util.UUID;
 
 public class AddressedMessageHandlerTest {
 
@@ -57,7 +58,7 @@ public class AddressedMessageHandlerTest {
 
 		// Scenario 1: node 2 succeeds
 		((Mockery) stream1).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
-			int transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
+			UUID transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
 			new Thread(() -> {
 				try {
 					Thread.sleep(100);
@@ -116,7 +117,7 @@ public class AddressedMessageHandlerTest {
 
 		// Scenario 2: node 2 fails, node 3 fails, node 4 succeeds
 		((Mockery) stream1).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
-			int transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
+			UUID transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
 			new Thread(() -> {
 				try {
 					Thread.sleep(100);
@@ -127,7 +128,7 @@ public class AddressedMessageHandlerTest {
 			return null;
 		});
 		((Mockery) stream2).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
-			int transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
+			UUID transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
 			new Thread(() -> {
 				try {
 					Thread.sleep(100);
@@ -138,7 +139,7 @@ public class AddressedMessageHandlerTest {
 			return null;
 		});
 		((Mockery) stream3).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
-			int transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
+			UUID transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
 			new Thread(() -> {
 				try {
 					Thread.sleep(100);
@@ -196,7 +197,7 @@ public class AddressedMessageHandlerTest {
 		// Scenario 3: node 2 responds with success 100ms after node 3 receives its message
 		Object notary = new Object();
 		((Mockery) stream1).method("send", Object.class).addResponse(args -> args[0] == message, args -> {
-			int transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
+			UUID transmissionID = ((AddressedMessage) args[0]).getTransmissionID();
 			new Thread(() -> {
 				try {
 					synchronized (notary) {

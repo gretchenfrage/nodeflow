@@ -2,6 +2,7 @@ package com.phoenixkahlo.nodenet;
 
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Described in package description.
@@ -12,18 +13,18 @@ public class AddressedMessageResult {
 		return new FieldSerializer(AddressedMessageResult.class, subSerializer, AddressedMessageResult::new);
 	}
 
-	private int transmissionID;
+	private UUID transmissionID;
 	private boolean success;
 
 	private AddressedMessageResult() {
 	}
 
-	public AddressedMessageResult(int transmissionID, boolean success) {
+	public AddressedMessageResult(UUID transmissionID, boolean success) {
 		this.transmissionID = transmissionID;
 		this.success = success;
 	}
 
-	public int getTransmissionID() {
+	public UUID getTransmissionID() {
 		return transmissionID;
 	}
 
