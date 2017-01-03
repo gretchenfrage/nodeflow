@@ -1,6 +1,7 @@
 package com.phoenixkahlo.nodenet.proxy;
 
 import com.phoenixkahlo.nodenet.NodeAddress;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * A representation of a remote object that can be reified and invoked. Is
@@ -39,7 +40,7 @@ public interface Proxy<E> {
 	/**
 	 * @return the proxy ID of this proxy.
 	 */
-	int getProxyID();
+	UUID getProxyID();
 
 	/**
 	 * Cast this proxy to a certain type parameter, throwing a

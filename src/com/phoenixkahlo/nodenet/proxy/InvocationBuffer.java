@@ -3,10 +3,10 @@ package com.phoenixkahlo.nodenet.proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.NodeAddress;
+import com.phoenixkahlo.util.UUID;
 
 public class InvocationBuffer {
 
@@ -33,7 +33,7 @@ public class InvocationBuffer {
 		if (invocations.isEmpty())
 			return;
 
-		int invocationID = ThreadLocalRandom.current().nextInt();
+		UUID invocationID = new UUID();
 		ProxyMultiInvocation multiInvocation = new ProxyMultiInvocation(invocationID, Optional.of(localAddress),
 				invocations);
 		proxyHandler.sendAndWait(multiInvocation, source);
@@ -43,7 +43,7 @@ public class InvocationBuffer {
 		if (invocations.isEmpty())
 			return;
 
-		int invocationID = ThreadLocalRandom.current().nextInt();
+		UUID invocationID = new UUID();
 		ProxyMultiInvocation multiInvocation = new ProxyMultiInvocation(invocationID, Optional.empty(), invocations);
 		proxyHandler.sendDontWait(multiInvocation, source);
 	}

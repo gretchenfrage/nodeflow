@@ -7,6 +7,7 @@ import com.phoenixkahlo.nodenet.DisconnectionException;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 public class BasicProxy<E> implements Proxy<E> {
 
@@ -15,7 +16,7 @@ public class BasicProxy<E> implements Proxy<E> {
 				() -> new BasicProxy<Object>(proxyHandler, localAddress));
 	}
 
-	private int proxyID;
+	private UUID proxyID;
 	private NodeAddress source;
 	private Class<E> implementing;
 	private transient ProxyHandler proxyHandler;
@@ -26,7 +27,7 @@ public class BasicProxy<E> implements Proxy<E> {
 		this.localAddress = localAddress;
 	}
 
-	public BasicProxy(int proxyID, NodeAddress source, Class<E> implementing, ProxyHandler proxyHandler,
+	public BasicProxy(UUID proxyID, NodeAddress source, Class<E> implementing, ProxyHandler proxyHandler,
 			NodeAddress localAddress) {
 		this.proxyID = proxyID;
 		this.source = source;
@@ -119,7 +120,7 @@ public class BasicProxy<E> implements Proxy<E> {
 	}
 
 	@Override
-	public int getProxyID() {
+	public UUID getProxyID() {
 		return proxyID;
 	}
 

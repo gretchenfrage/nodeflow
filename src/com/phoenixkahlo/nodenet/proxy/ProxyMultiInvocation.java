@@ -7,6 +7,7 @@ import com.phoenixkahlo.nodenet.AddressedPayload;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 public class ProxyMultiInvocation implements AddressedPayload {
 
@@ -14,14 +15,14 @@ public class ProxyMultiInvocation implements AddressedPayload {
 		return new FieldSerializer(ProxyMultiInvocation.class, subSerializer, ProxyMultiInvocation::new);
 	}
 	
-	private int invocationID;
+	private UUID invocationID;
 	private Optional<NodeAddress> returnAddress;
 	private List<ProxyInvocation> invocations;
 
 	public ProxyMultiInvocation() {
 	}
 	
-	public ProxyMultiInvocation(int invocationID, Optional<NodeAddress> returnAddress,
+	public ProxyMultiInvocation(UUID invocationID, Optional<NodeAddress> returnAddress,
 			List<ProxyInvocation> invocations) {
 		super();
 		this.invocationID = invocationID;
@@ -29,7 +30,7 @@ public class ProxyMultiInvocation implements AddressedPayload {
 		this.invocations = invocations;
 	}
 
-	public int getInvocationID() {
+	public UUID getInvocationID() {
 		return invocationID;
 	}
 

@@ -2,12 +2,12 @@ package com.phoenixkahlo.nodenet.proxy;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.phoenixkahlo.nodenet.AddressedPayload;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 public class ProxyInvocation implements AddressedPayload {
 
@@ -15,8 +15,8 @@ public class ProxyInvocation implements AddressedPayload {
 		return new FieldSerializer(ProxyInvocation.class, subSerializer, ProxyInvocation::new);
 	}
 	
-	private int proxyID;
-	private int invocationID;
+	private UUID proxyID;
+	private UUID invocationID;
 	private Method method;
 	private Object[] args;
 	private Optional<NodeAddress> returnAddress;
@@ -24,19 +24,19 @@ public class ProxyInvocation implements AddressedPayload {
 	private ProxyInvocation() {
 	}
 	
-	public ProxyInvocation(int proxyID, Method method, Object[] args, Optional<NodeAddress> returnAddress) {
+	public ProxyInvocation(UUID proxyID, Method method, Object[] args, Optional<NodeAddress> returnAddress) {
 		this.proxyID = proxyID;
-		this.invocationID = ThreadLocalRandom.current().nextInt();
+		this.invocationID = new UUID();
 		this.method = method;
 		this.args = args;
 		this.returnAddress = returnAddress;
 	}
 	
-	public int getProxyID() {
+	public UUID getProxyID() {
 		return proxyID;
 	}
 	
-	public int getInvocationID() {
+	public UUID getInvocationID() {
 		return invocationID;
 	}
 	

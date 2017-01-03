@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
 import com.phoenixkahlo.nodenet.AddressedMessageHandler;
@@ -14,14 +13,15 @@ import com.phoenixkahlo.nodenet.Node;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.util.BlockingHashMap;
 import com.phoenixkahlo.util.BlockingMap;
+import com.phoenixkahlo.util.UUID;
 
 public class ProxyHandler {
 
 	private AddressedMessageHandler addressedHandler;
-	private Map<Integer, Object> sources = Collections.synchronizedMap(new HashMap<>());
+	private Map<UUID, Object> sources = Collections.synchronizedMap(new HashMap<>());
 	private NodeAddress localAddress;
 	private Function<NodeAddress, Optional<Node>> nodeLookup;
-	private BlockingMap<Integer, ProxyResult> results = new BlockingHashMap<>();
+	private BlockingMap<UUID, ProxyResult> results = new BlockingHashMap<>();
 
 	public ProxyHandler(AddressedMessageHandler addressedHandler, NodeAddress localAddress,
 			Function<NodeAddress, Optional<Node>> nodeLookup) {
@@ -31,7 +31,7 @@ public class ProxyHandler {
 	}
 
 	public <E> Proxy<E> makeProxy(E source, Class<E> intrface) {
-		int id = ThreadLocalRandom.current().nextInt();
+		UUID id = new UUID();
 		sources.put(id, source);
 		return new BasicProxy<>(id, localAddress, intrface, this, localAddress);
 	}

@@ -3,6 +3,7 @@ package com.phoenixkahlo.nodenet.proxy;
 import com.phoenixkahlo.nodenet.AddressedPayload;
 import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
+import com.phoenixkahlo.util.UUID;
 
 public class ProxyResult implements AddressedPayload {
 
@@ -14,20 +15,20 @@ public class ProxyResult implements AddressedPayload {
 		NORMAL, TARGETEXCEPTION, PROXYEXCEPTION, DISCONNECTIONEXCEPTION
 	}
 	
-	private int invocationID;
+	private UUID invocationID;
 	private Object result;
 	private Type type;
 	
 	private ProxyResult() {
 	}
 	
-	public ProxyResult(int invocationID, Object result, Type type) {
+	public ProxyResult(UUID invocationID, Object result, Type type) {
 		this.invocationID = invocationID;
 		this.result = result;
 		this.type = type;
 	}
 	
-	public int getInvocationID() {
+	public UUID getInvocationID() {
 		return invocationID;
 	}
 
