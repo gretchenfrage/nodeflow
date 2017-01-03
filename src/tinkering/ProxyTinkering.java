@@ -86,19 +86,21 @@ public class ProxyTinkering {
 
 			Node other = net.connect(new InetSocketAddress("localhost", 35542)).get();
 
+			//Thread.sleep(5_000);
+			
 			Proxy<Bot> proxy = ((Proxy<?>) other.receive()).cast(Bot.class);
 			System.out.println("got proxy: " + proxy);
 
 			proxy.unblocking(true).say("hello from the other side");
 
 			System.out.println("remote name is: " + proxy.blocking().getName());
-
+			/*
 			try {
 				proxy.blocking().hell();
 			} catch (UnsupportedOperationException e) {
 				System.out.println("caught " + e);
 			}
-			
+			*/
 			InvocationBuffer buffer = new InvocationBuffer();
 			proxy.buffered(buffer).say("it's fun to stay at the");
 			proxy.buffered(buffer).say("Y");

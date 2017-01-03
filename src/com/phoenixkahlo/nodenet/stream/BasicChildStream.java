@@ -203,7 +203,7 @@ public class BasicChildStream implements ChildStream {
 			MessageBuilder builder;
 
 			Optional<MessageBuilder> existingBuilder = partiallyReceived.stream()
-					.filter(b -> b.getMessageID() == payload.getMessageID()).findAny();
+					.filter(b -> b.getMessageID().equals(payload.getMessageID())).findAny();
 			if (existingBuilder.isPresent()) {
 				builder = existingBuilder.get();
 			} else {
