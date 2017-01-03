@@ -56,6 +56,12 @@ public interface Node {
 	 */
 	boolean isDisconnected();
 
+	/**
+	 * Provide a listener to be invoked upon the disconnection of this node, or
+	 * immediately if the node is already disconnected.
+	 */
+	void listenForDisconnect(Runnable listener);
+
 	NodeAddress getAddress();
 
 }

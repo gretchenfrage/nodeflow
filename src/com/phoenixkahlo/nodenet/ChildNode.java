@@ -21,7 +21,8 @@ public class ChildNode implements Node {
 	private BlockingQueue<Object> receivedQueue = new LinkedBlockingQueue<>();
 	private Consumer<Object> receiver = receivedQueue::add;
 	private List<Thread> receiving = Collections.synchronizedList(new ArrayList<>());
-
+	private List<Runnable> disconnectionListeners = Collections.synchronizedList(new ArrayList<>());
+	
 	private volatile boolean disconnected = false;
 
 	public ChildNode(AddressedMessageHandler addressedHandler, Map<NodeAddress, ObjectStream> connections,
@@ -35,10 +36,18 @@ public class ChildNode implements Node {
 	public Object receive() throws DisconnectionException {
 		try {
 			receiving.add(Thread.currentThread());
+			boolean disconnected;
+			synchronized (this) {
+				disconnected = this.disconnected;
+			}
 			if (disconnected)
 				throw new DisconnectionException();
 			return receivedQueue.take();
 		} catch (InterruptedException e) {
+			boolean disconnected;
+			synchronized (this) {
+				disconnected = this.disconnected;
+			}
 			if (disconnected)
 				throw new DisconnectionException();
 			else
@@ -60,15 +69,19 @@ public class ChildNode implements Node {
 
 	@Override
 	public void send(Object object) throws DisconnectionException {
-		if (disconnected)
-			throw new DisconnectionException();
+		synchronized (this) {
+			if (disconnected)
+				throw new DisconnectionException();
+		}
 		addressedHandler.send(new ClientTransmission(object), remoteAddress);
 	}
 
 	@Override
 	public void sendAndConfirm(Object object) throws DisconnectionException, TransmissionException {
-		if (disconnected)
-			throw new DisconnectionException();
+		synchronized (this) {
+			if (disconnected)
+				throw new DisconnectionException();
+		}
 		boolean success = addressedHandler.sendAndWait(new ClientTransmission(object), remoteAddress);
 		if (!success)
 			throw new TransmissionException();
@@ -105,9 +118,23 @@ public class ChildNode implements Node {
 		return disconnected;
 	}
 
+	@Override
+	public void listenForDisconnect(Runnable runnable) {
+		synchronized (this) {
+			if (disconnected) {
+				runnable.run();
+			} else {
+				disconnectionListeners.add(runnable);
+			}
+		}
+	}
+	
 	public void disconnect() {
-		disconnected = true;
+		synchronized (this) {
+			disconnected = true;
+		}
 		receiving.forEach(Thread::interrupt);
+		disconnectionListeners.forEach(Runnable::run);
 	}
 
 	@Override
