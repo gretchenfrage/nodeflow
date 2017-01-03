@@ -11,6 +11,8 @@ public class DatagramStreamConfig {
 	public static final int HEARTBEAT_INTERVAL = 1000;
 	public static final int RETRANSMISSION_THRESHHOLD = 500;
 	
+	public static final int MAX_UNCONFIRMED_PAYLOADS = 5000;
+	
 	//public static final int TRANSMISSION_TYPE_RANGE = 0xF0000000;
 	//public static final int CONNECTION_ID_RANGE = ~TRANSMISSION_TYPE_RANGE;
 

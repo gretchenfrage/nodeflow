@@ -27,7 +27,7 @@ public class BasicChildStream implements ChildStream {
 	private UUID connectionID;
 	private InetSocketAddress sendTo;
 
-	// Synchronize usages of unconfirmed
+	// Synchronize usages of unconfirmed, and notify unconfirmed upon changes
 	private List<UnconfirmedPayload> unconfirmed = new ArrayList<>();
 	private AtomicInteger nextSendOrdinal = new AtomicInteger(0);
 
@@ -88,17 +88,28 @@ public class BasicChildStream implements ChildStream {
 
 	private void sendPayload(byte[] payload, UUID messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
 			throws DisconnectionException {
+		try {
+			synchronized (unconfirmed) {
+				while (unconfirmed.size() > DatagramStreamConfig.MAX_UNCONFIRMED_PAYLOADS)
+					unconfirmed.wait();
+			}
+		} catch (InterruptedException e) {
+			err.println("Interrupted while waiting for unconfirmed payloads to pass below threshhold");
+		}
+
 		UUID payloadID = new UUID();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			if (ordinal.isPresent()) {
 				baos.write(DatagramStreamConfig.ORDERED_PAYLOAD);
 				connectionID.write(baos);
-				//baos.write(intToBytes(connectionID | DatagramStreamConfig.ORDERED_PAYLOAD));
+				// baos.write(intToBytes(connectionID |
+				// DatagramStreamConfig.ORDERED_PAYLOAD));
 			} else {
 				baos.write(DatagramStreamConfig.PAYLOAD);
 				connectionID.write(baos);
-				//baos.write(intToBytes(connectionID | DatagramStreamConfig.PAYLOAD));
+				// baos.write(intToBytes(connectionID |
+				// DatagramStreamConfig.PAYLOAD));
 			}
 			payloadID.write(baos);
 			messageID.write(baos);
@@ -159,7 +170,8 @@ public class BasicChildStream implements ChildStream {
 			baos.write(DatagramStreamConfig.DISCONNECT);
 			connectionID.write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			//family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.DISCONNECT), sendTo);
+			// family.getUDPWrapper().send(intToBytes(connectionID |
+			// DatagramStreamConfig.DISCONNECT), sendTo);
 		} catch (IOException e) {
 			synchronized (err) {
 				err.println("IOException while sending disconnect message");
@@ -189,11 +201,13 @@ public class BasicChildStream implements ChildStream {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			baos.write(DatagramStreamConfig.CONFIRM);
-			connectionID.write(baos);;
+			connectionID.write(baos);
+			;
 			payload.getPayloadID().write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			//family.getUDPWrapper().send(concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM),
-			//		intToBytes(payload.getPayloadID())), sendTo);
+			// family.getUDPWrapper().send(concatenate(intToBytes(connectionID |
+			// DatagramStreamConfig.CONFIRM),
+			// intToBytes(payload.getPayloadID())), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while confirming payload");
 			e.printStackTrace();
@@ -230,6 +244,7 @@ public class BasicChildStream implements ChildStream {
 	public void receivePayloadConfirmation(UUID payloadID) {
 		synchronized (unconfirmed) {
 			unconfirmed.removeIf(u -> u.getPayloadID().equals(payloadID));
+			unconfirmed.notifyAll();
 		}
 	}
 
@@ -250,7 +265,8 @@ public class BasicChildStream implements ChildStream {
 			baos.write(DatagramStreamConfig.HEARTBEAT);
 			connectionID.write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			//family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.HEARTBEAT), sendTo);
+			// family.getUDPWrapper().send(intToBytes(connectionID |
+			// DatagramStreamConfig.HEARTBEAT), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while sending heartbeat");
 			e.printStackTrace();
@@ -315,7 +331,9 @@ public class BasicChildStream implements ChildStream {
 
 	@Override
 	public List<byte[]> getUnconfirmed() {
-		return unconfirmed.stream().map(UnconfirmedPayload::getTransmission).collect(Collectors.toList());
+		synchronized (unconfirmed) {
+			return unconfirmed.stream().map(UnconfirmedPayload::getTransmission).collect(Collectors.toList());
+		}
 	}
 
 }
