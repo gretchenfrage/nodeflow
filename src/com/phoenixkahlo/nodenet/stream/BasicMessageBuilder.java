@@ -6,20 +6,22 @@ import java.util.OptionalInt;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.phoenixkahlo.util.UUID;
+
 public class BasicMessageBuilder implements MessageBuilder {
 
-	private int messageID;
+	private UUID messageID;
 	private OptionalInt ordinal;
 	private SortedSet<ReceivedPayload> parts = new TreeSet<>(
 			(payload1, payload2) -> payload1.getPartNumber() - payload2.getPartNumber());
 
-	public BasicMessageBuilder(int messageID, OptionalInt ordinal) {
+	public BasicMessageBuilder(UUID messageID, OptionalInt ordinal) {
 		this.messageID = messageID;
 		this.ordinal = ordinal;
 	}
 
 	@Override
-	public long getMessageID() {
+	public UUID getMessageID() {
 		return messageID;
 	}
 

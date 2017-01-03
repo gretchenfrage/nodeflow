@@ -2,6 +2,8 @@ package com.phoenixkahlo.nodenet.stream;
 
 import java.util.OptionalInt;
 
+import com.phoenixkahlo.util.UUID;
+
 /**
  * A bean for all the data in a received payload. Ordinal is an OptionalInt, and
  * as such, this class works for both ordered and unordered messages. Payloads
@@ -9,14 +11,14 @@ import java.util.OptionalInt;
  */
 public class ReceivedPayload {
 
-	private int payloadID;
-	private int messageID;
+	private UUID payloadID;
+	private UUID messageID;
 	private OptionalInt ordinal;
 	private byte partNumber;
 	private byte totalParts;
 	private byte[] payload;
 
-	public ReceivedPayload(int payloadID, int messageID, int ordinal, byte partNumber, byte totalParts,
+	public ReceivedPayload(UUID payloadID, UUID messageID, int ordinal, byte partNumber, byte totalParts,
 			byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
@@ -26,7 +28,7 @@ public class ReceivedPayload {
 		this.payload = payload;
 	}
 
-	public ReceivedPayload(int payloadID, int messageID, byte partNumber, byte totalParts, byte[] payload) {
+	public ReceivedPayload(UUID payloadID, UUID messageID, byte partNumber, byte totalParts, byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
 		this.ordinal = OptionalInt.empty();
@@ -35,11 +37,11 @@ public class ReceivedPayload {
 		this.payload = payload;
 	}
 
-	public int getPayloadID() {
+	public UUID getPayloadID() {
 		return payloadID;
 	}
 
-	public int getMessageID() {
+	public UUID getMessageID() {
 		return messageID;
 	}
 

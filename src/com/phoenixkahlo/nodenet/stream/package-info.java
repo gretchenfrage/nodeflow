@@ -52,12 +52,19 @@
  * DatagramStreams communicate with each other using UDP datagrams.
  * </p>
  * <p>
- * The first 4 bytes in a transmission are a header that is common to every
- * transmission. The first 4 bits of that are the message's transmission type,
- * and the other 28 bits are the connection ID. The transmission type tells the
- * meaning of the rest of the message, and the connection ID is unique to each
- * connection. The connection ID is used to allow for multiple connections on
- * the same port.
+ * The first 5 bytes in a transmission are a header that is common toe very
+ * transmission. The first byte is the message's transmission type, and the next
+ * 4 are the connection ID. The transmission type tells the meaning of the rest
+ * of the message, and the connection ID is unique to each connection. The
+ * connection ID is used to allow for multiple connections on the same port.
+ * </p>
+ * <p>
+ * <strike> The first 4 bytes in a transmission are a header that is common to
+ * every transmission. The first 4 bits of that are the message's transmission
+ * type, and the other 28 bits are the connection ID. The transmission type
+ * tells the meaning of the rest of the message, and the connection ID is unique
+ * to each connection. The connection ID is used to allow for multiple
+ * connections on the same port. </strike>
  * </p>
  * <p>
  * The first transmission type is PAYLOAD, with an ID of 0x0. It represents a
@@ -71,8 +78,8 @@
  * confirmation/retransmission system. The parts of a payload transmission are:
  * <br>
  * <ol>
- * <li>int payloadID</li>
- * <li>int messageID</li>
+ * <li>UUID payloadID</li>
+ * <li>UUID messageID</li>
  * <li>byte partNumber</li>
  * <li>byte totalParts</li>
  * <li>short payloadSize</li>
@@ -87,8 +94,8 @@
  * and be incremented by 1 for every message. The parts of an ordered payload
  * transmission are: <br>
  * <ol>
- * <li>int payloadID</li>
- * <li>int messageID</li>
+ * <li>UUID payloadID</li>
+ * <li>UUID messageID</li>
  * <li>int ordinal</li>
  * <li>byte partNumber</li>
  * <li>byte totalParts</li>

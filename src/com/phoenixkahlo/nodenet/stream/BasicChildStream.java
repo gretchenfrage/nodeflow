@@ -1,9 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.concatenate;
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.intToBytes;
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.shortToBytes;
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.split;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,11 +19,12 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import com.phoenixkahlo.nodenet.DisconnectionException;
+import com.phoenixkahlo.util.UUID;
 
 public class BasicChildStream implements ChildStream {
 
 	private StreamFamily family;
-	private int connectionID;
+	private UUID connectionID;
 	private InetSocketAddress sendTo;
 
 	// Synchronize usages of unconfirmed
@@ -44,17 +42,15 @@ public class BasicChildStream implements ChildStream {
 	private volatile long lastHeartbeat;
 	private long timeOfCreation = System.currentTimeMillis();
 
-	private BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory;
+	private BiFunction<UUID, OptionalInt, MessageBuilder> messageBuilderFactory;
 	private Runnable disconnectionHandler = () -> System.out.println(BasicChildStream.this + " disconnected");
 
 	private volatile boolean disconnected = false;
 
 	private PrintStream err;
 
-	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo,
-			BiFunction<Integer, OptionalInt, MessageBuilder> messageBuilderFactory, PrintStream err) {
-		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
-			throw new IllegalArgumentException("connectionID has bits in transmission type range");
+	public BasicChildStream(StreamFamily family, UUID connectionID, InetSocketAddress sendTo,
+			BiFunction<UUID, OptionalInt, MessageBuilder> messageBuilderFactory, PrintStream err) {
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
@@ -62,9 +58,7 @@ public class BasicChildStream implements ChildStream {
 		this.err = err;
 	}
 
-	public BasicChildStream(StreamFamily family, int connectionID, InetSocketAddress sendTo, PrintStream err) {
-		if ((connectionID & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE) != 0)
-			throw new IllegalArgumentException("connectionID has bits in transmission type range");
+	public BasicChildStream(StreamFamily family, UUID connectionID, InetSocketAddress sendTo, PrintStream err) {
 		this.family = family;
 		this.connectionID = connectionID;
 		this.sendTo = sendTo;
@@ -85,24 +79,29 @@ public class BasicChildStream implements ChildStream {
 	private void sendMessage(byte[] message, OptionalInt ordinal) throws DisconnectionException {
 		if (disconnected)
 			throw new DisconnectionException();
-		int messageID = ThreadLocalRandom.current().nextInt();
+		UUID messageID = new UUID();
 		byte[][] payloads = split(message, DatagramStreamConfig.MAX_PAYLOAD_SIZE);
 		for (byte i = 0; i < payloads.length; i++) {
 			sendPayload(payloads[i], messageID, ordinal, i, (byte) payloads.length);
 		}
 	}
 
-	private void sendPayload(byte[] payload, int messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
+	private void sendPayload(byte[] payload, UUID messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
 			throws DisconnectionException {
-		int payloadID = ThreadLocalRandom.current().nextInt();
+		UUID payloadID = new UUID();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			if (ordinal.isPresent())
-				baos.write(intToBytes(connectionID | DatagramStreamConfig.ORDERED_PAYLOAD));
-			else
-				baos.write(intToBytes(connectionID | DatagramStreamConfig.PAYLOAD));
-			baos.write(intToBytes(payloadID));
-			baos.write(intToBytes(messageID));
+			if (ordinal.isPresent()) {
+				baos.write(DatagramStreamConfig.ORDERED_PAYLOAD);
+				connectionID.write(baos);
+				//baos.write(intToBytes(connectionID | DatagramStreamConfig.ORDERED_PAYLOAD));
+			} else {
+				baos.write(DatagramStreamConfig.PAYLOAD);
+				connectionID.write(baos);
+				//baos.write(intToBytes(connectionID | DatagramStreamConfig.PAYLOAD));
+			}
+			payloadID.write(baos);
+			messageID.write(baos);
 			if (ordinal.isPresent())
 				baos.write(intToBytes(ordinal.getAsInt()));
 			baos.write(partNumber);
@@ -156,7 +155,11 @@ public class BasicChildStream implements ChildStream {
 	public void disconnect() {
 		disconnected = true;
 		try {
-			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.DISCONNECT), sendTo);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(DatagramStreamConfig.DISCONNECT);
+			connectionID.write(baos);
+			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
+			//family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.DISCONNECT), sendTo);
 		} catch (IOException e) {
 			synchronized (err) {
 				err.println("IOException while sending disconnect message");
@@ -184,8 +187,13 @@ public class BasicChildStream implements ChildStream {
 	@Override
 	public void receivePayload(ReceivedPayload payload) {
 		try {
-			family.getUDPWrapper().send(concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM),
-					intToBytes(payload.getPayloadID())), sendTo);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(DatagramStreamConfig.CONFIRM);
+			connectionID.write(baos);;
+			payload.getPayloadID().write(baos);
+			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
+			//family.getUDPWrapper().send(concatenate(intToBytes(connectionID | DatagramStreamConfig.CONFIRM),
+			//		intToBytes(payload.getPayloadID())), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while confirming payload");
 			e.printStackTrace();
@@ -219,9 +227,9 @@ public class BasicChildStream implements ChildStream {
 	}
 
 	@Override
-	public void receivePayloadConfirmation(int payloadID) {
+	public void receivePayloadConfirmation(UUID payloadID) {
 		synchronized (unconfirmed) {
-			unconfirmed.removeIf(u -> u.getPayloadID() == payloadID);
+			unconfirmed.removeIf(u -> u.getPayloadID().equals(payloadID));
 		}
 	}
 
@@ -238,7 +246,11 @@ public class BasicChildStream implements ChildStream {
 	@Override
 	public void sendHeartbeat() {
 		try {
-			family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.HEARTBEAT), sendTo);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(DatagramStreamConfig.HEARTBEAT);
+			connectionID.write(baos);
+			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
+			//family.getUDPWrapper().send(intToBytes(connectionID | DatagramStreamConfig.HEARTBEAT), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while sending heartbeat");
 			e.printStackTrace();
@@ -246,7 +258,7 @@ public class BasicChildStream implements ChildStream {
 	}
 
 	@Override
-	public int getConnectionID() {
+	public UUID getConnectionID() {
 		return connectionID;
 	}
 

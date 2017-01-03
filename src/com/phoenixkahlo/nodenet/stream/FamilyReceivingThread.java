@@ -1,7 +1,6 @@
 package com.phoenixkahlo.nodenet.stream;
 
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readInt;
-import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.readShort;
+import static com.phoenixkahlo.nodenet.serialization.SerializationUtils.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 
 import com.phoenixkahlo.util.EndableThread;
+import com.phoenixkahlo.util.UUID;
 
 /**
  * Helper thread for a StreamFamily. Waits on the UDPSocketWrapper to receive
@@ -35,13 +35,15 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 				InetSocketAddress from = family.getUDPWrapper().receive(buffer);
 
 				InputStream in = new ByteArrayInputStream(buffer);
-				int header = readInt(in);
-				int transmissionType = header & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE;
-				int connectionID = header & DatagramStreamConfig.CONNECTION_ID_RANGE;
-								
+				//int header = readInt(in);
+				//int transmissionType = header & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE;
+				//int connectionID = header & DatagramStreamConfig.CONNECTION_ID_RANGE;
+				int transmissionType = in.read();
+				UUID connectionID = new UUID(in);
+				
 				Optional<ChildStream> child;
 				synchronized (family.getChildren()) {
-					child = family.getChildren().stream().filter(c -> c.getConnectionID() == connectionID).findAny();
+					child = family.getChildren().stream().filter(c -> c.getConnectionID().equals(connectionID)).findAny();
 				}
 				if (child.isPresent() && !child.get().getRemoteAddress().equals(from)) {
 					synchronized (err) {
@@ -62,8 +64,8 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 							// already exist.
 					if (child.isPresent()) {
 						if (transmissionType == DatagramStreamConfig.PAYLOAD) {
-							int payloadID = readInt(in);
-							int messageID = readInt(in);
+							UUID payloadID = new UUID(in);//readInt(in);
+							UUID messageID = new UUID(in);//readInt(in);
 							byte partNumber = (byte) in.read();
 							byte totalParts = (byte) in.read();
 							short payloadSize = readShort(in);
@@ -73,8 +75,8 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 							child.get().receivePayload(
 									new ReceivedPayload(payloadID, messageID, partNumber, totalParts, payload));
 						} else if (transmissionType == DatagramStreamConfig.ORDERED_PAYLOAD) {
-							int payloadID = readInt(in);
-							int messageID = readInt(in);
+							UUID payloadID = new UUID(in);//readInt(in);
+							UUID messageID = new UUID(in);//readInt(in);
 							int ordinal = readInt(in);
 							byte partNumber = (byte) in.read();
 							byte totalParts = (byte) in.read();
@@ -87,7 +89,7 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 						} else if (transmissionType == DatagramStreamConfig.DISCONNECT) {
 							child.get().receiveDisconnect();
 						} else if (transmissionType == DatagramStreamConfig.CONFIRM) {
-							int payloadID = readInt(in);
+							UUID payloadID = new UUID(in);
 							child.get().receivePayloadConfirmation(payloadID);
 						} else if (transmissionType == DatagramStreamConfig.HEARTBEAT) {
 							child.get().receiveHeartbeat();

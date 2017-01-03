@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import com.phoenixkahlo.util.UUID;
+
 /**
  * A family of ChildSockets that are all bound to a particular local port. Owns
  * several threads that handle blocking based tasks for all children, preventing
@@ -71,17 +73,17 @@ public interface StreamFamily {
 	 * If the receiveTest allows the connection, broadcast a response and add to
 	 * list of children.
 	 */
-	void receiveConnect(int connectionID, InetSocketAddress from);
+	void receiveConnect(UUID connectionID, InetSocketAddress from);
 
 	/**
 	 * Realize the potential connection, add to the list of children, and return
 	 * any threads waiting on connect.
 	 */
-	void receiveAccept(int connectionID, InetSocketAddress from);
+	void receiveAccept(UUID connectionID, InetSocketAddress from);
 
 	/**
 	 * Return empty any threads waiting on connect.
 	 */
-	void receiveReject(int connectionID, InetSocketAddress from);
+	void receiveReject(UUID connectionID, InetSocketAddress from);
 
 }

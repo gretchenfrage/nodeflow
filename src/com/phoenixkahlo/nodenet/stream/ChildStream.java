@@ -1,5 +1,7 @@
 package com.phoenixkahlo.nodenet.stream;
 
+import com.phoenixkahlo.util.UUID;
+
 /**
  * A DatagramStream that belongs to a StreamFamily. Depends on the StreamFamily's
  * helper threads to receive its messages and delegate them to it through the
@@ -21,7 +23,7 @@ public interface ChildStream extends DatagramStream {
 	/**
 	 * Receive confirmation that a particular payload has been received.
 	 */
-	void receivePayloadConfirmation(int payloadID);
+	void receivePayloadConfirmation(UUID payloadID);
 
 	/**
 	 * @return the time that a heartbeat was last received.
@@ -47,7 +49,7 @@ public interface ChildStream extends DatagramStream {
 	/**
 	 * @return the connection ID within the family.
 	 */
-	int getConnectionID();
+	UUID getConnectionID();
 
 	/**
 	 * Retransmit any payloads for which confirmation has remained unreceived

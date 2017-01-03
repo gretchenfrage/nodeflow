@@ -2,12 +2,14 @@ package com.phoenixkahlo.nodenet.stream;
 
 import java.util.OptionalInt;
 
+import com.phoenixkahlo.util.UUID;
+
 /**
  * A group of ReceivedPayloads that will eventually compose a complete message.
  */
 public interface MessageBuilder {
 
-	long getMessageID();
+	UUID getMessageID();
 
 	OptionalInt getOrdinal();
 

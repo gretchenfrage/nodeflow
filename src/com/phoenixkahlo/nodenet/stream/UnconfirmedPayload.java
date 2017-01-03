@@ -1,25 +1,27 @@
 package com.phoenixkahlo.nodenet.stream;
 
+import com.phoenixkahlo.util.UUID;
+
 /**
  * A bean for payloads that have been sent but not confirmed.
  */
 public class UnconfirmedPayload {
 
-	private int payloadID;
+	private UUID payloadID;
 	private byte[] transmission;
 	private long lastSentTime;
 
-	public UnconfirmedPayload(int payloadID, byte[] transmission, long lastSentTime) {
+	public UnconfirmedPayload(UUID payloadID, byte[] transmission, long lastSentTime) {
 		this.payloadID = payloadID;
 		this.transmission = transmission;
 		this.lastSentTime = lastSentTime;
 	}
 
-	public UnconfirmedPayload(int payloadID, byte[] transmission) {
+	public UnconfirmedPayload(UUID payloadID, byte[] transmission) {
 		this(payloadID, transmission, System.currentTimeMillis());
 	}
 	
-	public int getPayloadID() {
+	public UUID getPayloadID() {
 		return payloadID;
 	}
 
