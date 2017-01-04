@@ -3,6 +3,7 @@ package com.phoenixkahlo.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,29 +16,29 @@ public class UUID {
 	public static Serializer serializer() {
 		return new FieldSerializer(UUID.class, UUID::new);
 	}
-	
+
 	private long data1;
 	private long data2;
-	
+
 	public UUID() {
 		data1 = ThreadLocalRandom.current().nextLong();
 		data2 = ThreadLocalRandom.current().nextLong();
 	}
-	
+
 	public UUID(int n) {
 		data1 = n;
 	}
-	
+
 	public UUID(InputStream in) throws IOException {
 		data1 = SerializationUtils.readLong(in);
 		data2 = SerializationUtils.readLong(in);
 	}
-	
+
 	public void write(OutputStream out) throws IOException {
 		SerializationUtils.writeLong(data1, out);
 		SerializationUtils.writeLong(data2, out);
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof UUID)
@@ -45,15 +46,20 @@ public class UUID {
 		else
 			return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(data1, data2);
 	}
-	
+
+	private BigInteger asBigInt() {
+		return new BigInteger(SerializationUtils.concatenate(SerializationUtils.longToBytes(data1),
+				SerializationUtils.longToBytes(data2)));
+	}
+
 	@Override
 	public String toString() {
-		return Long.toHexString(data1) + Long.toHexString(data2);
+		return asBigInt().toString(36).toUpperCase();
 	}
-	
+
 }

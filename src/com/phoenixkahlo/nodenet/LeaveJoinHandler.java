@@ -43,11 +43,14 @@ public class LeaveJoinHandler {
 			}
 		}
 		if (node != null) {
+			List<Thread> threads = new ArrayList<Thread>();
 			synchronized (joinListeners) {
-				for (int i = joinListeners.size() - 1; i >= 0; i--) {
-					joinListeners.get(i).accept(node);
+				final Node finalNode = node;
+				for (Consumer<Node> listener : joinListeners) {
+					threads.add(new Thread(() -> listener.accept(finalNode)));
 				}
 			}
+			threads.forEach(Thread::start);
 		}
 	}
 
@@ -65,11 +68,14 @@ public class LeaveJoinHandler {
 			}
 		}
 		if (node != null) {
+			List<Thread> threads = new ArrayList<Thread>();
 			synchronized (leaveListeners) {
-				for (int i = leaveListeners.size() - 1; i >= 0; i--) {
-					leaveListeners.get(i).accept(node);
+				final Node finalNode = node;
+				for (Consumer<Node> listener : leaveListeners) {
+					threads.add(new Thread(() -> listener.accept(finalNode)));
 				}
 			}
+			threads.forEach(Thread::start);
 		}
 	}
 
