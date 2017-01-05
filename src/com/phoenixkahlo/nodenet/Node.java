@@ -13,6 +13,15 @@ public interface Node {
 	 */
 	Object receive() throws DisconnectionException;
 
+	@SuppressWarnings("unchecked")
+	default <E> E receive(Class<E> type) throws DisconnectionException, ProtocolViolationException {
+		Object received = receive();
+		if (type.isAssignableFrom(received.getClass()))
+			return (E) received;
+		else
+			throw new ProtocolViolationException(received + " not instance of " + type);
+	}
+	
 	/**
 	 * Set the handler for objects received from this node. This will change it
 	 * from the default of making them available to the receive method, causing

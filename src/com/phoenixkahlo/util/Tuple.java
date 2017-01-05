@@ -2,11 +2,21 @@ package com.phoenixkahlo.util;
 
 import java.util.Objects;
 
+import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
+import com.phoenixkahlo.nodenet.serialization.Serializer;
+
 public class Tuple<A, B> {
 
+	public static Serializer serializer(Serializer subSerializer) {
+		return new FieldSerializer(Tuple.class, subSerializer, Tuple::new);
+	}
+	
 	private A a;
 	private B b;
-	
+
+	private Tuple() {
+	}
+
 	public Tuple(A a, B b) {
 		this.a = a;
 		this.b = b;
@@ -27,7 +37,7 @@ public class Tuple<A, B> {
 	public void setB(B b) {
 		this.b = b;
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Tuple)
@@ -35,10 +45,10 @@ public class Tuple<A, B> {
 		else
 			return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(a, b);
 	}
-	
+
 }

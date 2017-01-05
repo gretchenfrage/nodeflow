@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -31,8 +32,17 @@ public class ProxyHandler {
 	}
 
 	public <E> Proxy<E> makeProxy(E source, Class<E> intrface) {
-		UUID id = new UUID();
-		sources.put(id, source);
+		Optional<UUID> existent;
+		synchronized (sources) {
+			existent = sources.entrySet().stream().filter(entry -> entry.getValue().equals(source)).map(Entry::getKey).findAny();
+		}
+		UUID id;
+		if (existent.isPresent()) {
+			id = existent.get();
+		} else {
+			id = new UUID();
+			sources.put(id, source);			
+		}
 		return new BasicProxy<>(id, localAddress, intrface, this, localAddress);
 	}
 

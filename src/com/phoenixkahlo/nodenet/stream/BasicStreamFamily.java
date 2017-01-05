@@ -99,11 +99,10 @@ public class BasicStreamFamily implements StreamFamily {
 	}
 
 	@Override
-	public Optional<DatagramStream> connect(InetSocketAddress address) {
+	public Optional<DatagramStream> connect(InetSocketAddress address, long timeout) {
 		if (disconnected)
 			return Optional.empty();
 		
-		//int connectionID = ThreadLocalRandom.current().nextInt() & DatagramStreamConfig.CONNECTION_ID_RANGE;
 		UUID connectionID = new UUID();
 		
 		synchronized (unconfirmedConnections) {
@@ -115,21 +114,34 @@ public class BasicStreamFamily implements StreamFamily {
 			baos.write(DatagramStreamConfig.CONNECT);
 			connectionID.write(baos);
 			udpWrapper.send(baos.toByteArray(), address);
-			//udpWrapper.send(intToBytes(connectionID | DatagramStreamConfig.CONNECT), address);
 		} catch (IOException e1) {
 			return Optional.empty();
 		}
 
+		Thread ender = new Thread(() -> {
+			try {
+				Thread.sleep(timeout);
+				synchronized (unconfirmedConnections) {
+					unconfirmedConnections.remove(connectionID);
+					unconfirmedConnections.notifyAll();
+				}
+			} catch (InterruptedException e) {
+			}
+		});
+		ender.start();
+		
 		synchronized (unconfirmedConnections) {
 			while (unconfirmedConnections.contains(connectionID)) {
 				try {
 					unconfirmedConnections.wait();
 				} catch (InterruptedException e) {
-					err.println("Interrupted while waiting on unconfirmedConnections");
-					e.printStackTrace();
+					err.println("Interrupted while waiting for removal of unconfirmed connection");
+					e.printStackTrace(err);
 				}
 			}
 		}
+		
+		ender.interrupt();
 
 		Optional<ChildStream> optional = children.stream().filter(child -> child.getConnectionID().equals(connectionID))
 				.findAny();

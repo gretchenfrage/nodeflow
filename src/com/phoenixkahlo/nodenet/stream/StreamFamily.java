@@ -55,8 +55,12 @@ public interface StreamFamily {
 	 * Attempt to connect to the address. Failure may result from timeout,
 	 * IOException, rejectance, etc.
 	 */
-	Optional<DatagramStream> connect(InetSocketAddress address);
+	Optional<DatagramStream> connect(InetSocketAddress address, long timeout);
 
+	default Optional<DatagramStream> connect(InetSocketAddress address) {
+		return connect(address, 5_000);
+	}
+	
 	/**
 	 * Useage of children list should be synchronized.
 	 */
