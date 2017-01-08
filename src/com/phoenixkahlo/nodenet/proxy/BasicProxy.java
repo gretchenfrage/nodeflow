@@ -1,6 +1,7 @@
 package com.phoenixkahlo.nodenet.proxy;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 import com.phoenixkahlo.nodenet.DisconnectionException;
@@ -39,23 +40,41 @@ public class BasicProxy<E> implements Proxy<E> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public E blocking() {
-		InvocationHandler invocationHandler = (proxy, method, args) -> {
-			ProxyResult result;
-			result = proxyHandler.sendAndWait(new ProxyInvocation(proxyID, method, args, Optional.of(localAddress)),
-					source);
-			switch (result.getType()) {
-			case NORMAL:
-				return result.getResult();
-			case TARGETEXCEPTION:
-				throw (Throwable) result.getResult();
-			case PROXYEXCEPTION:
-				throw new RuntimeProxyException();
-			case DISCONNECTIONEXCEPTION:
-				throw new RuntimeDisconnectionException();
-			default:
-				throw new RuntimeException();
-			}
-		};
+
+		InvocationHandler invocationHandler;
+		if (source.equals(localAddress))
+			invocationHandler = (proxy, method, args) -> {
+				Optional<Object> source = proxyHandler.getSource(proxyID);
+				if (source.isPresent()) {
+					try {
+						return method.invoke(source.get(), args);
+					} catch (InvocationTargetException e) {
+						throw e.getTargetException();
+					} catch (Exception e) {
+						throw new RuntimeProxyException(e);
+					}
+				} else {
+					throw new RuntimeProxyException();
+				}
+			};
+		else
+			invocationHandler = (proxy, method, args) -> {
+				ProxyResult result;
+				result = proxyHandler.sendAndWait(new ProxyInvocation(proxyID, method, args, Optional.of(localAddress)),
+						source);
+				switch (result.getType()) {
+				case NORMAL:
+					return result.getResult();
+				case TARGETEXCEPTION:
+					throw (Throwable) result.getResult();
+				case PROXYEXCEPTION:
+					throw new RuntimeProxyException();
+				case DISCONNECTIONEXCEPTION:
+					throw new RuntimeDisconnectionException();
+				default:
+					throw new RuntimeException();
+				}
+			};
 		return (E) java.lang.reflect.Proxy.newProxyInstance(BasicProxy.class.getClassLoader(),
 				new Class<?>[] { implementing }, invocationHandler);
 	}
@@ -88,16 +107,31 @@ public class BasicProxy<E> implements Proxy<E> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public E unblocking(boolean disconnectionException) {
-		InvocationHandler invocationHandler = (proxy, method, args) -> {
-			try {
-				proxyHandler.sendDontWait(new ProxyInvocation(proxyID, method, args, Optional.empty()), source);
-			} catch (DisconnectionException e) {
-				if (disconnectionException)
-					throw new RuntimeDisconnectionException(e);
-			}
+		InvocationHandler invocationHandler;
+		if (source.equals(localAddress))
+			invocationHandler = (proxy, method, args) -> {
+				new Thread(() -> {
+					Optional<Object> source = proxyHandler.getSource(proxyID);
+					if (source.isPresent()) {
+						try {
+							method.invoke(source.get(), args);
+						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						}
+					}
+				}).start();
+				return getGibberish(method.getReturnType());
+			};
+		else
+			invocationHandler = (proxy, method, args) -> {
+				try {
+					proxyHandler.sendDontWait(new ProxyInvocation(proxyID, method, args, Optional.empty()), source);
+				} catch (DisconnectionException e) {
+					if (disconnectionException)
+						throw new RuntimeDisconnectionException(e);
+				}
 
-			return getGibberish(method.getReturnType());
-		};
+				return getGibberish(method.getReturnType());
+			};
 		return (E) java.lang.reflect.Proxy.newProxyInstance(BasicProxy.class.getClassLoader(),
 				new Class<?>[] { implementing }, invocationHandler);
 	}
@@ -132,7 +166,7 @@ public class BasicProxy<E> implements Proxy<E> {
 		else
 			throw new ClassCastException();
 	}
-	
+
 	@Override
 	public String toString() {
 		return "proxy<" + implementing.getSimpleName() + ">";

@@ -58,6 +58,10 @@ public class ProxyHandler {
 	public void removeProxy(Proxy<?> proxy) {
 		sources.remove(proxy.getProxyID());
 	}
+	
+	public Optional<Object> getSource(UUID id) {
+		return Optional.ofNullable(sources.get(id));
+	}
 
 	public void handle(ProxyInvocation invocation) {
 		Object source = sources.get(invocation.getProxyID());

@@ -22,6 +22,7 @@ public class NodeAddress {
 		this.id = id;
 	}
 	
+	@Deprecated
 	public NodeAddress(int n) {
 		this.id = new UUID(n);
 	}

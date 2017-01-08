@@ -1,5 +1,6 @@
 package com.phoenixkahlo.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,8 +26,18 @@ public class UUID {
 		data2 = ThreadLocalRandom.current().nextLong();
 	}
 
+	@Deprecated
 	public UUID(int n) {
 		data1 = n;
+	}
+	
+	public UUID(BigInteger n) {
+		try (InputStream in = new ByteArrayInputStream(n.toByteArray())) {
+			data1 = in.read();
+			data2 = in.read();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public UUID(InputStream in) throws IOException {
@@ -52,7 +63,7 @@ public class UUID {
 		return Objects.hash(data1, data2);
 	}
 
-	private BigInteger asBigInt() {
+	public BigInteger asBigInt() {
 		return new BigInteger(SerializationUtils.concatenate(SerializationUtils.longToBytes(data1),
 				SerializationUtils.longToBytes(data2)));
 	}
