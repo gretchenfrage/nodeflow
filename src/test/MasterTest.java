@@ -18,6 +18,7 @@ import test.serialization.UnionSerializerTest;
 import test.socket.BasicChildSocketTest;
 import test.socket.RealUDPSocketWrapperTest;
 import test.util.BlockingHashMapTest;
+import test.util.UUIDJSONTest;
 
 public class MasterTest {
 
@@ -41,6 +42,7 @@ public class MasterTest {
 		Testing.test(HandshakeHandlerTest.class);
 		
 		Testing.test(BlockingHashMapTest.class);
+		Testing.test(UUIDJSONTest.class);
 		
 		System.out.println("$$$ done! $$$");
 	}

@@ -1,6 +1,7 @@
 package com.phoenixkahlo.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,9 +33,9 @@ public class UUID {
 	}
 	
 	public UUID(BigInteger n) {
-		try (InputStream in = new ByteArrayInputStream(n.toByteArray())) {
-			data1 = in.read();
-			data2 = in.read();
+		try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(n.toByteArray()))) {
+			data1 = in.readLong();
+			data2 = in.readLong();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -44,7 +45,11 @@ public class UUID {
 		data1 = SerializationUtils.readLong(in);
 		data2 = SerializationUtils.readLong(in);
 	}
-
+	
+	public UUID(String str) throws IllegalArgumentException {
+		this(new BigInteger(str, 36));
+	}
+	
 	public void write(OutputStream out) throws IOException {
 		SerializationUtils.writeLong(data1, out);
 		SerializationUtils.writeLong(data2, out);
