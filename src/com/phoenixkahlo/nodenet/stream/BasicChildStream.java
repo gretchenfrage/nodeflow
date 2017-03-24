@@ -43,7 +43,7 @@ public class BasicChildStream implements ChildStream {
 	private long timeOfCreation = System.currentTimeMillis();
 
 	private BiFunction<UUID, OptionalInt, MessageBuilder> messageBuilderFactory;
-	private Runnable disconnectionHandler = () -> System.out.println(BasicChildStream.this + " disconnected");
+	private Runnable disconnectionHandler = () -> {};
 
 	private volatile boolean disconnected = false;
 
@@ -81,12 +81,12 @@ public class BasicChildStream implements ChildStream {
 			throw new DisconnectionException();
 		UUID messageID = new UUID();
 		byte[][] payloads = split(message, DatagramStreamConfig.MAX_PAYLOAD_SIZE);
-		for (byte i = 0; i < payloads.length; i++) {
-			sendPayload(payloads[i], messageID, ordinal, i, (byte) payloads.length);
+		for (int i = 0; i < payloads.length; i++) {
+			sendPayload(payloads[i], messageID, ordinal, i, payloads.length);
 		}
 	}
 
-	private void sendPayload(byte[] payload, UUID messageID, OptionalInt ordinal, byte partNumber, byte totalParts)
+	private void sendPayload(byte[] payload, UUID messageID, OptionalInt ordinal, int partNumber, int totalParts)
 			throws DisconnectionException {
 		try {
 			synchronized (unconfirmed) {
@@ -103,20 +103,16 @@ public class BasicChildStream implements ChildStream {
 			if (ordinal.isPresent()) {
 				baos.write(DatagramStreamConfig.ORDERED_PAYLOAD);
 				connectionID.write(baos);
-				// baos.write(intToBytes(connectionID |
-				// DatagramStreamConfig.ORDERED_PAYLOAD));
 			} else {
 				baos.write(DatagramStreamConfig.PAYLOAD);
 				connectionID.write(baos);
-				// baos.write(intToBytes(connectionID |
-				// DatagramStreamConfig.PAYLOAD));
 			}
 			payloadID.write(baos);
 			messageID.write(baos);
 			if (ordinal.isPresent())
 				baos.write(intToBytes(ordinal.getAsInt()));
-			baos.write(partNumber);
-			baos.write(totalParts);
+			baos.write(intToBytes(partNumber));
+			baos.write(intToBytes(totalParts));
 			baos.write(shortToBytes((short) payload.length));
 			baos.write(payload);
 		} catch (IOException e) {
@@ -170,8 +166,6 @@ public class BasicChildStream implements ChildStream {
 			baos.write(DatagramStreamConfig.DISCONNECT);
 			connectionID.write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			// family.getUDPWrapper().send(intToBytes(connectionID |
-			// DatagramStreamConfig.DISCONNECT), sendTo);
 		} catch (IOException e) {
 			synchronized (err) {
 				err.println("IOException while sending disconnect message");
@@ -202,12 +196,8 @@ public class BasicChildStream implements ChildStream {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			baos.write(DatagramStreamConfig.CONFIRM);
 			connectionID.write(baos);
-			;
 			payload.getPayloadID().write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			// family.getUDPWrapper().send(concatenate(intToBytes(connectionID |
-			// DatagramStreamConfig.CONFIRM),
-			// intToBytes(payload.getPayloadID())), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while confirming payload");
 			e.printStackTrace();
@@ -265,8 +255,6 @@ public class BasicChildStream implements ChildStream {
 			baos.write(DatagramStreamConfig.HEARTBEAT);
 			connectionID.write(baos);
 			family.getUDPWrapper().send(baos.toByteArray(), sendTo);
-			// family.getUDPWrapper().send(intToBytes(connectionID |
-			// DatagramStreamConfig.HEARTBEAT), sendTo);
 		} catch (IOException e) {
 			err.println("IOException while sending heartbeat");
 			e.printStackTrace();

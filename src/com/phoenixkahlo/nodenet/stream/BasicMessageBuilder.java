@@ -2,6 +2,7 @@ package com.phoenixkahlo.nodenet.stream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.OptionalInt;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -12,8 +13,7 @@ public class BasicMessageBuilder implements MessageBuilder {
 
 	private UUID messageID;
 	private OptionalInt ordinal;
-	private SortedSet<ReceivedPayload> parts = new TreeSet<>(
-			(payload1, payload2) -> payload1.getPartNumber() - payload2.getPartNumber());
+	private SortedSet<ReceivedPayload> parts = new TreeSet<>(Comparator.comparingInt(ReceivedPayload::getPartNumber));
 
 	public BasicMessageBuilder(UUID messageID, OptionalInt ordinal) {
 		this.messageID = messageID;

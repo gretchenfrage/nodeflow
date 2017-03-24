@@ -26,7 +26,7 @@ public class DatagramStreamConfig {
 	 * - short payloadSize
 	 * - byte[] payload
 	 */
-	public static final int PAYLOAD = 0;//0x00000000;
+	public static final int PAYLOAD = 0;
 	/**
 	 * A part of an ordered message.
 	 * - int header
@@ -38,33 +38,33 @@ public class DatagramStreamConfig {
 	 * - short payloadSize
 	 * - byte[] payload
 	 */
-	public static final int ORDERED_PAYLOAD = 1;//0x10000000;
+	public static final int ORDERED_PAYLOAD = 1;
 	/**
 	 * Header only transmission for trying to start a connection.
 	 */
-	public static final int CONNECT = 2;//0x20000000;
+	public static final int CONNECT = 2;
 	/**
 	 * Header only transmission for ending a connection;
 	 */
-	public static final int DISCONNECT = 3;//0x30000000;
+	public static final int DISCONNECT = 3;
 	/**
 	 * Header only transmission for accepting a connection in response to CONNECT.
 	 */
-	public static final int ACCEPT = 4;//0x40000000;
+	public static final int ACCEPT = 4;
 	/**
 	 * Header only transmission for rejecting a connection in response to CONNECT.
 	 */
-	public static final int REJECT = 5;//0x50000000;
+	public static final int REJECT = 5;
 	/**
 	 * Confirmation that a payload has been received.
 	 * - int header
 	 * - int payloadID
 	 */
-	public static final int CONFIRM = 6;//0x60000000;
+	public static final int CONFIRM = 6;
 	/**
 	 * Header only heartbeat transmission.
 	 */
-	public static final int HEARTBEAT = 7;//0x70000000;
+	public static final int HEARTBEAT = 7;
 	
 	public static String nameOf(int transmissionType) {
 		switch (transmissionType) {
@@ -85,7 +85,7 @@ public class DatagramStreamConfig {
 		case HEARTBEAT:
 			return "heartbeat";
 		default:
-			return "invalid (" + Integer.toBinaryString(transmissionType >> 28) + ")";
+			return "invalid (" + Integer.toBinaryString(transmissionType) + ")";
 		}
 	}
 

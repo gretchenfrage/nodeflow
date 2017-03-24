@@ -20,11 +20,11 @@
  * <p>
  * DatagramStream packets are not guaranteed to arrive in order because of the
  * nature of UDP. However, packets can be sent with ordinals, which will cause
- * them to be buffered on the receiving end until all previously send packages
+ * them to be buffered on the receiving end until all previously sent packages
  * can be received first.
  * </p>
  * <p>
- * DatagramSockets provide and confirmation and retransmission system, which
+ * DatagramSockets provide confirmation and retransmission system, which
  * guarantees that all packets will be received, except in the event of a
  * disconnection. In the event of a disconnection, the client can get the
  * collection of packets that have been sent and not confirmed.
@@ -59,29 +59,21 @@
  * connection ID is used to allow for multiple connections on the same port.
  * </p>
  * <p>
- * <strike> The first 4 bytes in a transmission are a header that is common to
- * every transmission. The first 4 bits of that are the message's transmission
- * type, and the other 28 bits are the connection ID. The transmission type
- * tells the meaning of the rest of the message, and the connection ID is unique
- * to each connection. The connection ID is used to allow for multiple
- * connections on the same port. </strike>
- * </p>
- * <p>
  * The first transmission type is PAYLOAD, with an ID of 0x0. It represents a
  * part of an unordered message. Messages can be split into several parts due to
  * the size limit of UDP transmissions. Each <b>payload</b> has a randomly
  * generated payload ID which is used to identify it for the confirmation and
  * retransmission system. Each <b>message</b> also has a randomly generated
  * message ID which is used to combine multiple payloads of the same message.
- * When a payload is receives, it should respond with a CONFIRM message. A
- * payload may be sent/receives multiple times, as a part of the
+ * When a payload is received, it should respond with a CONFIRM message. A
+ * payload may be sent/received multiple times, as a part of the
  * confirmation/retransmission system. The parts of a payload transmission are:
  * <br>
  * <ol>
  * <li>UUID payloadID</li>
  * <li>UUID messageID</li>
- * <li>byte partNumber</li>
- * <li>byte totalParts</li>
+ * <li>int partNumber</li>
+ * <li>int totalParts</li>
  * <li>short payloadSize</li>
  * <li>byte[] payload</li>
  * </ol>
@@ -97,8 +89,8 @@
  * <li>UUID payloadID</li>
  * <li>UUID messageID</li>
  * <li>int ordinal</li>
- * <li>byte partNumber</li>
- * <li>byte totalParts</li>
+ * <li>int partNumber</li>
+ * <li>int totalParts</li>
  * <li>short payloadSize</li>
  * <li>byte[] payload</li>
  * </ol>

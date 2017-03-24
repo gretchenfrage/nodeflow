@@ -35,9 +35,6 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 				InetSocketAddress from = family.getUDPWrapper().receive(buffer);
 
 				InputStream in = new ByteArrayInputStream(buffer);
-				//int header = readInt(in);
-				//int transmissionType = header & DatagramStreamConfig.TRANSMISSION_TYPE_RANGE;
-				//int connectionID = header & DatagramStreamConfig.CONNECTION_ID_RANGE;
 				int transmissionType = in.read();
 				UUID connectionID = new UUID(in);
 				
@@ -66,8 +63,10 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 						if (transmissionType == DatagramStreamConfig.PAYLOAD) {
 							UUID payloadID = new UUID(in);//readInt(in);
 							UUID messageID = new UUID(in);//readInt(in);
-							byte partNumber = (byte) in.read();
-							byte totalParts = (byte) in.read();
+							//byte partNumber = (byte) in.read();
+							//byte totalParts = (byte) in.read();
+							int partNumber = readInt(in);
+							int totalParts = readInt(in);
 							short payloadSize = readShort(in);
 							byte[] payload = new byte[payloadSize];
 							in.read(payload);
@@ -78,8 +77,10 @@ public class FamilyReceivingThread extends Thread implements EndableThread {
 							UUID payloadID = new UUID(in);//readInt(in);
 							UUID messageID = new UUID(in);//readInt(in);
 							int ordinal = readInt(in);
-							byte partNumber = (byte) in.read();
-							byte totalParts = (byte) in.read();
+							//byte partNumber = (byte) in.read();
+							//byte totalParts = (byte) in.read();
+							int partNumber = readInt(in);
+							int totalParts = readInt(in);
 							short payloadSize = readShort(in);
 							byte[] payload = new byte[payloadSize];
 							in.read(payload);

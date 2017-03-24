@@ -14,11 +14,11 @@ public class ReceivedPayload {
 	private UUID payloadID;
 	private UUID messageID;
 	private OptionalInt ordinal;
-	private byte partNumber;
-	private byte totalParts;
+	private int partNumber;
+	private int totalParts;
 	private byte[] payload;
 
-	public ReceivedPayload(UUID payloadID, UUID messageID, int ordinal, byte partNumber, byte totalParts,
+	public ReceivedPayload(UUID payloadID, UUID messageID, int ordinal, int partNumber, int totalParts,
 			byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
@@ -28,7 +28,7 @@ public class ReceivedPayload {
 		this.payload = payload;
 	}
 
-	public ReceivedPayload(UUID payloadID, UUID messageID, byte partNumber, byte totalParts, byte[] payload) {
+	public ReceivedPayload(UUID payloadID, UUID messageID, int partNumber, int totalParts, byte[] payload) {
 		this.payloadID = payloadID;
 		this.messageID = messageID;
 		this.ordinal = OptionalInt.empty();
@@ -49,11 +49,11 @@ public class ReceivedPayload {
 		return ordinal;
 	}
 
-	public byte getPartNumber() {
+	public int getPartNumber() {
 		return partNumber;
 	}
 
-	public byte getTotalParts() {
+	public int getTotalParts() {
 		return totalParts;
 	}
 
