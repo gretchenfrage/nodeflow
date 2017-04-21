@@ -1,11 +1,9 @@
 package com.phoenixkahlo.nodenet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
@@ -51,7 +49,32 @@ public class ChildNode implements Node {
 			if (disconnected)
 				throw new DisconnectionException();
 			else
-				throw new RuntimeException(e);
+				throw new RuntimeException("unexpected interruption " + e);
+		} finally {
+			receiving.remove(Thread.currentThread());
+		}
+	}
+
+	@Override
+	public Optional<Object> receiveWithin(long millis) throws DisconnectionException {
+		try {
+			receiving.add(Thread.currentThread());
+			boolean disconnected;
+			synchronized (this) {
+				disconnected = this.disconnected;
+			}
+			if (disconnected)
+				throw new DisconnectionException();
+			return Optional.ofNullable(receivedQueue.poll(millis, TimeUnit.MILLISECONDS));
+		} catch (InterruptedException e) {
+			boolean disconnected;
+			synchronized (this) {
+				disconnected = this.disconnected;
+			}
+			if (disconnected)
+				throw new DisconnectionException();
+			else
+				throw new RuntimeException("unexpected interruption " + e);
 		} finally {
 			receiving.remove(Thread.currentThread());
 		}

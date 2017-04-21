@@ -4,7 +4,7 @@ import com.phoenixkahlo.nodenet.serialization.FieldSerializer;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 
 /**
- * Trigger to send NeighborSetUpdate. Descibed in package description.
+ * Trigger to send NeighborSetUpdate. Described in package description.
  */
 public class NeighborSetUpdateTrigger implements ViralPayload {
 

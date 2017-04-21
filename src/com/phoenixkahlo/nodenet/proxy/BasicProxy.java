@@ -72,7 +72,7 @@ public class BasicProxy<E> implements Proxy<E> {
 				case DISCONNECTIONEXCEPTION:
 					throw new RuntimeDisconnectionException();
 				default:
-					throw new RuntimeException();
+					throw new AssertionError();
 				}
 			};
 		return (E) java.lang.reflect.Proxy.newProxyInstance(BasicProxy.class.getClassLoader(),

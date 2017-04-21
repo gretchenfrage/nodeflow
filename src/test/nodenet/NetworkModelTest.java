@@ -6,6 +6,7 @@ import com.phoenixkahlo.nodenet.NetworkModel;
 import com.phoenixkahlo.nodenet.NodeAddress;
 import com.phoenixkahlo.ptest.Test;
 
+
 public class NetworkModelTest {
 
 	@Test

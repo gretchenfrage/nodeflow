@@ -1,5 +1,8 @@
 package com.phoenixkahlo.nodenet;
 
+import com.phoenixkahlo.nodenet.proxy.Proxy;
+
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -13,6 +16,8 @@ public interface Node {
 	 */
 	Object receive() throws DisconnectionException;
 
+	Optional<Object> receiveWithin(long millis) throws DisconnectionException;
+
 	@SuppressWarnings("unchecked")
 	default <E> E receive(Class<E> type) throws DisconnectionException, ProtocolViolationException {
 		Object received = receive();
@@ -20,6 +25,31 @@ public interface Node {
 			return (E) received;
 		else
 			throw new ProtocolViolationException(received + " not instance of " + type);
+	}
+
+	@SuppressWarnings("unchecked")
+	default <E> Optional<E> receiveWithin(Class<E> type, long millis) throws DisconnectionException, ProtocolViolationException {
+		Optional<Object> received = receiveWithin(millis);
+		if (!received.isPresent())
+			return Optional.empty();
+		if (type.isAssignableFrom(received.get().getClass()))
+			return (Optional<E>) received;
+		else
+			throw new ProtocolViolationException(received.get() + " not instance of " + type);
+	}
+
+	default <E> Proxy<E> receiveProxy(Class<E> type) throws DisconnectionException, ProtocolViolationException {
+		Proxy<?> proxy = receive(Proxy.class);
+		return proxy.cast(type);
+	}
+
+	@SuppressWarnings("unchecked")
+	default <E> Optional<Proxy<E>> receivedProxyWithin(Class<E> type, long millis) throws DisconnectionException, ProtocolViolationException {
+		Optional<Proxy> proxy = receiveWithin(Proxy.class, millis);
+		if (proxy.isPresent())
+			return Optional.of(proxy.get().cast(type));
+		else
+			return Optional.empty();
 	}
 	
 	/**
