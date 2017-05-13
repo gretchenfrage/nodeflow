@@ -3,13 +3,8 @@ package com.phoenixkahlo.nodenet;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,16 +16,7 @@ import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
 import com.phoenixkahlo.nodenet.proxy.ProxyInvocation;
 import com.phoenixkahlo.nodenet.proxy.ProxyMultiInvocation;
 import com.phoenixkahlo.nodenet.proxy.ProxyResult;
-import com.phoenixkahlo.nodenet.serialization.ArraySerializer;
-import com.phoenixkahlo.nodenet.serialization.ClassSerializer;
-import com.phoenixkahlo.nodenet.serialization.CollectionSerializer;
-import com.phoenixkahlo.nodenet.serialization.EmptyOptionalSerializer;
-import com.phoenixkahlo.nodenet.serialization.FullOptionalSerializer;
-import com.phoenixkahlo.nodenet.serialization.MethodSerializer;
-import com.phoenixkahlo.nodenet.serialization.NullSerializer;
-import com.phoenixkahlo.nodenet.serialization.Serializer;
-import com.phoenixkahlo.nodenet.serialization.StringSerializer;
-import com.phoenixkahlo.nodenet.serialization.UnionSerializer;
+import com.phoenixkahlo.nodenet.serialization.*;
 import com.phoenixkahlo.nodenet.stream.BasicStreamFamily;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
@@ -89,28 +75,35 @@ public class BasicLocalNode implements LocalNode {
 	}
 	
 	private void initSerializer() {
-		serializer.add(0, new NullSerializer());
-		serializer.add(-2, NodeAddress.serializer(serializer));
-		serializer.add(-3, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
-		serializer.add(-4, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
-		serializer.add(-5, Handshake.serializer(serializer));
-		serializer.add(-6, ViralMessage.serializer(serializer));
-		serializer.add(-9, AddressedMessageResult.serializer(serializer));
-		serializer.add(-10, AddressedMessage.serializer(serializer));
-		serializer.add(-11, NeighborSetUpdate.serializer(serializer));
-		serializer.add(-12, NeighborSetUpdateTrigger.serializer(serializer));
-		serializer.add(-13, ClientTransmission.serializer(serializer));
-		serializer.add(-14, BasicProxy.serializer(serializer, proxyHandler, localAddress));
-		serializer.add(-15, ProxyInvocation.serializer(serializer));
-		serializer.add(-16, ProxyResult.serializer(serializer));
-		serializer.add(-17, new MethodSerializer());
-		serializer.add(-18, new ClassSerializer());
-		serializer.add(-19, new ArraySerializer(Object.class, serializer));
-		serializer.add(-20, new StringSerializer());
-		serializer.add(-21, new EmptyOptionalSerializer());
-		serializer.add(-22, new FullOptionalSerializer(serializer));
-		serializer.add(-23, ProxyMultiInvocation.serializer(serializer));
-		serializer.add(-24, UUID.serializer());
+		int header = -1;
+		// serializers for things that should be serializable in general
+		serializer.add(header--, new NullSerializer());
+		serializer.add(header--, new MethodSerializer());
+		serializer.add(header--, new ClassSerializer());
+		serializer.add(header--, new PrimitiveClassSerializer());
+		serializer.add(header--, new ArrayClassSerializer(serializer));
+		serializer.add(header--, new ArraySerializer(Object.class, serializer));
+		serializer.add(header--, new StringSerializer());
+		serializer.add(header--, new EmptyOptionalSerializer());
+		serializer.add(header--, new FullOptionalSerializer(serializer));
+		// serializers for internal classes
+		serializer.add(header--, NodeAddress.serializer(serializer));
+		serializer.add(header--, Handshake.serializer(serializer));
+		serializer.add(header--, ViralMessage.serializer(serializer));
+		serializer.add(header--, AddressedMessageResult.serializer(serializer));
+		serializer.add(header--, AddressedMessage.serializer(serializer));
+		serializer.add(header--, NeighborSetUpdate.serializer(serializer));
+		serializer.add(header--, NeighborSetUpdateTrigger.serializer(serializer));
+		serializer.add(header--, ClientTransmission.serializer(serializer));
+		serializer.add(header--, BasicProxy.serializer(serializer, proxyHandler, localAddress));
+		serializer.add(header--, ProxyInvocation.serializer(serializer));
+		serializer.add(header--, ProxyResult.serializer(serializer));
+		serializer.add(header--, ProxyMultiInvocation.serializer(serializer));
+		serializer.add(header--, UUID.serializer());
+		// serializers for collections
+		serializer.add(header--, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
+		serializer.add(header--, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
+		serializer.add(header--, new HashMapSerializer(serializer));
 	}
 
 	@Override

@@ -27,5 +27,10 @@ public class ClassSerializationTest {
 		Object deserialized = deserializer.deserialize(new ByteArrayInputStream(baos.toByteArray()));
 		assert deserialized.equals(ArrayList.class);
 	}
+
+	@Test
+	public static void intClassTest() throws IOException, ProtocolViolationException {
+		
+	}
 	
 }

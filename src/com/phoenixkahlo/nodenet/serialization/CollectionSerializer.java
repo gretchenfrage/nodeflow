@@ -9,11 +9,22 @@ public class CollectionSerializer<E extends Collection<?>> implements Serializer
 	private Class<E> clazz;
 	private Supplier<E> factory;
 	private Serializer subSerializer;
-	
-	public CollectionSerializer(Class<E> clazz, Supplier<E> factory, Serializer subSerializer) {
+	private boolean flip;
+
+	/**
+	 * @param flip if you could iterate through the collection, and add each item to an empty instance of the same
+	 *             collection, and get an equal collection, flip should be false. if you would get a backwards
+	 *             collection, flip should be true.
+	 */
+	public CollectionSerializer(Class<E> clazz, Supplier<E> factory, Serializer subSerializer, boolean flip) {
 		this.clazz = clazz;
 		this.factory = factory;
 		this.subSerializer = subSerializer;
+		this.flip = flip;
+	}
+
+	public CollectionSerializer(Class<E> clazz, Supplier<E> factory, Serializer subSerializer) {
+		this(clazz, factory, subSerializer, false);
 	}
 
 	@Override
@@ -34,7 +45,7 @@ public class CollectionSerializer<E extends Collection<?>> implements Serializer
 
 	@Override
 	public Deserializer toDeserializer() {
-		return new CollectionDeserializer<>(clazz, factory, subSerializer.toDeserializer());
+		return new CollectionDeserializer<>(clazz, factory, subSerializer.toDeserializer(), flip);
 	}
 	
 }

@@ -6,10 +6,20 @@ import java.io.OutputStream;
 public class ClassSerializer implements Serializer {
 
 	private static StringSerializer stringSerializer = new StringSerializer();
-	
+
 	@Override
 	public boolean canSerialize(Object object) {
-		return object != null && object instanceof Class;
+		//return object != null
+		//		&& object instanceof Class;
+		if (object == null)
+			return false;
+		if (!(object instanceof Class))
+			return false;
+		if (PrimitiveClassSerializer.primitiveClasses.contains(object))
+			return false;
+		if (((Class<?>) object).isArray())
+			return false;
+		return true;
 	}
 
 	@Override
