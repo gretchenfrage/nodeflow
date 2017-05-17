@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.phoenixkahlo.nodenet.proxy.BasicProxy;
 import com.phoenixkahlo.nodenet.proxy.Proxy;
 import com.phoenixkahlo.nodenet.proxy.ProxyHandler;
@@ -28,7 +29,7 @@ import com.phoenixkahlo.util.UUID;
  */
 public class BasicLocalNode implements LocalNode {
 
-	private UnionSerializer serializer = new UnionSerializer();
+	private Kryo kryo = new Kryo();
 	private NodeAddress localAddress = new NodeAddress(new UUID());
 
 	private NetworkModel model = new NetworkModel();
@@ -49,11 +50,11 @@ public class BasicLocalNode implements LocalNode {
 		nodeFactory = address -> new ChildNode(addressedHandler, connections, localAddress, address);
 		leaveJoinHandler = new LeaveJoinHandler(localAddress, model, nodes, nodeFactory);
 		viralHandler = new ViralMessageHandler(localAddress, connections, leaveJoinHandler, errorLog);
-		handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes, viralHandler,
+		handshakeHandler = new HandshakeHandler(kryo, localAddress, connections, nodes, viralHandler,
 				addressedHandler, leaveJoinHandler, errorLog);
 		proxyHandler = new ProxyHandler(addressedHandler, localAddress, this::getNode);
 		addressedHandler.setProxyHandler(proxyHandler);
-		initSerializer();
+		//initSerializer();
 		family.setReceiveHandler(handshakeHandler::setup);
 		nodes.put(localAddress, nodeFactory.apply(localAddress));
 	}
@@ -73,53 +74,10 @@ public class BasicLocalNode implements LocalNode {
 	public BasicLocalNode(int port) throws SocketException {
 		this(port, System.err);
 	}
-	
-	private void initSerializer() {
-		int header = -1;
-		// serializers for things that should be serializable in general
-		serializer.add(header--, new NullSerializer());
-		serializer.add(header--, new MethodSerializer());
-		serializer.add(header--, new ClassSerializer());
-		serializer.add(header--, new PrimitiveClassSerializer());
-		serializer.add(header--, new ArrayClassSerializer(serializer));
-		serializer.add(header--, new ArraySerializer(Object.class, serializer));
-		serializer.add(header--, new StringSerializer());
-		serializer.add(header--, new EmptyOptionalSerializer());
-		serializer.add(header--, new FullOptionalSerializer(serializer));
-		// serializers for internal classes
-		serializer.add(header--, NodeAddress.serializer(serializer));
-		serializer.add(header--, Handshake.serializer(serializer));
-		serializer.add(header--, ViralMessage.serializer(serializer));
-		serializer.add(header--, AddressedMessageResult.serializer(serializer));
-		serializer.add(header--, AddressedMessage.serializer(serializer));
-		serializer.add(header--, NeighborSetUpdate.serializer(serializer));
-		serializer.add(header--, NeighborSetUpdateTrigger.serializer(serializer));
-		serializer.add(header--, ClientTransmission.serializer(serializer));
-		serializer.add(header--, BasicProxy.serializer(serializer, proxyHandler, localAddress));
-		serializer.add(header--, ProxyInvocation.serializer(serializer));
-		serializer.add(header--, ProxyResult.serializer(serializer));
-		serializer.add(header--, ProxyMultiInvocation.serializer(serializer));
-		serializer.add(header--, UUID.serializer());
-		// serializers for collections
-		serializer.add(header--, new CollectionSerializer<>(HashSet.class, HashSet::new, serializer));
-		serializer.add(header--, new CollectionSerializer<>(ArrayList.class, ArrayList::new, serializer));
-		serializer.add(header--, new HashMapSerializer(serializer));
-	}
 
 	@Override
-	public void addSerializer(Serializer serializer, int header) {
-		if (header <= 0)
-			throw new IllegalArgumentException("Serializer headers must be positive");
-
-		synchronized (this.serializer) {
-			this.serializer.add(header, serializer);
-			connections.values().stream().forEach(ObjectStream::rebuildDeserializer);
-		}
-	}
-	
-	@Override
-	public Serializer getSerializer() {
-		return serializer;
+	public Kryo getKryo() {
+		return kryo;
 	}
 
 	@Override

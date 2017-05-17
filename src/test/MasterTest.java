@@ -15,7 +15,6 @@ import test.serialization.HashMapSerializationTest;
 import test.serialization.NullableSerializationTest;
 import test.serialization.StringSerializationTest;
 import test.serialization.UnionSerializerTest;
-import test.socket.BasicChildSocketTest;
 import test.socket.RealUDPSocketWrapperTest;
 import test.util.BlockingHashMapTest;
 import test.util.UUIDJSONTest;
@@ -33,8 +32,7 @@ public class MasterTest {
 		Testing.test(CollectionSerializationTest.class);
 		
 		Testing.test(RealUDPSocketWrapperTest.class);
-		Testing.test(BasicChildSocketTest.class);
-		
+
 		Testing.test(NetworkModelTest.class);
 		Testing.test(AddressedAttemptSequenceTest.class);
 		Testing.test(AddressedMessageHandlerTest.class);

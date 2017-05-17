@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 import com.phoenixkahlo.nodenet.stream.DatagramStream;
+import com.phoenixkahlo.nodenet.stream.KryoObjectStream;
 import com.phoenixkahlo.nodenet.stream.ObjectStream;
 import com.phoenixkahlo.nodenet.stream.SerializerObjectStream;
 
@@ -17,7 +19,7 @@ import com.phoenixkahlo.nodenet.stream.SerializerObjectStream;
  */
 public class HandshakeHandler {
 
-	private Serializer serializer;
+	private Kryo kryo;
 	private NodeAddress localAddress;
 	private Map<NodeAddress, ObjectStream> connections;
 	private Map<NodeAddress, ChildNode> nodes;
@@ -28,10 +30,10 @@ public class HandshakeHandler {
 	
 	private PrintStream errorLog;
 
-	public HandshakeHandler(Serializer serializer, NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
+	public HandshakeHandler(Kryo kryo, NodeAddress localAddress, Map<NodeAddress, ObjectStream> connections,
 			Map<NodeAddress, ChildNode> nodes, ViralMessageHandler viralHandler,
 			AddressedMessageHandler addressedHandler, LeaveJoinHandler leaveJoinHandler, PrintStream errorLog) {
-		this.serializer = serializer;
+		this.kryo = kryo;
 		this.localAddress = localAddress;
 		this.connections = connections;
 		this.nodes = nodes;
@@ -43,7 +45,7 @@ public class HandshakeHandler {
 
 	public Optional<Node> setup(DatagramStream connection) {
 		// Establish object transmission layer
-		ObjectStream stream = new SerializerObjectStream(connection, serializer);
+		ObjectStream stream = new KryoObjectStream(connection, kryo);
 
 		// Exchange handshakes, find remote address
 		Handshake received;

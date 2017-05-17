@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.phoenixkahlo.nodenet.AddressedMessageHandler;
 import com.phoenixkahlo.nodenet.ChildNode;
 import com.phoenixkahlo.nodenet.Handshake;
@@ -31,53 +32,17 @@ import com.phoenixkahlo.ptest.Test;
 import com.phoenixkahlo.ptest.Testing;
 
 public class HandshakeHandlerTest {
-
+	/*
 	public static void main(String[] args) {
 		test1();
 	}
 
 	private static Map<Integer, Object> fakeSerialized = Collections.synchronizedMap(new HashMap<>());
 
-	private static class FakeSerializer implements Serializer {
-
-		@Override
-		public boolean canSerialize(Object object) {
-			return true;
-		}
-
-		@Override
-		public void serialize(Object object, OutputStream out) throws IOException {
-			int id = ThreadLocalRandom.current().nextInt();
-			fakeSerialized.put(id, object);
-			SerializationUtils.writeInt(id, out);
-		}
-
-		@Override
-		public Deserializer toDeserializer() {
-			return new FakeDeserializer();
-		}
-
-	};
-
-	private static class FakeDeserializer implements Deserializer {
-
-		@Override
-		public Object deserialize(InputStream in) throws IOException, ProtocolViolationException {
-			int id = SerializationUtils.readInt(in);
-			return Optional.ofNullable(fakeSerialized.get(id)).get();
-		}
-
-		@Override
-		public Serializer toSerializer() {
-			return new FakeSerializer();
-		}
-
-	}
-
 	@Test
 	public static void test1() {
 		// situtation 1: everything goes normally
-		Serializer serializer = new FakeSerializer();
+		Kryo kryo = new Kryo();
 
 		NodeAddress localAddress = new NodeAddress(1);
 
@@ -99,7 +64,7 @@ public class HandshakeHandlerTest {
 		nodes.put(new NodeAddress(2), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(2)));
 		nodes.put(new NodeAddress(3), new ChildNode(addressedHandler, connections, localAddress, new NodeAddress(3)));
 
-		HandshakeHandler handshakeHandler = new HandshakeHandler(serializer, localAddress, connections, nodes,
+		HandshakeHandler handshakeHandler = new HandshakeHandler(kryo, localAddress, connections, nodes,
 				viralHandler, addressedHandler, leaveJoinHandler, System.err);
 
 		DatagramStream connector = Testing.mock(DatagramStream.class);
@@ -145,5 +110,6 @@ public class HandshakeHandlerTest {
 			notary.notifyAll();
 		}
 	}
+	*/
 
 }

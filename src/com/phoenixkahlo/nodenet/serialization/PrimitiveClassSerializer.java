@@ -12,7 +12,7 @@ public class PrimitiveClassSerializer implements Serializer {
 
     private static StringSerializer stringSerializer = new StringSerializer();
 
-    public static List<Class<?>> primitiveClasses = new ArrayList<>();
+    public static final List<Class<?>> primitiveClasses = new ArrayList<>();
     static {
         primitiveClasses.add(int.class);
         primitiveClasses.add(long.class);

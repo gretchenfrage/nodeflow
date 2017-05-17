@@ -16,7 +16,13 @@ public interface ObjectStream {
 
 	Object receive() throws ProtocolViolationException, DisconnectionException;
 
-	<E> E receive(Class<E> type) throws ProtocolViolationException, DisconnectionException;
+	default <E> E receive(Class<E> type) throws ProtocolViolationException, DisconnectionException {
+		Object received = receive();
+		if (type.isAssignableFrom(received.getClass()))
+			return (E) received;
+		else
+			throw new ProtocolViolationException("Object is of wrong class: " + received);
+	}
 
 	void disconnect();
 

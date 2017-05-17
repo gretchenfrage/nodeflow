@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.phoenixkahlo.nodenet.proxy.Proxy;
 import com.phoenixkahlo.nodenet.serialization.Serializer;
 
@@ -14,16 +15,7 @@ import com.phoenixkahlo.nodenet.serialization.Serializer;
  */
 public interface LocalNode {
 
-	/**
-	 * Add a serializer for object transmission.
-	 */
-	void addSerializer(Serializer serializer, int header);
-
-	/**
-	 * @return the serializer to use in subSerializers for establishing a
-	 *         serialization protocol.
-	 */
-	Serializer getSerializer();
+	Kryo getKryo();
 
 	/**
 	 * Attempt to form a connection with the given address.
